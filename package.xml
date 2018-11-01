@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>dg_blmc_robots</name>
+  <version>1.0.0</version>
+  <description>
+    This project implements a small example when using the dynamic graph
+  </description>
+  <author email="mnaveau@tue.mpg.de">Maximilien Naveau</author>
+  <maintainer email="mnaveau@tue.mpg.de">Maximilien Naveau</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend> blmc_robots </build_depend>
+  <run_depend>   blmc_robots </run_depend>
+
+  <build_depend> dynamic_graph_manager </build_depend>
+  <run_depend>   dynamic_graph_manager </run_depend>
+</package>
