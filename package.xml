@@ -15,4 +15,11 @@
 
   <build_depend> dynamic_graph_manager </build_depend>
   <run_depend>   dynamic_graph_manager </run_depend>
+
+  <build_depend> realtime_tools </build_depend>
+  <run_depend>   realtime_tools </run_depend>
+
+  <build_depend> yaml_cpp </build_depend>
+  <run_depend>   yaml_cpp </run_depend>
+
 </package>

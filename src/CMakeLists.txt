@@ -3,7 +3,7 @@
 ################################################################
 
 set(SOURCES
-  dg_test_bench_8_motors/dg_test_bench_8_motors.cpp
+  test_bench_8_motors/dgm_test_bench_8_motors.cpp
 )
 add_library(dg_test_bench_8_motors SHARED ${SOURCES})
 target_link_libraries(dg_test_bench_8_motors
@@ -16,3 +16,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     pthread
   )
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+
+set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dg_test_bench_8_motors
+    PARENT_SCOPE)

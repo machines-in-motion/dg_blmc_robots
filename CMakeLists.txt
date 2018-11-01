@@ -19,32 +19,47 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 set(CATKIN_PKGS ${CATKIN_PKGS}
   blmc_robots
+  realtime_tools
+  yaml_cpp
   dynamic_graph_manager
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
+search_for_python()
+search_for_boost()
 search_for_eigen()
+
+####################################
+# Define the OS to be used locally #
+####################################
+
+# This macro sets the C++ preprocessor flags "XENOMAI", "RT_PREEMPT", or
+# "NON_REAL_TIME" according to the current operating system.
+define_os()
 
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
 ######################################################
+message(STATUS "${catkin_INCLUDE_DIRS}")
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${catkin_INCLUDE_DIRS}
+    ${PYTHON_INCLUDE_PATH}
+    ${Boost_INCLUDE_DIR}
     ${Eigen_INCLUDE_DIRS}
-)
-
-##########################################
-# export the package as a catkin package #
-##########################################
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS ${CATKIN_PKGS}
 )
 
 ########################################################
 # manage the creation of the libraries and executables #
 ########################################################
 add_subdirectory(src)
+
+##########################################
+# export the package as a catkin package #
+##########################################
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${EXPORTED_LIBRAIRIES}
+)
 
 #########################
 # manage the unit tests #
