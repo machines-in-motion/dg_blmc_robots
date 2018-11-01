@@ -1,5 +1,5 @@
 /**
- * \file test_bench_8_motors.cpp
+ * \file dg_test_bench_8_motors.cpp
  * \brief The hardware wrapper of the the test bench with 8 blmc motors
  * \author Maximilien Naveau
  * \date 2018
@@ -7,7 +7,7 @@
  * This file defines the TestBench8Motors class.
  */
 
-#include "blmc_robots/test_bench_8_motors/test_bench_8_motors.hh"
+#include "dg_blmc_robots/dg_test_bench_8_motors/dg_test_bench_8_motors.hh"
 
 namespace blmc_motors
 {
