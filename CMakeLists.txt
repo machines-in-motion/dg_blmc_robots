@@ -39,7 +39,6 @@ define_os()
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
 ######################################################
-message(STATUS "${catkin_INCLUDE_DIRS}")
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${catkin_INCLUDE_DIRS}

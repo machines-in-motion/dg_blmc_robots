@@ -1,6 +1,6 @@
 is_real_robot: true
 device:
-  name: "single_motor"
+  name: "test_bench_8_motors"
   sensors:
     motor_positions:
       size: 8

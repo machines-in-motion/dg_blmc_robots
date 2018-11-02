@@ -11,8 +11,6 @@ add_executable(demo_dg_test_bench_8_motors
   test_bench_8_motors/demo_dg_test_bench_8_motors.cpp
 )
 
-message(STATUS ${catkin_LIBRARIES})
-
 target_link_libraries(demo_dg_test_bench_8_motors
   dg_test_bench_8_motors
   ${catkin_LIBRARIES}

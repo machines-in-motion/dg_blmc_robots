@@ -23,16 +23,17 @@ namespace dg_blmc_robots
 
   void DGMTestBench8Motors::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
-    map["motor_positions"] = test_bench_.get
-    map["motor_velocities"] =
-    map["motor_currents"] =
-    map["slider_positions"] =
+    test_bench_.acquire_sensors();
+    map.at("motor_positions") = test_bench_.get_motor_positions();
+    map.at("motor_velocities") = test_bench_.get_motor_velocities();
+    map.at("motor_currents") = test_bench_.get_motor_currents();
+    map.at("slider_positions") = test_bench_.get_slider_positions();
   }
 
   void DGMTestBench8Motors::set_motor_controls_from_map(
       const dynamic_graph::VectorDGMap& map)
   {
-    test_bench_.send_target_current(map["torques"]);
+    test_bench_.send_target_current(map.at("torques"));
   }
 
 } // namespace dg_blmc_robots
