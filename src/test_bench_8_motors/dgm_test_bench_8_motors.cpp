@@ -33,7 +33,7 @@ namespace dg_blmc_robots
   void DGMTestBench8Motors::set_motor_controls_from_map(
       const dynamic_graph::VectorDGMap& map)
   {
-    test_bench_.send_target_current(map.at("torques"));
+    test_bench_.send_target_current(map.at("ctrl_motor_currents"));
   }
 
 } // namespace dg_blmc_robots

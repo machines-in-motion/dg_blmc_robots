@@ -11,7 +11,7 @@ device:
     slider_positions:
       size: 8
   controls:
-    torques:
+    ctrl_motor_currents:
       size: 8
 hardware_communication:
   max_missed_control: 10
