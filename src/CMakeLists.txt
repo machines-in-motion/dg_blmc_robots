@@ -4,6 +4,7 @@
 
 set(SOURCES
   test_bench_8_motors/dgm_test_bench_8_motors.cpp
+  test_bench_8_motors/dgm_test_bench_8_motors_simu.cpp
 )
 add_library(dg_test_bench_8_motors SHARED ${SOURCES})
 target_link_libraries(dg_test_bench_8_motors
