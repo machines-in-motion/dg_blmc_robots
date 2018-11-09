@@ -16,7 +16,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     rt
     pthread
   )
-endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+endif()
 
 
 set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} dg_test_bench_8_motors
