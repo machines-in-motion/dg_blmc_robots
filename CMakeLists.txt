@@ -28,6 +28,16 @@ search_for_python()
 search_for_boost()
 search_for_eigen()
 
+## Trigger dependency to dynamic-graph.
+add_required_dependency("dynamic-graph >= 3.0.0")
+add_required_dependency("dynamic-graph-python >= 3.0.0")
+build_prefix_for_pkg("dynamic-graph" dg_name)
+build_prefix_for_pkg("dynamic-graph-python" dgp_name)
+link_directories(
+  ${${dg_name}_LIBRARY_DIRS}
+  ${${dgp_name}_LIBRARY_DIRS}
+)
+
 ####################################
 # Define the OS to be used locally #
 ####################################
