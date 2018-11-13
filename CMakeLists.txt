@@ -19,7 +19,6 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 set(CATKIN_PKGS ${CATKIN_PKGS}
   blmc_robots
-  realtime_tools
   yaml_cpp
   dynamic_graph_manager
 )
@@ -38,12 +37,6 @@ link_directories(
   ${${dgp_name}_LIBRARY_DIRS}
 )
 
-####################################
-# Define the OS to be used locally #
-####################################
-
-# This macro sets the C++ preprocessor flags "XENOMAI", "RT_PREEMPT", or
-# "NON_REAL_TIME" according to the current operating system.
 define_os()
 
 ######################################################

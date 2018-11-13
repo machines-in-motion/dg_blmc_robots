@@ -29,7 +29,7 @@ namespace dg_blmc_robots
     /**
      * @brief ~DemoSingleMotor is the destructor.
      */
-    ~DGMTestBench8Motors(){}
+    ~DGMTestBench8Motors();
 
     /**
      * @brief initialize_hardware_communication_process is the function that
