@@ -7,14 +7,14 @@
  * This file uses the TestBench8Motors class in a small demo.
  */
 
-#include "dg_blmc_robots/test_bench_8_motors/dgm_test_bench_8_motors.hh"
+#include "dg_blmc_robots/dgm_quadruped.hpp"
 
 int main(int , char* []) {
   std::cout << "Loading paramters from "
             << YAML_PARAMS
             << std::endl;
   YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-  dg_blmc_robots::DGMTestBench8Motors dgm;
+  dg_blmc_robots::DGMQuadruped dgm;
 
   dgm.initialize(param);
   dgm.run();

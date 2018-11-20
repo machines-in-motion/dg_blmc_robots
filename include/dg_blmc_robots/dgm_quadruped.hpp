@@ -1,6 +1,6 @@
 /**
- * \file dgm_test_bench_8_motors_simu.hh
- * \brief This file define the dynamic graph manager responsible of the simu
+ * \file dgm_test_bench_8_motors.hh
+ * \brief This file define the dynamic graph manager responsible of the control
  * of the test bench with the 8 blmc motors
  * \author Maximilien Naveau
  * \date 2018
@@ -12,25 +12,24 @@
 #ifndef DGM_TEST_BENCH_8_MOTORS_HH
 #define DGM_TEST_BENCH_8_MOTORS_HH
 
-#include <vector>
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/test_bench_8_motors/test_bench_8_motors.hh>
+#include <blmc_robots/quadruped.hpp>
 
 namespace dg_blmc_robots
 {
 
-  class DGMTestBench8MotorsSimu : public dynamic_graph::DynamicGraphManager
+  class DGMQuadruped : public dynamic_graph::DynamicGraphManager
   {
   public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
-    DGMTestBench8MotorsSimu();
+    DGMQuadruped();
 
     /**
      * @brief ~DemoSingleMotor is the destructor.
      */
-    ~DGMTestBench8MotorsSimu(){}
+    ~DGMQuadruped();
 
     /**
      * @brief initialize_hardware_communication_process is the function that
@@ -55,16 +54,13 @@ namespace dg_blmc_robots
   private:
 
     /**
-     * Entries for the simulated hardware.
+     * Entries for the real hardware.
      */
-    blmc_robots::Vector8d ctrl_motor_currents_;
-    blmc_robots::Vector8d motor_positions_;
-    blmc_robots::Vector8d motor_velocities_;
-    blmc_robots::Vector8d motor_currents_;
-    blmc_robots::Vector8d slider_positions_;
 
-    double motors_inertia_;
-    double motors_torque_constant_;
+     /**
+      * @brief test_bench_ the real test bench hardware drivers.
+      */
+     blmc_robots::Quadruped quadruped_;
   };
 
 

@@ -6,41 +6,31 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/demos
 )
 
+#############################################
+# Declare a simple macro to build the demos #
+#############################################
+
+macro(create_dgm_demo demo_name)
+
 ### demo off the 8 blmc motor test bench ####
-add_executable(demo_dg_test_bench_8_motors
-  test_bench_8_motors/demo_dg_test_bench_8_motors.cpp
+add_executable(demo_dg_${demo_name}
+  demo_dg_${demo_name}.cpp
 )
 
-target_link_libraries(demo_dg_test_bench_8_motors
-  dg_test_bench_8_motors
+target_link_libraries(demo_dg_${demo_name}
+  dgm_${demo_name}
   ${catkin_LIBRARIES}
 )
 
-target_compile_definitions(demo_dg_test_bench_8_motors PUBLIC
-  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/test_bench_8_motors/test_bench_8_motors.yaml")
+target_compile_definitions(demo_dg_${demo_name} PUBLIC
+  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/config/${demo_name}.yaml")
 
-### demo off the 8 blmc motor test bench ####
-add_executable(demo_dg_test_bench_8_motors_simu
-  test_bench_8_motors/demo_dg_test_bench_8_motors_simu.cpp
-)
+endmacro(create_dgm_demo demo_name)
 
-target_link_libraries(demo_dg_test_bench_8_motors_simu
-  dg_test_bench_8_motors
-  ${catkin_LIBRARIES}
-)
+###############
+# build demos #
+###############
 
-target_compile_definitions(demo_dg_test_bench_8_motors_simu PUBLIC
-  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/test_bench_8_motors/test_bench_8_motors_simu.yaml")
-
-### demo off the 8 blmc motor test bench ####
-add_executable(demo_dg_test_bench_8_motors_single_process
-  test_bench_8_motors/demo_dg_test_bench_8_motors_simu.cpp
-)
-
-target_link_libraries(demo_dg_test_bench_8_motors_single_process
-  dg_test_bench_8_motors
-  ${catkin_LIBRARIES}
-)
-
-target_compile_definitions(demo_dg_test_bench_8_motors_single_process PUBLIC
-  YAML_PARAMS="${CMAKE_CURRENT_SOURCE_DIR}/test_bench_8_motors/test_bench_8_motors_single_process.yaml")
+create_dgm_demo(test_bench_8_motors)
+create_dgm_demo(test_bench_8_motors_simu)
+create_dgm_demo(quadruped)

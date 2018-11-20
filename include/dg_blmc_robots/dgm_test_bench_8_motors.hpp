@@ -13,7 +13,7 @@
 #define DGM_TEST_BENCH_8_MOTORS_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/test_bench_8_motors/test_bench_8_motors.hh>
+#include <blmc_robots/test_bench_8_motors.hpp>
 
 namespace dg_blmc_robots
 {
