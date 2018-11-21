@@ -61,6 +61,11 @@ namespace dg_blmc_robots
       * @brief test_bench_ the real test bench hardware drivers.
       */
      blmc_robots::Quadruped quadruped_;
+
+     /**
+      * @brief ctrl_joint_torques_ the joint torques to be sent
+      */
+     blmc_robots::Vector8d ctrl_joint_torques_;
   };
 
 
