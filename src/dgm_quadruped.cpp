@@ -52,8 +52,8 @@ namespace dg_blmc_robots
       /**
         * Additional data
         */
-      map.at("contact_sensors") = quadruped_.get_slider_positions();
-      map.at("slider_positions") = quadruped_.get_contact_sensors_states();
+      map.at("contact_sensors") = quadruped_.get_contact_sensors_states();
+      map.at("slider_positions") = quadruped_.get_slider_positions();
 
     }catch(...){
       printf("Error in acquiring the sensors data\n");
