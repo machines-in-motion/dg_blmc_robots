@@ -19,6 +19,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 ############################
 set(CATKIN_PKGS ${CATKIN_PKGS}
   robot_properties_quadruped
+  blmc_drivers
   blmc_robots
   yaml_cpp
   dynamic_graph_manager

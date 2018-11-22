@@ -10,6 +10,9 @@
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend> blmc_drivers </build_depend>
+  <run_depend>   blmc_drivers </run_depend>
+
   <build_depend> blmc_robots </build_depend>
   <run_depend>   blmc_robots </run_depend>
 
