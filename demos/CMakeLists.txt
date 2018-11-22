@@ -33,7 +33,6 @@ if(NOT EXISTS ${config_file})
   )
 endif()
 
-message(WARNING ${config_file})
 target_compile_definitions(demo_dg_${robot_name} PUBLIC
   YAML_PARAMS="${config_file}")
 
