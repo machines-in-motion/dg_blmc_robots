@@ -9,8 +9,8 @@
  * bench with 8 motors.
  */
 
-#ifndef DGM_TEST_BENCH_8_MOTORS_HH
-#define DGM_TEST_BENCH_8_MOTORS_HH
+#ifndef DGM_QUADRUPED_HH
+#define DGM_QUADRUPED_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <blmc_robots/quadruped.hpp>
