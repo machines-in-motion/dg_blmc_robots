@@ -41,6 +41,7 @@ namespace dg_blmc_robots
         */
       map.at("contact_sensors") = teststand_.get_contact_sensors_states();
       map.at("slider_positions") = teststand_.get_slider_positions();
+      map.at("height_sensors") = teststand_.get_height_sensors();
 
       map.at("ati_force") = teststand_.get_ati_force();
       map.at("ati_torque") = teststand_.get_ati_torque();
@@ -71,6 +72,7 @@ namespace dg_blmc_robots
         */
       map.at("contact_sensors").fill(0.0);
       map.at("slider_positions").fill(0.0);
+      map.at("height_sensors").fill(0.0);
 
       map.at("ati_force").fill(0.0);
       map.at("ati_torque").fill(0.0);
