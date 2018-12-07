@@ -113,7 +113,7 @@ dg.plug(slider_filtered.sout, slider_1_op.sin)
 sslider_1 = slider_1_op.sout
 
 sslider_1_scale = constVector([0., 0., -0.2,])
-spos_offset = constVector([0., 0., 0.32])
+spos_offset = constVector([0.05, 0., 0.32])
 sslider_1_scaled = op2(score.Multiply_double_vector, sslider_1, sslider_1_scale)
 
 spos_des = op2(score.Add_of_vector, spos_offset, sslider_1_scaled)
@@ -130,33 +130,32 @@ storque = impedance_torque(sjac_contact, spos_diff)
 
 # HACK: Use a PD controller to fuse the P and D signal. Adding them
 # by jviereck didn't work :/ -> control process crashes.
-from dynamic_graph.sot.core.control_pd import ControlPD
+# from dynamic_graph.sot.core.control_pd import ControlPD
 
-pd = ControlPD("")
-pd.displaySignals()
-pd.Kd.value = (0.1, 0.3,)
-pd.Kp.value = (100., 100.)
-pd.desiredposition.value = (0., 0.)
-pd.desiredvelocity.value = (0., 0.)
-dg.plug(storque, pd.position)
-dg.plug(robot.device.joint_velocities, pd.velocity)
+# pd = ControlPD("")
+# pd.displaySignals()
+# pd.Kd.value = (0.1, 0.3,)
+# pd.Kp.value = (150., 150.)
+# pd.desiredposition.value = (0., 0.)
+# pd.desiredvelocity.value = (0., 0.)
+# dg.plug(storque, pd.position)
+# dg.plug(robot.device.joint_velocities, pd.velocity)
 
-dg.plug(pd.control, robot.device.ctrl_joint_torques)
+# dg.plug(pd.control, robot.device.ctrl_joint_torques)
 
 
 # # Scale the torque
-# p_gain_op = score.Multiply_double_vector("")
-# p_gain = p_gain_op.sin1
-# p_gain.value = -50.
+p_gain_op = score.Multiply_double_vector("")
+p_gain = p_gain_op.sin1
+p_gain.value = -50.
+dg.plug(storque, p_gain_op.sin2)
 
-# dg.plug(storque, p_gain_op.sin2)
+d_gain_op = score.Multiply_double_vector("")
+d_gain = d_gain_op.sin1
+d_gain.value = -1.
+dg.plug(robot.device.joint_velocities, d_gain_op.sin2)
 
-# d_gain_op = score.Multiply_double_vector("")
-# d_gain = d_gain_op.sin1
-# d_gain.value = -1.
-# dg.plug(robot.device.joint_velocities, d_gain_op.sin2)
-
-# # stau = op2(score.Add_of_vector, d_gain_op.sout, p_gain_op.sout)
+stau = op2(score.Add_of_vector, d_gain_op.sout, p_gain_op.sout)
 # stau = op2(score.Substract_of_vector, p_gain_op.sout, p_gain_op.sout)
 # # stau = p_gain_op.sout
 
@@ -167,7 +166,7 @@ dg.plug(pd.control, robot.device.ctrl_joint_torques)
 # stau.recompute(0)
 # print(stau.value)
 
-# dg.plug(stau, robot.device.ctrl_joint_torques)
+dg.plug(stau, robot.device.ctrl_joint_torques)
 # dg.plug(p_gain_op.sout, robot.device.ctrl_joint_torques)
 # dg.plug(d_gain_op.sout, robot.device.ctrl_joint_torques)
 
