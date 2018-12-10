@@ -21,14 +21,14 @@ robot_dg.createJacobianEndEffWorld('jac_contact', 'contact')
 robot_dg.createPosition('pos_hip', 'joint_hip')
 robot_dg.createPosition('pos_contact', 'joint_contact')
 
-def op2(op_clazz, sin1, sin2):
-    op = op_clazz("")
+def op2(op_clazz, sin1, sin2, entity_name=""):
+    op = op_clazz(entity_name)
     dg.plug(sin1, op.sin1)
     dg.plug(sin2, op.sin2)
     return op.sout
 
-def op1(op_clazz, sin1):
-    op = op_clazz("")
+def op1(op_clazz, sin1, entity_name=""):
+    op = op_clazz(entity_name)
     dg.plug(sin1, op.sin)
     return op.sout
 
@@ -80,7 +80,7 @@ def impedance_torque(sjac, swrench):
     dg.plug(swrench, op.signal('sin2'))
 
     # Only keep the last two entries.
-    sel = score.Selec_of_vector('sel')
+    sel = score.Selec_of_vector('impedance_torque')
     sel.selec(1, 3)
     dg.plug(op.signal('sout'), sel.signal('sin'))
     return sel.signal('sout')
@@ -113,10 +113,10 @@ dg.plug(slider_filtered.sout, slider_1_op.sin)
 sslider_1 = slider_1_op.sout
 
 sslider_1_scale = constVector([0., 0., -0.2,])
-spos_offset = constVector([0.05, 0., 0.32])
+spos_offset = constVector([0.02, 0., 0.32])
 sslider_1_scaled = op2(score.Multiply_double_vector, sslider_1, sslider_1_scale)
 
-spos_des = op2(score.Add_of_vector, spos_offset, sslider_1_scaled)
+spos_des = op2(score.Add_of_vector, spos_offset, sslider_1_scaled, "pos_des")
 
 
 # Computes the actual length difference and the difference to the desired length.
@@ -130,18 +130,24 @@ storque = impedance_torque(sjac_contact, spos_diff)
 
 # HACK: Use a PD controller to fuse the P and D signal. Adding them
 # by jviereck didn't work :/ -> control process crashes.
-# from dynamic_graph.sot.core.control_pd import ControlPD
 
-# pd = ControlPD("")
-# pd.displaySignals()
-# pd.Kd.value = (0.1, 0.3,)
-# pd.Kp.value = (150., 150.)
-# pd.desiredposition.value = (0., 0.)
-# pd.desiredvelocity.value = (0., 0.)
-# dg.plug(storque, pd.position)
-# dg.plug(robot.device.joint_velocities, pd.velocity)
+if False:
+    from dynamic_graph.sot.core.control_pd import ControlPD
 
-# dg.plug(pd.control, robot.device.ctrl_joint_torques)
+    pd = ControlPD("")
+    pd.displaySignals()
+    pd.Kd.value = (0.1, 0.3,)
+    pd.Kp.value = (150., 150.)
+    pd.desiredposition.value = (0., 0.)
+    pd.desiredvelocity.value = (0., 0.)
+    dg.plug(storque, pd.position)
+    dg.plug(robot.device.joint_velocities, pd.velocity)
+
+    dg.plug(pd.control, robot.device.ctrl_joint_torques)
+
+
+# robot.add_trace('pos_des', 'sout')
+# robot.add_trace('impedance_torque', 'sout')
 
 
 # # Scale the torque
@@ -155,7 +161,12 @@ d_gain = d_gain_op.sin1
 d_gain.value = -1.
 dg.plug(robot.device.joint_velocities, d_gain_op.sin2)
 
-stau = op2(score.Add_of_vector, d_gain_op.sout, p_gain_op.sout)
+add_op = score.Add_of_vector("adding_2_vectors")
+dg.plug(p_gain_op.sout, add_op.sin1)
+dg.plug(d_gain_op.sout, add_op.sin2)
+dg.plug(add_op.sout, robot.device.ctrl_joint_torques)
+
+# stau = op2(score.Add_of_vector, d_gain_op.sout, p_gain_op.sout)
 # stau = op2(score.Substract_of_vector, p_gain_op.sout, p_gain_op.sout)
 # # stau = p_gain_op.sout
 
@@ -166,7 +177,7 @@ stau = op2(score.Add_of_vector, d_gain_op.sout, p_gain_op.sout)
 # stau.recompute(0)
 # print(stau.value)
 
-dg.plug(stau, robot.device.ctrl_joint_torques)
+# dg.plug(stau, robot.device.ctrl_joint_torques)
 # dg.plug(p_gain_op.sout, robot.device.ctrl_joint_torques)
 # dg.plug(d_gain_op.sout, robot.device.ctrl_joint_torques)
 
