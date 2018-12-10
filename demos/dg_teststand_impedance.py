@@ -116,16 +116,42 @@ sslider_1_scale = constVector([0., 0., -0.2,])
 spos_offset = constVector([0.02, 0., 0.32])
 sslider_1_scaled = op2(score.Multiply_double_vector, sslider_1, sslider_1_scale)
 
+# Adding an oscillator to the game.
+import dynamic_graph.sot.tools
+osc = dynamic_graph.sot.tools.Oscillator("oscillator")
+osc.setTimePeriod(0.001)
+osc.omega.value = 3. * np.pi
+
+def start_oscillator():
+    osc.magnitude.value = 0.25
+    osc.bias.value = 0.75
+
+def stop_oscillator():
+    osc.magnitude.value = 0.0
+    osc.bias.value = 1.0
+
+stop_oscillator()
+
 spos_des = op2(score.Add_of_vector, spos_offset, sslider_1_scaled, "pos_des")
+
+spos_des_osc_op = score.Multiply_double_vector("dist_osc")
+dg.plug(osc.sout, spos_des_osc_op.sin1)
+dg.plug(spos_des, spos_des_osc_op.sin2)
 
 
 # Computes the actual length difference and the difference to the desired length.
 # Converts the result into a 6d wrench vector.
-spos_diff = stack_to_wrench(pos_diff(spos_des, pos_diff(spos_hip, spos_contact)))
+spos_diff = stack_to_wrench(pos_diff(spos_des_osc_op.sout, pos_diff(spos_hip, spos_contact)))
+
+# Add a gain for the position error to convert into a desired force.
+force_des_op = score.Multiply_double_vector("force_des")
+f_gain = force_des_op.sin1
+f_gain.value = 150.
+dg.plug(spos_diff, force_des_op.sin2)
 
 # Comptues the torque using J.T lam
 
-storque = impedance_torque(sjac_contact, spos_diff)
+storque = impedance_torque(sjac_contact, force_des_op.sout)
 
 
 # HACK: Use a PD controller to fuse the P and D signal. Adding them
@@ -133,10 +159,10 @@ storque = impedance_torque(sjac_contact, spos_diff)
 
 from dynamic_graph.sot.core.control_pd import ControlPD
 
-pd = ControlPD("")
+pd = ControlPD("PDController")
 pd.displaySignals()
 pd.Kd.value = (0.1, 0.3,)
-pd.Kp.value = (150., 150.)
+pd.Kp.value = (1., 1.)
 pd.desiredposition.value = (0., 0.)
 pd.desiredvelocity.value = (0., 0.)
 dg.plug(storque, pd.position)
@@ -144,9 +170,14 @@ dg.plug(robot.device.joint_velocities, pd.velocity)
 
 dg.plug(pd.control, robot.device.ctrl_joint_torques)
 
+robot.add_trace('oscillator', 'sout')
+robot.add_trace('force_des', 'sout')
+robot.add_trace('impedance_torque', 'sout')
 
-# robot.add_trace('pos_des', 'sout')
-# robot.add_trace('impedance_torque', 'sout')
+# robot.export_signal_to_ros(osc.sout, 'oscillator')
+robot.export_signal_to_ros(force_des_op.sout, 'force_des')
+robot.export_signal_to_ros(storque, 'impedance_torque')
+
 
 if False:
     # # Scale the torque
