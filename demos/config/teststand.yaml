@@ -30,4 +30,6 @@ hardware_communication:
   max_missed_control: 10
   control_period: 1000000 # in nano second this means 1ms <=> 1kz
 
+debug_timer_history_length: 0
+
 motor_KT: 0.025    # The Kt constant of the motor [Nm/A]: tau = I * Kt
