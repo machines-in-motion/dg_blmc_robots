@@ -1,6 +1,8 @@
 import numpy as np
 np.set_printoptions(suppress=True, precision=2)
 
+from scipy.signal import savgol_coeffs
+
 import pinocchio as se3
 from py_dynamics_simulator.robot_wrapper import RobotWrapper
 
@@ -130,6 +132,15 @@ def stop_oscillator():
     osc.magnitude.value = 0.0
     osc.bias.value = 1.0
 
+def oscilate_frequency():
+    osc_Kp = dynamic_graph.sot.tools.Oscillator("oscillator_Kp")
+    osc_Kp.setTimePeriod(0.001)
+    osc_Kp.omega.value = 0.1
+    osc_Kp.magnitude.value = 0.2
+    osc_Kp.bias.value = 0.5
+
+    dg.plug(osc_Kp.sout, osc.omega)
+
 stop_oscillator()
 
 spos_des = op2(score.Add_of_vector, spos_offset, sslider_1_scaled, "pos_des")
@@ -161,7 +172,7 @@ from dynamic_graph.sot.core.control_pd import ControlPD
 
 pd = ControlPD("PDController")
 pd.displaySignals()
-pd.Kd.value = (0.1, 0.3,)
+pd.Kd.value = (1., 1.,)
 pd.Kp.value = (1., 1.)
 pd.desiredposition.value = (0., 0.)
 pd.desiredvelocity.value = (0., 0.)
@@ -170,45 +181,34 @@ dg.plug(robot.device.joint_velocities, pd.velocity)
 
 dg.plug(pd.control, robot.device.ctrl_joint_torques)
 
+
+# Create a filter for the ctrl_joint_torques. Plug and request to recompute
+# here to make sure it is properly filled when the filtered signal is read.
+cmd_filter = FIRFilter_Vector_double("ctrl_joint_torques_filter")
+cmd_filter_size = 51
+cmd_filter.setSize(cmd_filter_size)
+for (i, c) in enumerate(savgol_coeffs(cmd_filter_size, 2, 0)):
+    cmd_filter.setElement(i, c)
+dg.plug(pd.control, cmd_filter.sin)
+
+robot.device.after.addSignal(cmd_filter.name + '.sout')
+
+def filter_ctrl_joint_torques():
+    """ Enable joint torque filtering. """
+
+    dg.plug(cmd_filter.sout, robot.device.ctrl_joint_torques)
+    print("Using filter to control command.")
+
+
+# robot.add_ros_and_trace('oscillator', 'sout')
 robot.add_trace('oscillator', 'sout')
-robot.add_trace('force_des', 'sout')
-robot.add_trace('impedance_torque', 'sout')
+robot.add_ros_and_trace('force_des', 'sout')
+robot.add_ros_and_trace('impedance_torque', 'sout')
 
-# robot.export_signal_to_ros(osc.sout, 'oscillator')
-robot.export_signal_to_ros(force_des_op.sout, 'force_des')
-robot.export_signal_to_ros(storque, 'impedance_torque')
+def log_entity(entityName, signalNames):
+    [robot.add_ros_and_trace(entityName, sigName) for sigName in signalNames]
 
+log_entity('PDController', ['Kp', 'Kd', 'position', 'velocity', 'desiredvelocity', 'desiredposition'])
 
-if False:
-    # # Scale the torque
-    p_gain_op = score.Multiply_double_vector("")
-    p_gain = p_gain_op.sin1
-    p_gain.value = -50.
-    dg.plug(storque, p_gain_op.sin2)
-
-    d_gain_op = score.Multiply_double_vector("")
-    d_gain = d_gain_op.sin1
-    d_gain.value = -1.
-    dg.plug(robot.device.joint_velocities, d_gain_op.sin2)
-
-    # add_op = score.Add_of_vector("")
-    # dg.plug(p_gain_op.sout, add_op.sin1)
-    # dg.plug(d_gain_op.sout, add_op.sin2)
-    # dg.plug(add_op.sout, robot.device.ctrl_joint_torques)
-
-    stau = op2(score.Add_of_vector, d_gain_op.sout, p_gain_op.sout)
-    # stau = op2(score.Substract_of_vector, p_gain_op.sout, p_gain_op.sout)
-    # # stau = p_gain_op.sout
-
-
-    # print(stau.value)
-    # print(robot.device.ctrl_joint_torques.value)
-
-    # stau.recompute(0)
-    # print(stau.value)
-
-    dg.plug(stau, robot.device.ctrl_joint_torques)
-# dg.plug(p_gain_op.sout, robot.device.ctrl_joint_torques)
-# dg.plug(d_gain_op.sout, robot.device.ctrl_joint_torques)
 
 print("test")
