@@ -32,6 +32,12 @@ namespace dg_blmc_robots
     ~DGMQuadruped();
 
     /**
+     * @brief This function make also sure that the joint velocity do not exceed
+     * a certain value
+     */
+    bool is_in_safety_mode();
+
+    /**
      * @brief initialize_hardware_communication_process is the function that
      * initialize the hardware.
      */
@@ -66,6 +72,11 @@ namespace dg_blmc_robots
       * @brief ctrl_joint_torques_ the joint torques to be sent
       */
      blmc_robots::Vector8d ctrl_joint_torques_;
+
+    /**
+     * @brief Check if we entered once in the safety mode and stay there if so
+     */
+    bool was_in_safety_mode_;
   };
 
 
