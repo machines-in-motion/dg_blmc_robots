@@ -3,6 +3,8 @@ import dynamic_graph.sot.core as score
 from dynamic_graph.sot.core.reader import Reader
 from dynamic_graph.sot.core.control_pd import ControlPD
 
+from  dynamic_graph.sot.tools import CubicInterpolation
+
 def file_exists(filename):
     if os.path.isfile(filename):
         print("The file %s exists" % filename)
