@@ -1,7 +1,30 @@
+import time
+
 import dynamic_graph as dg
 import dynamic_graph.sot.core as score
 from dynamic_graph.sot.core.reader import Reader
 from dynamic_graph.sot.core.control_pd import ControlPD
+from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
+
+
+from  dynamic_graph.sot.tools import CubicInterpolation
+
+def op2(op_clazz, sin1, sin2, entity_name=""):
+    op = op_clazz(entity_name)
+    dg.plug(sin1, op.sin1)
+    dg.plug(sin2, op.sin2)
+    return op.sout
+
+def op1(op_clazz, sin1, entity_name=""):
+    op = op_clazz(entity_name)
+    dg.plug(sin1, op.sin)
+    return op.sout
+
+def constVector(val):
+    op = score.VectorConstant("").sout
+    op.value = list(val)
+    return op
+
 
 def file_exists(filename):
     if os.path.isfile(filename):
@@ -12,8 +35,8 @@ def file_exists(filename):
 reader_pos = Reader('PositionReader')
 reader_vel = Reader('VelocityReader')
 
-filename_pos = os.path.abspath('devel_dg/workspace/src/catkin/robots/dg_blmc_robots/demos/teststand_squatting_positions.dat')
-filename_vel = os.path.abspath('devel_dg/workspace/src/catkin/robots/dg_blmc_robots/demos/teststand_squatting_velocities.dat')
+filename_pos = os.path.abspath('teststand_squatting_positions.dat')
+filename_vel = os.path.abspath('teststand_squatting_velocities.dat')
 file_exists(filename_pos)
 file_exists(filename_vel)
 
@@ -26,13 +49,29 @@ reader_vel.load(filename_vel)
 reader_pos.selec.value = '110'
 reader_vel.selec.value = '110'
 
+# Compute the desired position. Get the value of the first slider and add
+# a desired position offset for the overall desired position.
+slider_filtered = FIRFilter_Vector_double("slider_fir_filter")
+filter_size = 20
+slider_filtered.setSize(filter_size)
+for i in range(filter_size):
+    slider_filtered.setElement(i, 1.0/float(filter_size))
+
+# we plug the centered sliders output to the input of the filter.
+dg.plug(robot.device.slider_positions, slider_filtered.sin)
+
+slider_1_op = score.Component_of_vector("")
+slider_1_op.setIndex(0)
+dg.plug(slider_filtered.sout, slider_1_op.sin)
+sslider_1 = slider_1_op.sout
+
 pd = ControlPD("PDController")
 pd.displaySignals()
 pd.Kp.value = (5., 5.)
 pd.Kd.value = (0.1, 0.1,)
 
-dg.plug(reader_pos.vector, pd.desiredposition)
-dg.plug(reader_vel.vector, pd.desiredvelocity)
+pd.desiredposition.value = (0., 0.,)
+pd.desiredvelocity.value = (0., 0.,)
 
 dg.plug(robot.device.joint_positions, pd.position)
 dg.plug(robot.device.joint_velocities, pd.velocity)
@@ -42,3 +81,21 @@ dg.plug(pd.control, robot.device.ctrl_joint_torques)
 # Expose the entity's signal to ros and the tracer together.
 robot.add_ros_and_trace("PDController", "desiredposition")
 robot.add_ros_and_trace("PDController", "desiredvelocity")
+
+def start():
+    reader_pos.rewind()
+    reader_vel.rewind()
+    reader_pos.vector.recompute(0)
+    interp = CubicInterpolation('')
+    interp.init.value = robot.device.joint_positions.value
+    interp.goal.value = reader_pos.vector.value
+    interp.sout.recompute(robot.device.joint_positions.time)
+    interp.setSamplingPeriod(0.001)
+    interp.start(1.0)
+    dg.plug(interp.sout, pd.desiredposition)
+    dg.plug(interp.soutdot, pd.desiredvelocity)
+    time.sleep(2.)
+    dg.plug(reader_pos.vector, pd.desiredposition)
+    dg.plug(reader_vel.vector, pd.desiredvelocity)
+
+
