@@ -122,7 +122,7 @@ sslider_1_scaled = op2(score.Multiply_double_vector, sslider_1, sslider_1_scale)
 import dynamic_graph.sot.tools
 osc = dynamic_graph.sot.tools.Oscillator("oscillator")
 osc.setTimePeriod(0.001)
-osc.omega.value = 3. * np.pi
+osc.omega.value = 0.5 * np.pi
 
 def start_oscillator():
     osc.magnitude.value = 0.25
@@ -172,8 +172,9 @@ from dynamic_graph.sot.core.control_pd import ControlPD
 
 pd = ControlPD("PDController")
 pd.displaySignals()
-pd.Kd.value = (1., 1.,)
 pd.Kp.value = (1., 1.)
+pd.Kd.value = (0.1, 0.1,)
+
 pd.desiredposition.value = (0., 0.)
 pd.desiredvelocity.value = (0., 0.)
 dg.plug(storque, pd.position)
@@ -182,22 +183,23 @@ dg.plug(robot.device.joint_velocities, pd.velocity)
 dg.plug(pd.control, robot.device.ctrl_joint_torques)
 
 
-# Create a filter for the ctrl_joint_torques. Plug and request to recompute
-# here to make sure it is properly filled when the filtered signal is read.
-cmd_filter = FIRFilter_Vector_double("ctrl_joint_torques_filter")
+# Create a filter for the joint velocity. Estimate the joint velocity by
+# differentiating the filtered position.
+cmd_filter = FIRFilter_Vector_double("cmd_filter")
 cmd_filter_size = 51
 cmd_filter.setSize(cmd_filter_size)
-for (i, c) in enumerate(savgol_coeffs(cmd_filter_size, 2, 0)):
-    cmd_filter.setElement(i, c)
+for i in range(cmd_filter_size):
+    cmd_filter.setElement(i, 1.0/float(cmd_filter_size))
 dg.plug(pd.control, cmd_filter.sin)
 
 robot.device.after.addSignal(cmd_filter.name + '.sout')
+robot.add_ros_and_trace(cmd_filter.name, 'sout')
 
-def filter_ctrl_joint_torques():
-    """ Enable joint torque filtering. """
-
+def filter_cmd_mean():
+    pd.Kd.value = (0.0, 0.,)
+    f_gain.value = 1.
     dg.plug(cmd_filter.sout, robot.device.ctrl_joint_torques)
-    print("Using filter to control command.")
+    print("Using filter on the cmd signal.")
 
 
 # robot.add_ros_and_trace('oscillator', 'sout')
@@ -208,7 +210,8 @@ robot.add_ros_and_trace('impedance_torque', 'sout')
 def log_entity(entityName, signalNames):
     [robot.add_ros_and_trace(entityName, sigName) for sigName in signalNames]
 
-log_entity('PDController', ['Kp', 'Kd', 'position', 'velocity', 'desiredvelocity', 'desiredposition'])
+log_entity('PDController', ['Kp', 'Kd', 'position', 'velocity',
+                            'desiredvelocity', 'desiredposition', 'control'])
 
 
 print("test")
