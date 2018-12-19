@@ -10,7 +10,7 @@
 namespace dg_blmc_robots
 {
 
-  DGMTeststand::DGMTeststand()
+  DGMTeststand::DGMTeststand(): was_in_safety_mode_(false)
   {
   }
 
@@ -21,6 +21,17 @@ namespace dg_blmc_robots
   void DGMTeststand::initialize_hardware_communication_process()
   {
     teststand_.initialize();
+  }
+
+  bool DGMTeststand::is_in_safety_mode()
+  {
+    was_in_safety_mode_ |= teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 30.;
+    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
+      was_in_safety_mode_ = true;
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void DGMTeststand::get_sensors_to_map(dynamic_graph::VectorDGMap& map)

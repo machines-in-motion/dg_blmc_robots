@@ -152,7 +152,7 @@ from dynamic_graph.sot.core.control_pd import ControlPD
 pd = ControlPD("PDController")
 pd.displaySignals()
 dg.plug(op2(score.Multiply_double_vector, osc_Kp.sout, constVector([1, 1])), pd.Kp)
-pd.Kd.value = (1., 1.,)
+pd.Kd.value = (0.1, 0.1,)
 dg.plug(joint_des, pd.desiredposition)
 pd.desiredvelocity.value = (0., 0.)
 dg.plug(robot.device.joint_positions, pd.position)

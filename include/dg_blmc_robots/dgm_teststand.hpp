@@ -51,6 +51,10 @@ namespace dg_blmc_robots
      */
     void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
 
+    /**
+     * @brief is_in_safety_mode Implement custom safemode detection.
+     */
+    virtual bool is_in_safety_mode();
   private:
 
     /**
@@ -66,6 +70,11 @@ namespace dg_blmc_robots
     * @brief ctrl_joint_torques_ the joint torques to be sent
     */
     Eigen::Vector2d ctrl_joint_torques_;
+
+    /**
+     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was entered.
+     */
+    bool was_in_safety_mode_;
   };
 
 
