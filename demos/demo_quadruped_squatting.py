@@ -12,8 +12,8 @@ def file_exists(filename):
 reader_pos = Reader('PositionReader')
 reader_vel = Reader('VelocityReader')
 
-filename_pos = os.path.abspath('devel_dg/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped_squatting_positions.dat')
-filename_vel = os.path.abspath('devel_dg/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped_squatting_velocities.dat')
+filename_pos = os.path.abspath('data/quadruped_squatting_positions.dat')
+filename_vel = os.path.abspath('data/quadruped_squatting_velocities.dat')
 file_exists(filename_pos)
 file_exists(filename_vel)
 
@@ -28,8 +28,11 @@ reader_vel.selec.value = '111111110'
 
 pd = ControlPD("PDController")
 pd.displaySignals()
-pd.Kp.value = (5., 5., 5., 5., 5., 5., 5., 5.)
-pd.Kd.value = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+pd.Kp.value = 8 * (5.,)
+pd.Kd.value = 8 * (0.1,)
+
+pd.desiredposition.value = 8 * (0.,)
+pd.desiredvelocity.value = 8 * (0.,)
 
 dg.plug(reader_pos.vector, pd.desiredposition)
 dg.plug(reader_vel.vector, pd.desiredvelocity)
@@ -42,6 +45,23 @@ dg.plug(pd.control, robot.device.ctrl_joint_torques)
 # Expose the entity's signal to ros and the tracer together.
 robot.add_ros_and_trace("PDController", "desiredposition")
 robot.add_ros_and_trace("PDController", "desiredvelocity")
+
+def start():
+    reader_pos.rewind()
+    reader_vel.rewind()
+    reader_pos.vector.recompute(0)
+    interp = CubicInterpolation('')
+    interp.init.value = robot.device.joint_positions.value
+    interp.goal.value = reader_pos.vector.value
+    interp.sout.recompute(robot.device.joint_positions.time)
+    interp.setSamplingPeriod(0.001)
+    interp.start(1.0)
+    dg.plug(interp.sout, pd.desiredposition)
+    dg.plug(interp.soutdot, pd.desiredvelocity)
+    time.sleep(2.)
+    dg.plug(reader_pos.vector, pd.desiredposition)
+    dg.plug(reader_vel.vector, pd.desiredvelocity)
+
 
 
 
