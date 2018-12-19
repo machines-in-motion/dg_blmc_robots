@@ -14,6 +14,7 @@ namespace dg_blmc_robots
 
   DGMQuadruped::DGMQuadruped()
   {
+    was_in_safety_mode_ = false;
   }
 
   DGMQuadruped::~DGMQuadruped()
@@ -24,6 +25,18 @@ namespace dg_blmc_robots
   {
     quadruped_.initialize();
   }
+
+  bool DGMQuadruped::is_in_safety_mode()
+  {
+    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 30.;
+    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
+      was_in_safety_mode_ = true;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 
   void DGMQuadruped::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
