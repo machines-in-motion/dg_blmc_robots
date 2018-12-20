@@ -1,3 +1,4 @@
+import time
 import dynamic_graph as dg
 import dynamic_graph.sot.core as score
 from dynamic_graph.sot.core.reader import Reader
@@ -36,8 +37,8 @@ pd.Kd.value = 8 * (0.1,)
 pd.desiredposition.value = 8 * (0.,)
 pd.desiredvelocity.value = 8 * (0.,)
 
-dg.plug(reader_pos.vector, pd.desiredposition)
-dg.plug(reader_vel.vector, pd.desiredvelocity)
+# dg.plug(reader_pos.vector, pd.desiredposition)
+# dg.plug(reader_vel.vector, pd.desiredvelocity)
 
 dg.plug(robot.device.joint_positions, pd.position)
 dg.plug(robot.device.joint_velocities, pd.velocity)
