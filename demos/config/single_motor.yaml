@@ -4,29 +4,21 @@ device:
   sensors:
     # joints data
     joint_positions:
-      size: 2
-    joint_velocities:
-      size: 2
-    joint_torques:
-      size: 2
-    joint_target_torques:
-      size: 2
-    joint_encoder_index:
-      size: 2
-    # additional data
-    contact_sensors:
       size: 1
+    joint_velocities:
+      size: 1
+    joint_torques:
+      size: 1
+    joint_target_torques:
+      size: 1
+    joint_encoder_index:
+      size: 1
+    # additional data
     slider_positions:
       size: 1
-    height_sensors:
-      size: 1
-    ati_force:
-      size: 3
-    ati_torque:
-      size: 3
   controls:
     ctrl_joint_torques:
-      size: 2
+      size: 1
 hardware_communication:
   max_missed_control: 10
   control_period: 1000000 # in nano second this means 1ms <=> 1kz

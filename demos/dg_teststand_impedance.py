@@ -165,9 +165,6 @@ dg.plug(spos_diff, force_des_op.sin2)
 storque = impedance_torque(sjac_contact, force_des_op.sout)
 
 
-# HACK: Use a PD controller to fuse the P and D signal. Adding them
-# by jviereck didn't work :/ -> control process crashes.
-
 from dynamic_graph.sot.core.control_pd import ControlPD
 
 pd = ControlPD("PDController")

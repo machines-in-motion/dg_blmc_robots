@@ -123,7 +123,7 @@ from dynamic_graph.sot.core.control_pd import ControlPD
 
 pd = ControlPD("PDController")
 pd.displaySignals()
-pd.Kp.value = (5., 5.)
+pd.Kp.value = (1., 1.)
 pd.Kd.value = (0.1, 0.1,)
 dg.plug(joint_des, pd.desiredposition)
 pd.desiredvelocity.value = (0., 0.)
@@ -131,3 +131,20 @@ dg.plug(robot.device.joint_positions, pd.position)
 dg.plug(robot.device.joint_velocities, pd.velocity)
 
 dg.plug(pd.control, robot.device.ctrl_joint_torques)
+
+# Create a filter for the joint velocity. Estimate the joint velocity by
+# differentiating the filtered position.
+cmd_filter = FIRFilter_Vector_double("cmd_filter")
+cmd_filter_size = 51
+cmd_filter.setSize(cmd_filter_size)
+for i in range(cmd_filter_size):
+    cmd_filter.setElement(i, 1.0/float(cmd_filter_size))
+dg.plug(pd.control, cmd_filter.sin)
+
+robot.device.after.addSignal(cmd_filter.name + '.sout')
+robot.add_ros_and_trace(cmd_filter.name, 'sout')
+
+def filter_cmd_mean():
+    pd.Kd.value = (0.0, 0.,)
+    dg.plug(cmd_filter.sout, robot.device.ctrl_joint_torques)
+    print("Using filter on the cmd signal.")

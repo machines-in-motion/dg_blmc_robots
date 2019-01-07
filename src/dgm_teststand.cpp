@@ -25,7 +25,7 @@ namespace dg_blmc_robots
 
   bool DGMTeststand::is_in_safety_mode()
   {
-    was_in_safety_mode_ |= teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 30.;
+    was_in_safety_mode_ |= teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 10.;
     if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
       was_in_safety_mode_ = true;
       return true;
@@ -46,6 +46,7 @@ namespace dg_blmc_robots
       map.at("joint_velocities") = teststand_.get_joint_velocities();
       map.at("joint_torques") = teststand_.get_joint_torques();
       map.at("joint_target_torques") = teststand_.get_joint_target_torques();
+      map.at("joint_encoder_index") = teststand_.get_joint_encoder_index();
 
       /**
         * Additional data

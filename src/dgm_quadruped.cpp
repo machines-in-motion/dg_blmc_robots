@@ -28,7 +28,7 @@ namespace dg_blmc_robots
 
   bool DGMQuadruped::is_in_safety_mode()
   {
-    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 30.;
+    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 1.875;
     if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
       was_in_safety_mode_ = true;
       return true;
