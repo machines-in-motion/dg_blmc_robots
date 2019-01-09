@@ -89,23 +89,29 @@ def impedance_torque(sjac, swrench):
 from dynamic_graph.sot.core.control_pd import ControlPD
 
 
+des_vel = constVector([np.pi],"des_vel")
+ff = constVector([0.],"ff")
 
 pd = ControlPD("PDController")
 # dg.plug(op2(score.Multiply_double_vector, osc_Kp.sout, constVector([1, 1])), pd.Kp)
-pd.Kp.value = ((0.02,))
-# pd.Kd.value = ((0.05/9.,))
-pd.Kd.value = ((0.002,))
-pd.desiredvelocity.value = ((0.,))
+# pd.Kp.value = ((0.02,))
+# pd.Kd.value = ((0.002,))
+
+pd.Kp.value = ((0.005,))
+pd.Kd.value = ((0.0002,))
+
 dg.plug(robot.device.joint_positions, pd.position)
 dg.plug(robot.device.joint_velocities, pd.velocity)
 
-     = score.GradientAscent('ga')
+ga = score.GradientAscent('ga')
 ga.learningRate.value = 1e-3
-ga.gradient.value = ((9.,))
+
+dg.plug(des_vel, ga.gradient)
+dg.plug(des_vel, pd.desiredvelocity)
 
 dg.plug(ga.value, pd.desiredposition)
 
-dg.plug(pd.control, robot.device.ctrl_joint_torques)
+dg.plug(op2(score.Add_of_vector, pd.control, ff, ""), robot.device.ctrl_joint_torques)
 
 
 

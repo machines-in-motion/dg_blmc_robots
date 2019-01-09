@@ -1,6 +1,6 @@
 is_real_robot: true
 device:
-  name: "hopper_teststand"
+  name: "single_motor"
   sensors:
     # joints data
     joint_positions:
