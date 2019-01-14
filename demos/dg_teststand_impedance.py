@@ -159,7 +159,7 @@ spos_diff = stack_to_wrench(pos_diff(spos_des_osc_op.sout, pos_diff(spos_hip, sp
 # Add a gain for the position error to convert into a desired force.
 force_des_op = Multiply_double_vector("force_des")
 f_gain = force_des_op.sin1
-f_gain.value = 150.
+f_gain.value = -10.
 plug(spos_diff, force_des_op.sin2)
 
 # Comptues the torque using J.T lam
@@ -170,7 +170,6 @@ storque = impedance_torque(sjac_contact, force_des_op.sout) # TODO: rename to ct
 from dynamic_graph.sot.core.control_pd import ControlPD
 
 pd = ControlPD("PDController")
-pd.displaySignals()
 pd.Kp.value = (0., 0.) # since we are now applying PD to the position, set gain to 0
 pd.Kd.value = (0.1, 0.1,)
 
