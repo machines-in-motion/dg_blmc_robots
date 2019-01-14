@@ -75,18 +75,18 @@ def pos_diff(sig1, sig2):
 def impedance_torque(sjac, swrench):
     op = MatrixTranspose("")
     plug(sjac, op.sin)
-    sjacT = op.sout # NOTE: or does the - also need to go through an op?
+    sjacT = op.sout
 
     op = Multiply_matrix_vector('mv')
     plug(sjacT, op.signal('sin1'))
 
     neg_op = Multiply_double_vector() # apply a negative multiplication to get -J.t*lam (applied here to the wrench)
-    plug(-1.0, neg_op.sin1)
+    # plug(-1.0, neg_op.sin1)
+    neg_op.sin1.value = -1.0
     plug(swrench,neg_op.sin2)
     plug(neg_op.sout, op.signal('sin2'))
 
     # Only keep the last two entries.
-    # TODO: selector matrix S should be a property of the robot (like Jac), and then this should be a matrix multiplication
     sel = Selec_of_vector('impedance_torque')
     sel.selec(1, 3)
     plug(op.signal('sout'), sel.signal('sin'))    
