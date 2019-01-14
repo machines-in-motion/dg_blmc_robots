@@ -1,5 +1,4 @@
-import dynamic_graph as dg
-import dynamic_graph.sot.core as score
+from dynamic_graph import plug
 from dynamic_graph.sot.core.reader import Reader
 from dynamic_graph.sot.core.control_pd import ControlPD
 
@@ -32,14 +31,14 @@ pd.displaySignals()
 pd.Kp.value = (5., 5.)
 pd.Kd.value = (0.1, 0.1,)
 
-# dg.plug(joint_des, pd.desiredposition)
-dg.plug(reader.vector, pd.desiredposition)
+# plug(joint_des, pd.desiredposition)
+plug(reader.vector, pd.desiredposition)
 
 pd.desiredvelocity.value = (0., 0.)
-dg.plug(robot.device.joint_positions, pd.position)
-dg.plug(robot.device.joint_velocities, pd.velocity)
+plug(robot.device.joint_positions, pd.position)
+plug(robot.device.joint_velocities, pd.velocity)
 
-dg.plug(pd.control, robot.device.ctrl_joint_torques)
+plug(pd.control, robot.device.ctrl_joint_torques)
 
 # Expose the entity's signal to ros and the tracer together.
 robot.add_ros_and_trace("PDController", "desiredposition")

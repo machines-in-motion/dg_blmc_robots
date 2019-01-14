@@ -1,7 +1,7 @@
 import time
 
-import dynamic_graph as dg
-import dynamic_graph.sot.core as score
+from dynamic_graph import plug
+from dynamic_graph.sot.core import*
 from dynamic_graph.sot.core.reader import Reader
 from dynamic_graph.sot.core.control_pd import ControlPD
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
@@ -11,17 +11,17 @@ from  dynamic_graph.sot.tools import CubicInterpolation
 
 def op2(op_clazz, sin1, sin2, entity_name=""):
     op = op_clazz(entity_name)
-    dg.plug(sin1, op.sin1)
-    dg.plug(sin2, op.sin2)
+    plug(sin1, op.sin1)
+    plug(sin2, op.sin2)
     return op.sout
 
 def op1(op_clazz, sin1, entity_name=""):
     op = op_clazz(entity_name)
-    dg.plug(sin1, op.sin)
+    plug(sin1, op.sin)
     return op.sout
 
 def constVector(val):
-    op = score.VectorConstant("").sout
+    op = VectorConstant("").sout
     op.value = list(val)
     return op
 
@@ -58,11 +58,11 @@ for i in range(filter_size):
     slider_filtered.setElement(i, 1.0/float(filter_size))
 
 # we plug the centered sliders output to the input of the filter.
-dg.plug(robot.device.slider_positions, slider_filtered.sin)
+plug(robot.device.slider_positions, slider_filtered.sin)
 
-slider_1_op = score.Component_of_vector("")
+slider_1_op = Component_of_vector("")
 slider_1_op.setIndex(0)
-dg.plug(slider_filtered.sout, slider_1_op.sin)
+plug(slider_filtered.sout, slider_1_op.sin)
 sslider_1 = slider_1_op.sout
 
 pd = ControlPD("PDController")
@@ -73,10 +73,10 @@ pd.Kd.value = (0.1, 0.1,)
 pd.desiredposition.value = (0., 0.,)
 pd.desiredvelocity.value = (0., 0.,)
 
-dg.plug(robot.device.joint_positions, pd.position)
-dg.plug(robot.device.joint_velocities, pd.velocity)
+plug(robot.device.joint_positions, pd.position)
+plug(robot.device.joint_velocities, pd.velocity)
 
-dg.plug(pd.control, robot.device.ctrl_joint_torques)
+plug(pd.control, robot.device.ctrl_joint_torques)
 
 # Expose the entity's signal to ros and the tracer together.
 robot.add_ros_and_trace("PDController", "desiredposition")
@@ -92,10 +92,10 @@ def start():
     interp.sout.recompute(robot.device.joint_positions.time)
     interp.setSamplingPeriod(0.001)
     interp.start(1.0)
-    dg.plug(interp.sout, pd.desiredposition)
-    dg.plug(interp.soutdot, pd.desiredvelocity)
+    plug(interp.sout, pd.desiredposition)
+    plug(interp.soutdot, pd.desiredvelocity)
     time.sleep(2.)
-    dg.plug(reader_pos.vector, pd.desiredposition)
-    dg.plug(reader_vel.vector, pd.desiredvelocity)
+    plug(reader_pos.vector, pd.desiredposition)
+    plug(reader_vel.vector, pd.desiredvelocity)
 
 

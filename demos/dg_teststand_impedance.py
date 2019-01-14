@@ -6,12 +6,10 @@ from scipy.signal import savgol_coeffs
 import pinocchio as se3
 from py_dynamics_simulator.robot_wrapper import RobotWrapper
 
-# import dynamic_graph as dg
 from dynamic_graph import plug
 import dynamic_graph.sot.dynamics_pinocchio as dp
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
-# import dynamic_graph.sot.core as score
 from dynamic_graph.sot.core import *
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
@@ -77,16 +75,21 @@ def pos_diff(sig1, sig2):
 def impedance_torque(sjac, swrench):
     op = MatrixTranspose("")
     plug(sjac, op.sin)
-    sjacT = op.sout
+    sjacT = op.sout # NOTE: or does the - also need to go through an op?
 
     op = Multiply_matrix_vector('mv')
     plug(sjacT, op.signal('sin1'))
-    plug(swrench, op.signal('sin2'))
+
+    neg_op = Multiply_double_vector() # apply a negative multiplication to get -J.t*lam (applied here to the wrench)
+    plug(-1.0, neg_op.sin1)
+    plug(swrench,neg_op.sin2)
+    plug(neg_op.sout, op.signal('sin2'))
 
     # Only keep the last two entries.
+    # TODO: selector matrix S should be a property of the robot (like Jac), and then this should be a matrix multiplication
     sel = Selec_of_vector('impedance_torque')
     sel.selec(1, 3)
-    plug(op.signal('sout'), sel.signal('sin'))
+    plug(op.signal('sout'), sel.signal('sin'))    
     return sel.signal('sout')
 
 print("test")
@@ -159,12 +162,12 @@ spos_diff = stack_to_wrench(pos_diff(spos_des_osc_op.sout, pos_diff(spos_hip, sp
 # Add a gain for the position error to convert into a desired force.
 force_des_op = Multiply_double_vector("force_des")
 f_gain = force_des_op.sin1
-f_gain.value = -10.
+f_gain.value = 10.
 plug(spos_diff, force_des_op.sin2)
 
 # Comptues the torque using J.T lam
 
-storque = impedance_torque(sjac_contact, force_des_op.sout) # TODO: rename to ctrl_torque?
+ctrl_torque = impedance_torque(sjac_contact, force_des_op.sout)
 
 
 from dynamic_graph.sot.core.control_pd import ControlPD
@@ -175,12 +178,12 @@ pd.Kd.value = (0.1, 0.1,)
 
 pd.desiredposition.value = (0., 0.)
 pd.desiredvelocity.value = (0., 0.)
-# plug(storque, pd.position)
+# plug(ctrl_torque, pd.position)
 plug(robot.device.joint_positions, pd.position)
 plug(robot.device.joint_velocities, pd.velocity)
 
 # plug(pd.control, robot.device.ctrl_joint_torques)
-plug(op2(Add_of_vector, pd.control, storque), robot.device.ctrl_joint_torques)
+plug(op2(Add_of_vector, pd.control, ctrl_torque), robot.device.ctrl_joint_torques)
 
 # Create a filter for the joint velocity. Estimate the joint velocity by
 # differentiating the filtered position.
