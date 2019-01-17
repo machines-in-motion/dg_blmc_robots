@@ -24,12 +24,12 @@ namespace dg_blmc_robots
   {
   public:
     /**
-     * @brief DemoSingleMotor is the constructor.
+     * @brief DGMSingleMotor is the constructor.
      */
     DGMSingleMotor();
 
     /**
-     * @brief ~DemoSingleMotor is the destructor.
+     * @brief ~DGMSingleMotor is the destructor.
      */
     ~DGMSingleMotor();
 
@@ -40,7 +40,7 @@ namespace dg_blmc_robots
     void initialize_hardware_communication_process();
 
     /**
-     * @brief get_sensors_to_map acquieres the sensors data and feed it to the
+     * @brief get_sensors_to_map acquires the sensors data and feed it to the
      * input/output map
      * @param[in][out] map is the sensors data filled by this function.
      */
@@ -59,12 +59,12 @@ namespace dg_blmc_robots
      */
 
     /**
-    * @brief test_bench_ the real test bench hardware drivers.
+    * @brief single_motor_ the real motor hardware drivers.
     */
     blmc_robots::SingleMotor single_motor_;
 
     /**
-    * @brief ctrl_joint_torques_ the joint torques to be sent
+    * @brief ctrl_joint_torques_ the motor torque to be sent
     */
     Vector1d ctrl_joint_torques_;
 

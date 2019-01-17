@@ -22,12 +22,12 @@ namespace dg_blmc_robots
   {
   public:
     /**
-     * @brief DemoSingleMotor is the constructor.
+     * @brief DGMTeststand is the constructor.
      */
     DGMTeststand();
 
     /**
-     * @brief ~DemoSingleMotor is the destructor.
+     * @brief ~DGMTeststand is the destructor.
      */
     ~DGMTeststand();
 
@@ -38,7 +38,7 @@ namespace dg_blmc_robots
     void initialize_hardware_communication_process();
 
     /**
-     * @brief get_sensors_to_map acquieres the sensors data and feed it to the
+     * @brief get_sensors_to_map acquires the sensors data and feeds it to the
      * input/output map
      * @param[in][out] map is the sensors data filled by this function.
      */
@@ -52,7 +52,7 @@ namespace dg_blmc_robots
     void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
 
     /**
-     * @brief is_in_safety_mode Implement custom safemode detection.
+     * @brief is_in_safety_mode Implement custom safe-mode detection.
      */
     virtual bool is_in_safety_mode();
   private:
