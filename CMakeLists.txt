@@ -65,6 +65,8 @@ catkin_package(
   LIBRARIES ${EXPORTED_LIBRAIRIES}
 )
 
+catkin_python_setup()
+
 #########################
 # manage the unit tests #
 #########################
