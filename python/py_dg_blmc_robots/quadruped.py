@@ -102,7 +102,7 @@ class QuadrupedBulletRobot(Robot):
             self.sim2signal_()
             self.steps_ += 1
 
-            if delay != 0. and self.steps_ % 60 == 0:
+            if delay != 0. and self.steps_ % 17 == 0:
                 time.sleep(delay)
 
     def reset_state(self, q, dq):
