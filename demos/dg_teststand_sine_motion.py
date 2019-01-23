@@ -1,25 +1,12 @@
 import numpy as np
 np.set_printoptions(suppress=True, precision=2)
 
-import pinocchio as se3
-from py_dynamics_simulator.robot_wrapper import RobotWrapper
-
 from dynamic_graph import plug
-import dynamic_graph.sot.dynamics_pinocchio as dp
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
 from dynamic_graph.sot.core import *
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
-
-robot_py = RobotWrapper({'urdf':'hopper_1d.urdf'})
-robot_dg = dp.DynamicPinocchio('hopper')
-robot_dg.setData(robot_py.data)
-robot_dg.setModel(robot_py.model)
-
-robot_dg.createJacobianEndEffWorld('jac_contact', 'contact')
-robot_dg.createPosition('pos_hip', 'joint_hip')
-robot_dg.createPosition('pos_contact', 'joint_contact')
 
 def op2(op_clazz, sin1, sin2, entity_name=""):
     op = op_clazz(entity_name)
