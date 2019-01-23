@@ -89,7 +89,7 @@ def impedance_torque(sjac, swrench):
     # Only keep the last two entries.
     sel = Selec_of_vector('impedance_torque')
     sel.selec(1, 3)
-    plug(op.signal('sout'), sel.signal('sin'))    
+    plug(op.signal('sout'), sel.signal('sin'))
     return sel.signal('sout')
 
 print("test")
