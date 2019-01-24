@@ -4,7 +4,7 @@ np.set_printoptions(suppress=True, precision=2)
 from scipy.signal import savgol_coeffs
 
 import pinocchio as se3
-from py_dynamics_simulator.robot_wrapper import RobotWrapper
+#from py_dynamics_simulator.robot_wrapper import RobotWrapper
 
 from dynamic_graph import plug
 import dynamic_graph.sot.dynamics_pinocchio as dp
