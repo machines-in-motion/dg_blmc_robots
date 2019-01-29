@@ -27,7 +27,7 @@ class QuadrupedBulletRobot(Robot):
         self.planeId = p.loadURDF(rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/plane_with_restitution.urdf")
 
         # Load the robot
-        robotStartPos = [0,0,0.40]
+        robotStartPos = [0.,0,0.40]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         urdf_path = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/quadruped.urdf"
