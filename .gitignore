@@ -4,6 +4,11 @@
 .DS_Store
 CATKIN_IGNORE
 
+# vim temporary files
+*~
+*.swp
+*.swo
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
