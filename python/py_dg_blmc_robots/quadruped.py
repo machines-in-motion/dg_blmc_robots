@@ -36,7 +36,7 @@ class QuadrupedBulletRobot(Robot):
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(urdf_path)) + '/urdf']
-        self.pin_robot = se3.robot_wrapper.RobotWrapper(urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
+        self.pin_robot = se3.robot_wrapper.RobotWrapper.BuildFromURDF(urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
