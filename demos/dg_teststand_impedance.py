@@ -4,7 +4,7 @@ np.set_printoptions(suppress=True, precision=2)
 from scipy.signal import savgol_coeffs
 
 import pinocchio as se3
-from py_dynamics_simulator.robot_wrapper import RobotWrapper
+#from py_dynamics_simulator.robot_wrapper import RobotWrapper
 
 from dynamic_graph import plug
 import dynamic_graph.sot.dynamics_pinocchio as dp
@@ -89,7 +89,7 @@ def impedance_torque(sjac, swrench):
     # Only keep the last two entries.
     sel = Selec_of_vector('impedance_torque')
     sel.selec(1, 3)
-    plug(op.signal('sout'), sel.signal('sin'))    
+    plug(op.signal('sout'), sel.signal('sin'))
     return sel.signal('sout')
 
 print("test")

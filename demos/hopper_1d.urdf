@@ -38,10 +38,7 @@
   <link name="shank">
      <visual>
       <origin rpy="0 0 0" xyz="0 0 -0.08"/>
-      <geometry>
-        <!-- <cylinder length="${upper_leg_length}" radius="${upper_leg_radius}"/> -->
-        <mesh filename="package://quadruped/urdf/cylinder.obj" scale="0.025 0.025 0.16"/>
-      </geometry>
+
       <material name="grey">
         <color rgba=".4 .4 .4 .1"/>
       </material>
@@ -72,10 +69,6 @@
     </contact>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 -0.08"/>
-      <geometry>
-        <!-- <cylinder length="${upper_leg_length}" radius="${upper_leg_radius}"/> -->
-        <mesh filename="package://quadruped/urdf/cylinder.obj" scale="0.025 0.025 0.16"/>
-      </geometry>
       <material name="grey">
         <color rgba=".4 .4 .4 .1"/>
       </material>
@@ -106,10 +99,6 @@
     </contact>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <!-- <sphere radius="${upper_leg_radius}"/> -->
-        <mesh filename="package://quadruped/urdf/sphere.obj" scale="0.025 0.025 0.025"/>
-      </geometry>
       <material name="red">
         <color rgba="1. 0. 0. 1."/>
       </material>
