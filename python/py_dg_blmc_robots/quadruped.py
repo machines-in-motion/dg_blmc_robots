@@ -27,7 +27,7 @@ class QuadrupedBulletRobot(Robot):
         self.planeId = p.loadURDF(rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/plane_with_restitution.urdf")
 
         # Load the robot
-        robotStartPos = [0,0,0.40]
+        robotStartPos = [0.,0,0.40]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         urdf_path = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/quadruped.urdf"
@@ -36,7 +36,7 @@ class QuadrupedBulletRobot(Robot):
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(urdf_path)) + '/urdf']
-        self.pin_robot = se3.robot_wrapper.RobotWrapper(urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
+        self.pin_robot = se3.robot_wrapper.RobotWrapper.BuildFromURDF(urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)

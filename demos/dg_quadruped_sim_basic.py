@@ -17,7 +17,8 @@ robot = get_quadruped_robot()
 q = zero(robot.pin_robot.nq)
 dq = zero(robot.pin_robot.nv)
 
-q[1] = 0.1
+q[0] = 0.2
+q[1] = 0.0
 q[2] = 0.4
 q[6] = 1.
 for i in range(4):
@@ -46,3 +47,4 @@ plug(pd.control, robot.device.ctrl_joint_torques)
 # a plugged visualizer to display the evolving trajectory.
 robot.run(5000, 1./60.)
 
+raw_input("Press Enter to continue...")
