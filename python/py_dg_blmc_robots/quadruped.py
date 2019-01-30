@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import rospkg
 import numpy as np
@@ -24,19 +26,22 @@ class QuadrupedBulletRobot(Robot):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
-        self.planeId = p.loadURDF(rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/plane_with_restitution.urdf")
+        plain_urdf = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/plane_with_restitution.urdf"
+        self.planeId = p.loadURDF(plain_urdf)
+
+        print("Loaded plain.")
 
         # Load the robot
         robotStartPos = [0.,0,0.40]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
-        urdf_path = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/quadruped.urdf"
-        self.robotId = p.loadURDF(urdf_path, robotStartPos, robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE)
+        self.urdf_path = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/quadruped.urdf"
+        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
-        package_dirs = [os.path.dirname(os.path.dirname(urdf_path)) + '/urdf']
-        self.pin_robot = se3.robot_wrapper.RobotWrapper.BuildFromURDF(urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
+        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) + '/urdf']
+        self.pin_robot = se3.robot_wrapper.RobotWrapper.BuildFromURDF(self.urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
@@ -61,8 +66,8 @@ class QuadrupedBulletRobot(Robot):
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
         self.signal_base_vel_ = VectorConstant("bullet_quadruped_base_vel")
-        self.signal_base_pos_.value = np.hstack([robotStartPos, robotStartOrientation]).tolist()
-        self.signal_base_vel_.value = [0., 0., 0., 0., 0., 0.]
+        self.signal_base_pos_.sout.value = np.hstack([robotStartPos, robotStartOrientation]).tolist()
+        self.signal_base_vel_.sout.value = [0., 0., 0., 0., 0., 0.]
 
         # Initialize signals that are not filled in sim2signals.
         self.device.motor_encoder_indexes.value = 8 * [0.]
@@ -76,7 +81,7 @@ class QuadrupedBulletRobot(Robot):
         super(QuadrupedBulletRobot, self).__init__('bullet_quadruped', self.device)
 
     def base_signals(self):
-        return self.signal_base_pos_, self.signal_base_vel_
+        return self.signal_base_pos_.sout, self.signal_base_vel_.sout
 
     def sim2signal_(self):
         """ Reads the state from the simulator and fills the corresponding signals. """

@@ -61,7 +61,7 @@ class PinBulletWrapper(object):
 
         if len(cp) > 0:
             for ci in cp:
-                contact_normal = ci[7] 
+                contact_normal = ci[7]
                 normal_force = ci[9]
                 lateral_friction_direction_1 = ci[11]
                 lateral_friction_force_1 = ci[10]
