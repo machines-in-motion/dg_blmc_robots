@@ -80,6 +80,9 @@ class QuadrupedBulletRobot(Robot):
 
         super(QuadrupedBulletRobot, self).__init__('bullet_quadruped', self.device)
 
+    def pinocchio_robot_wrapper(self):
+        return self.pin_robot
+
     def base_signals(self):
         return self.signal_base_pos_.sout, self.signal_base_vel_.sout
 
@@ -96,8 +99,8 @@ class QuadrupedBulletRobot(Robot):
         device.joint_positions.value = q[7:]
         device.joint_velocities.value = dq[6:]
 
-        self.signal_base_pos_.value = q[:7]
-        self.signal_base_vel_.value = dq[:6]
+        self.signal_base_pos_.sout.value = q[:7]
+        self.signal_base_vel_.sout.value = dq[:6]
 
     def run(self, steps=1, delay=0.):
         for i in range(steps):
