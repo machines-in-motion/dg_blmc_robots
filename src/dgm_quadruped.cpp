@@ -28,7 +28,7 @@ namespace dg_blmc_robots
 
   bool DGMQuadruped::is_in_safety_mode()
   {
-    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 1.5;
+    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 1.875;
     if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
       was_in_safety_mode_ = true;
       return true;
@@ -42,6 +42,17 @@ namespace dg_blmc_robots
   {
     try{
       quadruped_.acquire_sensors();
+
+      /**
+        * Motor data
+        */
+      map.at("motor_positions") = quadruped_.get_motor_positions();
+      map.at("motor_velocities") = quadruped_.get_motor_velocities();
+      map.at("motor_currents") = quadruped_.get_motor_currents();
+      map.at("motor_target_currents") = quadruped_.get_motor_target_currents();
+      map.at("motor_torques") = quadruped_.get_motor_torques();
+      map.at("motor_target_torques") = quadruped_.get_target_motor_torques();
+      map.at("motor_encoder_indexes") = quadruped_.get_motor_encoder_indexes();
 
       /**
         * Joint data
