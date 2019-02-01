@@ -70,7 +70,7 @@ class QuadrupedBulletRobot(Robot):
         self.signal_base_vel_.sout.value = [0., 0., 0., 0., 0., 0.]
 
         # Initialize signals that are not filled in sim2signals.
-        self.device.motor_encoder_indexes.value = 8 * [0.]
+        #self.device.motor_encoder_indexes.value = 8 * [0.]
         self.device.slider_positions.value = 4 * [0.]
 
         # Sync the current robot state to the graph input signals.
@@ -121,4 +121,3 @@ class QuadrupedBulletRobot(Robot):
 
 def get_quadruped_robot():
     return QuadrupedBulletRobot()
-
