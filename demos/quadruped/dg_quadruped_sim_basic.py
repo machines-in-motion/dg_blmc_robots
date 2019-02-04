@@ -64,7 +64,6 @@ robot.add_robot_state_to_ros(entity_name=robot_joint_states.name,
 # Run the robot (here the simulator) for 5000 steps (= 5 seconds). The second
 # optional parameter specifies how much to sleep every 1/60. steps. This allows
 # a plugged visualizer to display the evolving trajectory.
-while(True):
-    robot.run(1, 1./60.)
+robot.run(5000, 1./60.)
 
 raw_input("Press Enter to continue...")
