@@ -2,6 +2,7 @@ import numpy as np
 np.set_printoptions(suppress=True, precision=2)
 
 from scipy.signal import savgol_coeffs
+import rospkg
 
 import pinocchio as se3
 #from py_dynamics_simulator.robot_wrapper import RobotWrapper
@@ -14,7 +15,11 @@ from dynamic_graph.sot.core import *
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
 
-robot_py = RobotWrapper({'urdf':'hopper_1d.urdf'})
+urdf_path = os.path.join(rospkg.RosPack().get_path("dg_blmc_robots"),'demos/hopper_1d.urdf')
+#package_dirs = [os.path.join(rospkg.RosPack().get_path("robot_properties_quadruped"), 'urdf')]
+#robot_py = se3.RobotWrapper.BuildFromURDF(urdf_path,root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
+robot_py = se3.RobotWrapper(urdf_path,[os.path.join(rospkg.RosPack().get_path("robot_properties_quadruped"), 'urdf')])
+
 robot_dg = dp.DynamicPinocchio('hopper')
 robot_dg.setData(robot_py.data)
 robot_dg.setModel(robot_py.model)
@@ -80,7 +85,7 @@ def impedance_torque(sjac, swrench):
     op = Multiply_matrix_vector('mv')
     plug(sjacT, op.signal('sin1'))
 
-    neg_op = Multiply_double_vector() # apply a negative multiplication to get -J.t*lam (applied here to the wrench)
+    neg_op = Multiply_double_vector("") # apply a negative multiplication to get -J.t*lam (applied here to the wrench)
     # plug(-1.0, neg_op.sin1)
     neg_op.sin1.value = -1.0
     plug(swrench,neg_op.sin2)
