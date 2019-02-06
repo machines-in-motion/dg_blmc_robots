@@ -17,9 +17,7 @@ from pinocchio.utils import zero
 
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.pinbullet_wrapper import PinBulletWrapper
-
+from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
     def __init__(self):
