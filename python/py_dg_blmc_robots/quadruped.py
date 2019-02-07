@@ -53,8 +53,8 @@ class QuadrupedBulletRobot(Robot):
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
         self.base_link_name = "base_link"
-        self.joint_names = ['HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE', 'FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE']
-        controlled_joints = ['HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE', 'FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE']
+        self.joint_names = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE']
+        controlled_joints = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE']
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
             controlled_joints,
