@@ -13,15 +13,16 @@ from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
 from dynamic_graph.sot.core import *
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
+from py_robot_properties_teststand.config import TeststandConfig
 
-robot_py = RobotWrapper({'urdf':'hopper_1d.urdf'})
+robot_py = TeststandConfig.buildRobotWrapper()
 robot_dg = dp.DynamicPinocchio('hopper')
 robot_dg.setData(robot_py.data)
 robot_dg.setModel(robot_py.model)
 
 robot_dg.createJacobianEndEffWorld('jac_contact', 'contact')
-robot_dg.createPosition('pos_hip', 'joint_hip')
-robot_dg.createPosition('pos_contact', 'joint_contact')
+robot_dg.createPosition('pos_hip', 'HFE')
+robot_dg.createPosition('pos_contact', 'END')
 
 def op2(op_clazz, sin1, sin2, entity_name=""):
     op = op_clazz(entity_name)
