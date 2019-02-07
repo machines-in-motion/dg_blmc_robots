@@ -10,6 +10,7 @@ from dynamic_graph_manager.device import Device
 from dynamic_graph_manager.device.robot import Robot
 
 import py_robot_properties_quadruped
+from py_robot_properties_quadruped.config import QuadrupedConfig
 
 import pybullet as p
 import pinocchio as se3
@@ -17,9 +18,7 @@ from pinocchio.utils import zero
 
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.pinbullet_wrapper import PinBulletWrapper
-
+from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
     def __init__(self):
@@ -35,13 +34,13 @@ class QuadrupedBulletRobot(Robot):
         robotStartPos = [0.,0,0.40]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
-        self.urdf_path = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/quadruped.urdf"
+        self.urdf_path = QuadrupedConfig.urdf_path
         self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) + '/urdf']
-        self.pin_robot = se3.robot_wrapper.RobotWrapper.BuildFromURDF(self.urdf_path, root_joint=se3.JointModelFreeFlyer(), package_dirs=package_dirs)
+        self.pin_robot = QuadrupedConfig.buildRobotWrapper()
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
@@ -63,7 +62,7 @@ class QuadrupedBulletRobot(Robot):
 
         # Initialize the device.
         self.device = Device('bullet_quadruped')
-        self.device.initialize(rospkg.RosPack().get_path("dg_blmc_robots") + '/demos/config/quadruped.yaml')
+        self.device.initialize(QuadrupedConfig.yaml_path)
 
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
