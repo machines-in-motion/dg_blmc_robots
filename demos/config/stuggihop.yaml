@@ -1,0 +1,29 @@
+is_real_robot: true
+device:
+  name: "stuggihop"
+  sensors:
+    # joints data
+    joint_positions:
+      size: 2
+    joint_velocities:
+      size: 2
+    joint_torques:
+      size: 2
+    joint_target_torques:
+      size: 2
+    joint_encoder_index:
+      size: 2
+    boom_positions:
+      size: 2
+    boom_velocities:
+      size: 2
+  controls:
+    ctrl_joint_torques:
+      size: 2
+hardware_communication:
+  max_missed_control: 10
+  control_period: 1000000 # in nano second this means 1ms <=> 1kz
+
+debug_timer_history_length: 0
+
+motor_KT: 0.025    # The Kt constant of the motor [Nm/A]: tau = I * Kt
