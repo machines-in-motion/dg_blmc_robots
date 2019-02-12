@@ -5,8 +5,8 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 package_info = generate_distutils_setup()
 package_info['packages'] = ['py_dg_blmc_robots']
+package_info['packages'] = ['leg_impedance_control']
 package_info['package_dir'] = {'': 'python'}
 package_info['install_requires'] = []
 
 setup(**package_info)
-

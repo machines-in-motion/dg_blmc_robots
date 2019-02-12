@@ -52,6 +52,8 @@ class QuadrupedBulletRobot(Robot):
         p.setGravity(0,0, -9.81)
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
+        self.base_link_name = "base_link"
+        self.joint_names = ['HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE', 'FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE']
         controlled_joints = ['HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE', 'FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE']
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
@@ -99,8 +101,9 @@ class QuadrupedBulletRobot(Robot):
         device.joint_positions.value = q[7:]
         device.joint_velocities.value = dq[6:]
 
-        self.signal_base_pos_.sout.value = q[:7]
-        self.signal_base_vel_.sout.value = dq[:6]
+        self.signal_base_pos_.sout.value = q[0:7]
+        self.signal_base_vel_.sout.value = dq[0:6]
+        
 
     def run(self, steps=1, delay=0.):
         for i in range(steps):
