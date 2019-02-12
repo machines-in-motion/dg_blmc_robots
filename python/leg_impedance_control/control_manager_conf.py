@@ -1,15 +1,19 @@
+import numpy
+
 TAU_MAX = 10.0
 CURRENT_MAX = 3.
 CTRL_MAX = 3.
 
 nbJoints=8
-testRobotPath="/home/ameduri/devel/workspace/src/catkin/robots/robot_properties/robot_properties_quadruped/urdf/quadruped.urdf"
+urdfFileName="/home/ameduri/devel/workspace/src/catkin/robots/robot_properties/robot_properties_quadruped/urdf/quadruped.urdf"
 controlDT=0.001
 maxCurrent=CURRENT_MAX
 robotRef= "control-manager-robot"
 urdftosot=range(nbJoints)
 
 ctrlManagerCurrentToControlGain=1.0
+
+ImuJointName = 'none'
 
 mapJointNameToID={
   'FL_HFE': 0,

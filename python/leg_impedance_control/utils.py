@@ -22,8 +22,6 @@ from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 from py_robot_properties_teststand.config import TeststandConfig
 
 
-
-
 def compute_pos_diff(pos1, pos2, entityName):
     sub_op = Substract_of_vector(entityName)
     plug(pos1, sub_op.signal('sin1'))
@@ -160,16 +158,15 @@ def selec_vector(vec, start_index, end_index, entityName):
     plug(vec, op.signal('sin'))
     return op.sout
 
-def impedance_controller_fl(robot_fl_dg, gain_value,des_pos):
+def impedance_controller_fl(robot_fl_dg, gain_value, des_pos):
     ## Impdance control implementation
     xyzpos_hip_fl = hom2pos(robot_fl_dg.pos_hip_fl, "xyzpos_hip_fl")
     xyzpos_foot_fl = hom2pos(robot_fl_dg.pos_foot_fl, "xyzpos_foot_fl")
     # relative foot position to hip
     rel_pos_foot_fl = compute_pos_diff(xyzpos_foot_fl, xyzpos_hip_fl, "rel_pos_foot_fl")
-    ## removing the values of the base
-    ##rel_pos_foot = remove_base_pos(rel_pos_foot,rel_pos_foot)
 
     jac_fl = robot_fl_dg.jac_contact_fl
+
     pos_error_fl = compute_pos_diff(rel_pos_foot_fl, des_pos, "pos_error_fl")
     ## adding force in fz and also rotation forces for proper jacobian multiplication
     pos_error_fl = stack_two_vectors(pos_error_fl, constVector([0.0, 0.0, 0.0],'stack_to_wrench_fl'), 3, 3)
@@ -263,6 +260,8 @@ def createLegs():
     robot_fl_dg.createJacobianEndEffWorld('jac_contact_fl', 'contact')
     robot_fl_dg.createPosition('pos_hip_fl', 'HFE')
     robot_fl_dg.createPosition('pos_foot_fl', 'END')
+    robot_fl_dg.createVelocity('vel_joint_HFE_fl', 'HFE')
+    robot_fl_dg.createVelocity('vel_joint_KFE_fl', 'KFE')
 
     robot_fr_py = TeststandConfig.buildRobotWrapper()
     robot_fr_dg = dp.DynamicPinocchio('hopper_fr')
@@ -271,6 +270,9 @@ def createLegs():
     robot_fr_dg.createJacobianEndEffWorld('jac_contact_fr', 'contact')
     robot_fr_dg.createPosition('pos_hip_fr', 'HFE')
     robot_fr_dg.createPosition('pos_foot_fr', 'END')
+    robot_fr_dg.createVelocity('vel_joint_HFE_fr', 'HFE')
+    robot_fr_dg.createVelocity('vel_joint_KFE_fr', 'KFE')
+
 
     robot_hl_py = TeststandConfig.buildRobotWrapper()
     robot_hl_dg = dp.DynamicPinocchio('hopper_hl')
@@ -279,6 +281,8 @@ def createLegs():
     robot_hl_dg.createJacobianEndEffWorld('jac_contact_hl', 'contact')
     robot_hl_dg.createPosition('pos_hip_hl', 'HFE')
     robot_hl_dg.createPosition('pos_foot_hl', 'END')
+    robot_hl_dg.createVelocity('vel_joint_HFE_hl', 'HFE')
+    robot_hl_dg.createVelocity('vel_joint_KFE_hl', 'KFE')
 
     robot_hr_py = TeststandConfig.buildRobotWrapper()
     robot_hr_dg = dp.DynamicPinocchio('hopper_hr')
@@ -287,6 +291,7 @@ def createLegs():
     robot_hr_dg.createJacobianEndEffWorld('jac_contact_hr', 'contact')
     robot_hr_dg.createPosition('pos_hip_hr', 'HFE')
     robot_hr_dg.createPosition('pos_foot_hr', 'END')
-
+    robot_hr_dg.createVelocity('vel_joint_HFE_hr', 'HFE')
+    robot_hr_dg.createVelocity('vel_joint_KFE_hr', 'KFE')
 
     return robot_fl_py, robot_fl_dg, robot_fr_py, robot_fr_dg, robot_hl_py, robot_hl_dg, robot_hr_py, robot_hr_dg
