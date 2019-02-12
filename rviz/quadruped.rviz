@@ -22,7 +22,7 @@ Panels:
         - /RobotModel1/Links1/base_link1
         - /Axes1
       Splitter Ratio: 0.402926
-    Tree Height: 747
+    Tree Height: 359
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -187,10 +187,10 @@ Visualization Manager:
         Z: 0.0497311
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: -0.0146022
+      Pitch: 0.150398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.29541
+      Yaw: 4.82541
     Saved: ~
 Window Geometry:
   Displays:
@@ -208,5 +208,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 934
-  X: 975
-  Y: 14
+  X: 5295
+  Y: 235

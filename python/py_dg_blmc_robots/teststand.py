@@ -9,8 +9,8 @@ import dynamic_graph_manager as dgm
 from dynamic_graph_manager.device import Device
 from dynamic_graph_manager.device.robot import Robot
 
-import py_robot_properties_quadruped
-from py_robot_properties_quadruped.config import QuadrupedConfig
+import py_robot_properties_teststand
+from py_robot_properties_teststand.config import TeststandConfig
 
 import pybullet as p
 import pinocchio as se3
@@ -20,72 +20,64 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
-class QuadrupedBulletRobot(Robot):
+class TeststandBulletRobot(Robot):
     def __init__(self):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
-        plain_urdf = rospkg.RosPack().get_path("robot_properties_quadruped") + "/urdf/plane_with_restitution.urdf"
+        plain_urdf = rospkg.RosPack().get_path("robot_properties_teststand") + "/urdf/plane_with_restitution.urdf"
         self.planeId = p.loadURDF(plain_urdf)
 
         print("Loaded plain.")
 
         # Load the robot
-        robotStartPos = [0.,0,0.40]
+        robotStartPos = [0., 0., 0.]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
-        self.urdf_path = QuadrupedConfig.urdf_path
-        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE)
+        self.urdf_path = TeststandConfig.urdf_path
+        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation, 
+                                  flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=True)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) + '/urdf']
-        self.pin_robot = QuadrupedConfig.buildRobotWrapper()
+        self.pin_robot = TeststandConfig.buildRobotWrapper()
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
 
         for ji in range(num_joints):
-            p.changeDynamics(self.robotId, ji, linearDamping=.04, angularDamping=0.04, restitution=0.0, lateralFriction=0.5)
+            p.changeDynamics(self.robotId, ji, linearDamping=.04, angularDamping=0.04, 
+                             restitution=0.0, lateralFriction=0.5)
 
         p.setGravity(0,0, -9.81)
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
-        self.base_link_name = "base_link"
-        self.joint_names = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE']
-        controlled_joints = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE', 'HL_KFE', 'HR_HFE', 'HR_KFE']
-
-        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
-            controlled_joints,
-            ['HL_END', 'HR_END', 'FL_END', 'FR_END']
-        )
+        self.joint_names = ['joint_z', 'HFE', 'KFE']
+    
+        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot, self.joint_names, 
+                                       ['END'], useFixedBase=True)
 
         # Initialize the device.
-        self.device = Device('bullet_quadruped')
-        self.device.initialize(QuadrupedConfig.yaml_path)
-
-        # Create signals for the base.
-        self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
-        self.signal_base_vel_ = VectorConstant("bullet_quadruped_base_vel")
-        self.signal_base_pos_.sout.value = np.hstack([robotStartPos, robotStartOrientation]).tolist()
-        self.signal_base_vel_.sout.value = [0., 0., 0., 0., 0., 0.]
+        self.device = Device('bullet_teststand')
+        self.device.initialize(TeststandConfig.yaml_path)
 
         # Initialize signals that are not filled in sim2signals.
-        #self.device.motor_encoder_indexes.value = 8 * [0.]
-        self.device.slider_positions.value = 4 * [0.]
+        self.device.slider_positions.value = 1 * [0.]
+        self.device.contact_sensors.value = 1 * [0.]
+        self.device.height_sensors.value = 1 * [0.]
+        self.device.ati_force.value = 3 * [0.]
+        self.device.ati_torque.value = 3 * [0.]
 
         # Sync the current robot state to the graph input signals.
         self.sim2signal_()
 
         self.steps_ = 0
 
-        super(QuadrupedBulletRobot, self).__init__('bullet_quadruped', self.device)
+        super(TeststandBulletRobot, self).__init__('bullet_teststand', self.device)
 
     def pinocchio_robot_wrapper(self):
         return self.pin_robot
-
-    def base_signals(self):
-        return self.signal_base_pos_.sout, self.signal_base_vel_.sout
 
     def sim2signal_(self):
         """ Reads the state from the simulator and fills the corresponding signals. """
@@ -97,17 +89,25 @@ class QuadrupedBulletRobot(Robot):
         q, dq = [np.array(t).reshape(-1).tolist() for t in self.wrapper.get_state()]
 
         device = self.device
-        device.joint_positions.value = q[7:]
-        device.joint_velocities.value = dq[6:]
+        device.joint_positions.value = q[1:]
+        device.joint_velocities.value = dq[1:]
 
-        self.signal_base_pos_.sout.value = q[0:7]
-        self.signal_base_vel_.sout.value = dq[0:6]
+        device.height_sensors.value = [q[0]]
+
+        contact_frames, contact_forces = self.wrapper.get_force()
+        if (len(contact_frames) > 0):
+            device.ati_force.value = (-contact_forces[0]).tolist()
+        else:
+            device.ati_force.value = 3 * [0.]
         
 
     def run(self, steps=1, delay=0.):
+        tau = zero(self.wrapper.nv)
         for i in range(steps):
             self.device.executeGraph()
-            self.wrapper.send_joint_command(np.matrix(self.device.ctrl_joint_torques.value).T)
+            # The base is not actuated.
+            tau[1:] = np.matrix(self.device.ctrl_joint_torques.value).T
+            self.wrapper.send_joint_command(tau)
             p.stepSimulation()
             self.sim2signal_()
             self.steps_ += 1
@@ -121,5 +121,5 @@ class QuadrupedBulletRobot(Robot):
         self.sim2signal_()
 
 
-def get_quadruped_robot():
-    return QuadrupedBulletRobot()
+def get_teststand_robot():
+    return TeststandBulletRobot()

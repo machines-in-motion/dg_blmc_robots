@@ -16,8 +16,14 @@
   <build_depend> blmc_robots </build_depend>
   <run_depend>   blmc_robots </run_depend>
 
+  <build_depend> pinocchio_bullet </build_depend>
+  <run_depend>   pinocchio_bullet </run_depend>
+
   <build_depend> robot_properties_quadruped </build_depend>
   <run_depend>   robot_properties_quadruped </run_depend>
+
+  <build_depend> robot_properties_teststand </build_depend>
+  <run_depend>   robot_properties_teststand </run_depend>
 
   <build_depend> dynamic_graph_manager </build_depend>
   <run_depend>   dynamic_graph_manager </run_depend>
