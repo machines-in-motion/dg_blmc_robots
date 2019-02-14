@@ -1,11 +1,17 @@
+## Code to identify cogging on a single motor
+
+
 from dynamic_graph.sot.torque_control.position_controller import PositionController
 from dynamic_graph.sot.torque_control.control_manager import ControlManager
 from dynamic_graph.sot.torque_control.joint_trajectory_generator import JointTrajectoryGenerator
 from dynamic_graph.sot.core import Stack_of_vector
 from dynamic_graph import plug
-from leg_impedance_control import control_manager_conf
+from leg_impedance_control import control_manager_single_motor_conf as control_manager_conf
 from leg_impedance_control import joint_pos_ctrl_gains
 from leg_impedance_control.utils import stack_two_vectors
+
+
+
 
 NJ = control_manager_conf.nbJoints
 dt = 0.001
@@ -17,7 +23,8 @@ def create_ctrl_manager(conf, motor_params, dt, robot_name='robot'):
     ctrl_manager.tau_predicted.value    = NJ*(0.0,);
     ctrl_manager.i_measured.value       = NJ*(0.0,);
     ctrl_manager.tau_max.value          = NJ*(conf.TAU_MAX,);
-    ctrl_manager.i_max.value            = NJ*(conf.CURRENT_MAX,);
+    # ctrl_manager.i_max.value            = NJ*(conf.CURRENT_MAX,);
+    ctrl_manager.i_max.value            = NJ*(5.0,);
     ctrl_manager.u_max.value            = NJ*(conf.CTRL_MAX,);
 
     # Init should be called before addCtrlMode
@@ -94,8 +101,8 @@ robot.ctrl_manager = create_ctrl_manager(control_manager_conf, None, dt)
 create_base6d_encoders(robot)
 robot.traj_gen = create_trajectory_generator(robot, dt)
 robot.pos_ctrl = create_position_controller(robot, joint_pos_ctrl_gains, dt)
-
-# connect position controller to control manager
+#
+# # connect position controller to control manager
 plug(robot.device.ctrl_joint_torques,               robot.ctrl_manager.i_measured);
 robot.ctrl_manager.addCtrlMode("pos");
 plug(robot.pos_ctrl.pwmDes,                         robot.ctrl_manager.ctrl_pos);
@@ -103,12 +110,16 @@ robot.ctrl_manager.setCtrlMode("all", "pos");
 robot.device.ctrl_joint_torques.value = NJ*(0.0,)
 kp_pos = NJ*[0.0]
 ki_pos = NJ*[0.0]
-kp_pos[0] = 4.0
-ki_pos[0] = 0.1
+kd_pos = NJ.[0.0]
+kp_pos[0] = 0.01
+ki_pos[0] = 0.0
 robot.pos_ctrl.Kp.value = kp_pos
 robot.pos_ctrl.Ki.value = ki_pos
-
+#
 from dynamic_graph.sot.torque_control.utils.filter_utils import create_butter_lp_filter_Wn_03_N_4
 robot.vel_filt = create_butter_lp_filter_Wn_03_N_4('vel_filt2', dt, NJ)
 plug(robot.device.joint_velocities, robot.vel_filt.x)
 plug(robot.vel_filt.x_filtered, robot.pos_ctrl.jointsVelocities)
+
+# kd_pos[0] = 0.0
+# robot.pos_ctrl.Kd.value = kd_pos

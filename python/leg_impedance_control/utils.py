@@ -22,6 +22,12 @@ from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 from py_robot_properties_teststand.config import TeststandConfig
 
 
+def add_vec_vec(vec1, vec2, entityName):
+    add = Add_of_vector(entityName)
+    plug(vec1, add.signal('sin1'))
+    plug(vec2, add.signal('sin2'))
+    return add.sout
+
 def compute_pos_diff(pos1, pos2, entityName):
     sub_op = Substract_of_vector(entityName)
     plug(pos1, sub_op.signal('sin1'))
@@ -247,8 +253,6 @@ def impedance_controller_hr(robot_hr_dg, gain_value,des_pos):
     return control_torques_hr
 
 
-
-
 #########i
 
 def createLegs():
@@ -260,8 +264,7 @@ def createLegs():
     robot_fl_dg.createJacobianEndEffWorld('jac_contact_fl', 'contact')
     robot_fl_dg.createPosition('pos_hip_fl', 'HFE')
     robot_fl_dg.createPosition('pos_foot_fl', 'END')
-    robot_fl_dg.createVelocity('vel_joint_HFE_fl', 'HFE')
-    robot_fl_dg.createVelocity('vel_joint_KFE_fl', 'KFE')
+    robot_fl_dg.createVelocity('vel_foot_fl', 'END')
 
     robot_fr_py = TeststandConfig.buildRobotWrapper()
     robot_fr_dg = dp.DynamicPinocchio('hopper_fr')
@@ -270,9 +273,7 @@ def createLegs():
     robot_fr_dg.createJacobianEndEffWorld('jac_contact_fr', 'contact')
     robot_fr_dg.createPosition('pos_hip_fr', 'HFE')
     robot_fr_dg.createPosition('pos_foot_fr', 'END')
-    robot_fr_dg.createVelocity('vel_joint_HFE_fr', 'HFE')
-    robot_fr_dg.createVelocity('vel_joint_KFE_fr', 'KFE')
-
+    robot_fr_dg.createVelocity('vel_foot_fl', 'END')
 
     robot_hl_py = TeststandConfig.buildRobotWrapper()
     robot_hl_dg = dp.DynamicPinocchio('hopper_hl')
@@ -281,8 +282,7 @@ def createLegs():
     robot_hl_dg.createJacobianEndEffWorld('jac_contact_hl', 'contact')
     robot_hl_dg.createPosition('pos_hip_hl', 'HFE')
     robot_hl_dg.createPosition('pos_foot_hl', 'END')
-    robot_hl_dg.createVelocity('vel_joint_HFE_hl', 'HFE')
-    robot_hl_dg.createVelocity('vel_joint_KFE_hl', 'KFE')
+    robot_fl_dg.createVelocity('vel_foot_fl', 'END')
 
     robot_hr_py = TeststandConfig.buildRobotWrapper()
     robot_hr_dg = dp.DynamicPinocchio('hopper_hr')
@@ -291,7 +291,6 @@ def createLegs():
     robot_hr_dg.createJacobianEndEffWorld('jac_contact_hr', 'contact')
     robot_hr_dg.createPosition('pos_hip_hr', 'HFE')
     robot_hr_dg.createPosition('pos_foot_hr', 'END')
-    robot_hr_dg.createVelocity('vel_joint_HFE_hr', 'HFE')
-    robot_hr_dg.createVelocity('vel_joint_KFE_hr', 'KFE')
+    robot_hr_dg.createVelocity('vel_foot_fl', 'END')
 
     return robot_fl_py, robot_fl_dg, robot_fr_py, robot_fr_dg, robot_hl_py, robot_hl_dg, robot_hr_py, robot_hr_dg

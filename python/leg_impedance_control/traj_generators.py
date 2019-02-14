@@ -23,14 +23,26 @@ def mul_double_vec_2(doub, vec, entityName):
 
 def linear_sine_generator(amplitude, omega, phase , bias ,entityName):
     ## generates a y = a*sin(W.t + phi)
-    osc = dynamic_graph.sot.tools.Oscillator(entityName)
-    osc.setTimePeriod(0.001)
-    osc.omega.value = omega *np.pi
-    osc.magnitude.value = amplitude
-    osc.phase.value = phase
-    osc.bias.value = bias
+    osc_pos = dynamic_graph.sot.tools.Oscillator(entityName + "_pos")
+    osc_pos.setTimePeriod(0.001)
+    osc_pos.omega.value = omega*np.pi
+    osc_pos.magnitude.value = amplitude
+    osc_pos.phase.value = phase
+    osc_pos.bias.value = bias
 
-    return osc.sout
+    osc_vel = dynamic_graph.sot.tools.Oscillator(entityName + '_vel')
+    osc_vel.setTimePeriod(0.001)
+    osc_vel.omega.value = omega*np.pi
+    osc_vel.magnitude.value = osc_pos.magnitude.value*osc_pos.omega.value
+    osc_vel.phase.value = osc_pos.phase.value + np.pi/2.0
+    osc_vel.bias.value = 0
+
+    unit_vector_pos = constVector([0.0, 0.0, 1.0], "unit_vector_pos")
+    unit_vector_vel = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_vector_vel")
+
+    pos_traj = mul_double_vec_2(osc_pos.sout, unit_vector_pos, "des_position")
+    vel_traj = mul_double_vec_2(osc_vel.sout, unit_vector_vel, "des_velocity")
+    return pos_traj, vel_traj
 
 
 def circular_trajectory_generator(radius, omega, phase, entityName):

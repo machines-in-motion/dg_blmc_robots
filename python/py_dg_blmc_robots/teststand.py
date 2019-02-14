@@ -35,7 +35,7 @@ class TeststandBulletRobot(Robot):
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = TeststandConfig.urdf_path
-        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation, 
+        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation,
                                   flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=True)
         p.getBasePositionAndOrientation(self.robotId)
 
@@ -47,15 +47,15 @@ class TeststandBulletRobot(Robot):
         num_joints = p.getNumJoints(self.robotId)
 
         for ji in range(num_joints):
-            p.changeDynamics(self.robotId, ji, linearDamping=.04, angularDamping=0.04, 
+            p.changeDynamics(self.robotId, ji, linearDamping=.04, angularDamping=0.04,
                              restitution=0.0, lateralFriction=0.5)
 
         p.setGravity(0,0, -9.81)
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
         self.joint_names = ['joint_z', 'HFE', 'KFE']
-    
-        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot, self.joint_names, 
+
+        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot, self.joint_names,
                                        ['END'], useFixedBase=True)
 
         # Initialize the device.
@@ -94,12 +94,13 @@ class TeststandBulletRobot(Robot):
 
         device.height_sensors.value = [q[0]]
 
-        contact_frames, contact_forces = self.wrapper.get_force()
-        if (len(contact_frames) > 0):
-            device.ati_force.value = (-contact_forces[0]).tolist()
-        else:
-            device.ati_force.value = 3 * [0.]
-        
+        ## uncomment if force at the ground is desired
+        # #contact_frames, contact_forces = self.wrapper.get_force()
+        # if (len(contact_frames) > 0):
+        #     device.ati_force.value = (-contact_forces[0]).tolist()
+        # else:
+        #     device.ati_force.value = 3 * [0.]
+
 
     def run(self, steps=1, delay=0.):
         tau = zero(self.wrapper.nv)

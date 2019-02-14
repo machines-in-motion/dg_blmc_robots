@@ -8,10 +8,10 @@ from dynamic_graph.sot.core.control_pd import ControlPD
 
 pd = ControlPD("PDController")
 
-pd.Kp.value = ((0.005,))
+pd.Kp.value = ((0.05,))
 pd.Kd.value = ((0.0002,))
-pd.desiredposition = ((0.0,)) # you can adjust this directly in the REPL
-pd.desiredvelocity = ((0.0,))
+pd.desiredposition.value = ((0.0,)) # you can adjust this directly in the REPL
+pd.desiredvelocity.value = ((0.0,))
 
 plug(robot.device.joint_positions, pd.position)
 plug(robot.device.joint_velocities, pd.velocity)

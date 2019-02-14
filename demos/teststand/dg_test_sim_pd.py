@@ -43,11 +43,11 @@ plug(pd.control, robot.device.ctrl_joint_torques)
 # Run the robot (here the simulator) for 5000 steps (= 5 seconds). The second
 # optional parameter specifies how much to sleep every 1/60. steps. This allows
 # a plugged visualizer to display the evolving trajectory.
-for i in range(5):
-    # Pull the robot upwards again.
-    robot.reset_state(q, dq)
-    
-    robot.run(1000, 1./60.)
-    print("Contact forces:", robot.device.ati_force.value)
-
-raw_input("Press Enter to continue...")
+# for i in range(5):
+#     # Pull the robot upwards again.
+#     robot.reset_state(q, dq)
+#
+#     robot.run(1000, 1./60.)
+#     print("Contact forces:", robot.device.ati_force.value)
+#
+# raw_input("Press Enter to continue...")

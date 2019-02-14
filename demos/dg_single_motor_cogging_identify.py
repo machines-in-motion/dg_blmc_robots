@@ -5,7 +5,7 @@ import pickle
 import datetime, threading, time
 
 import pinocchio as se3
-from py_dynamics_simulator.robot_wrapper import RobotWrapper
+#from py_dynamics_simulator.robot_wrapper import RobotWrapper
 
 from dynamic_graph import plug
 import dynamic_graph.sot.dynamics_pinocchio as dp
@@ -101,18 +101,18 @@ pd = ControlPD("PDController")
 pd.Kp.value = ((0.005,))
 pd.Kd.value = ((0.0002,))
 
-plug(robot.device.joint_positions, pd.position)
-plug(robot.device.joint_velocities, pd.velocity)
+#plug(robot.device.joint_positions, pd.position)
+#plug(robot.device.joint_velocities, pd.velocity)
 
-ga = GradientAscent('ga')
-ga.learningRate.value = 1e-3
-
-plug(des_vel, ga.gradient)
-plug(des_vel, pd.desiredvelocity)
-
-plug(ga.value, pd.desiredposition)
-
-plug(op2(Add_of_vector, pd.control, ff, ""), robot.device.ctrl_joint_torques)
+# plug(((0.2,)), robot.device.ctrl_joint_torques)
 
 
+# ga = GradientAscent('ga')
+# ga.learningRate.value = 1e-3
 
+# plug(des_vel, ga.gradient)
+# plug(des_vel, pd.desiredvelocity)
+
+#plug(ga.value, pd.desiredposition)
+
+#plug(op2(Add_of_vector, pd.control, ff, ""), robot.device.ctrl_joint_torques)

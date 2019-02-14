@@ -35,8 +35,8 @@ robot.reset_state(q, dq)
 #########################################################################################
 
 
-pos_des_fl_fr_z = linear_sine_generator(0.06, 1.0, 0.0 , -0.2, "fl")
-pos_des_hl_hr_z = linear_sine_generator(0.06, 1.0, 0.0 , -0.2, "hl")
+pos_des_fl_fr_z = linear_sine_generator(0.06, 3.0, 0.0 , -0.2, "fl")
+pos_des_hl_hr_z = linear_sine_generator(0.06, 3.0, 0.0 , -0.2, "hl")
 
 ###########################################################################
 
