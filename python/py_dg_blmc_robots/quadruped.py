@@ -120,6 +120,9 @@ class QuadrupedBulletRobot(Robot):
         self.wrapper.reset_state(q, dq)
         self.sim2signal_()
 
+    def set_gravity(self, vec):
+        """ Sets gravity in the simulator to (x,y,z), where z is the vertical axis. """
+        p.setGravity(vec[0],vec[1], vec[2])
 
 def get_quadruped_robot():
     return QuadrupedBulletRobot()
