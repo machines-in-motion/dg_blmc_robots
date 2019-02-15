@@ -34,27 +34,26 @@ robot.reset_state(q, dq)
 
 #########################################################################################
 
-
-pos_des_fl_fr_z = linear_sine_generator(0.06, 3.0, 0.0 , -0.2, "fl")
-pos_des_hl_hr_z = linear_sine_generator(0.06, 3.0, 0.0 , -0.2, "hl")
-
-###########################################################################
-
-
-unit_vector = constVector([0.0, 0.0, 1.0], "unit_vector")
-
-pos_des_fl_fr = mul_double_vec_2(pos_des_fl_fr_z, unit_vector, "sine_des_position_front")
-pos_des_hl_hr = mul_double_vec_2(pos_des_hl_hr_z, unit_vector, "sine_des_position_hind")
+des_pos, des_vel = linear_sine_generator(0.08, 3.5, 0.0 , -.2, "hopper")
 
 pos_des = constVector([0.0, 0.0, -0.25], "pos_des")
 # For making gain input dynamic through terminal
-add = Add_of_double('gain')
-add.sin1.value = 0
+kp = Add_of_double('Kd')
+kp.sin1.value = 0
 ### Change this value for different gains
-add.sin2.value = 100.0
-gain_value = add.sout
+kp.sin2.value = 100.0
+Kp = kp.sout
 
-control_torques = quad_impedance_controller(robot, pos_des_fl_fr, pos_des_fl_fr, pos_des_hl_hr, pos_des_hl_hr, gain_value)
+# For making gain input dynamic through terminal
+kd = Add_of_double('Kd')
+kd.sin1.value = 0
+### Change this value for different gains
+kd.sin2.value = 10.0
+Kd = kp.sout
+
+
+
+control_torques = quad_impedance_controller(robot, des_pos, des_pos, des_pos, des_pos, des_vel, Kp, Kd )
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 

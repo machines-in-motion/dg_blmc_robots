@@ -10,7 +10,7 @@ from utils import *
 
 
 
-def quad_impedance_controller(robot, pos_des_fl, pos_des_fr, pos_des_hl, pos_des_hr, gain_value):
+def quad_impedance_controller(robot, pos_des_fl, pos_des_fr, pos_des_hl, pos_des_hr, vel_des_fr , Kp, Kd):
 
     robot_fl_py, robot_fl_dg, robot_fr_py, robot_fr_dg, robot_hl_py, robot_hl_dg, robot_hr_py, robot_hr_dg = createLegs()
 
@@ -37,7 +37,7 @@ def quad_impedance_controller(robot, pos_des_fl, pos_des_fr, pos_des_hl, pos_des
     plug(stack_zero((joint_velocities_fl), "add_base_joint_velocity_fl"), robot_fl_dg.velocity)
     robot_fl_dg.acceleration.value = 3 * (0.0, )
 
-    control_torques_fl = impedance_controller_fl(robot_fl_dg,gain_value,pos_des_fl)
+    control_torques_fl = impedance_controller_fl(robot_fl_dg,Kp,pos_des_fl)
 
     ##### torques for fr
 
@@ -48,7 +48,7 @@ def quad_impedance_controller(robot, pos_des_fl, pos_des_fr, pos_des_hl, pos_des
     plug(stack_zero((joint_velocities_fr), "add_base_joint_velocity_fr"), robot_fr_dg.velocity)
     robot_fr_dg.acceleration.value = 3 * (0.0, )
 
-    control_torques_fr = impedance_controller_fr(robot_fr_dg,gain_value,pos_des_fr)
+    control_torques_fr = impedance_controller_fr(robot_fr_dg, Kp, Kd ,pos_des_fr, vel_des_fr)
 
     ##### torques for hl
 
@@ -59,7 +59,7 @@ def quad_impedance_controller(robot, pos_des_fl, pos_des_fr, pos_des_hl, pos_des
     plug(stack_zero((joint_velocities_hl), "add_base_joint_velocity_hl"), robot_hl_dg.velocity)
     robot_hl_dg.acceleration.value = 3 * (0.0, )
 
-    control_torques_hl = impedance_controller_hl(robot_hl_dg,gain_value,pos_des_hl)
+    control_torques_hl = impedance_controller_hl(robot_hl_dg,Kp,pos_des_hl)
 
     ###### torques for hr
     joint_positions_hr = selec_vector(joint_positions, 6, 8, 'position_slicer_hr')
@@ -69,7 +69,7 @@ def quad_impedance_controller(robot, pos_des_fl, pos_des_fr, pos_des_hl, pos_des
     plug(stack_zero((joint_velocities_hr), "add_base_joint_velocity_hr"), robot_hr_dg.velocity)
     robot_hr_dg.acceleration.value = 3 * (0.0, )
 
-    control_torques_hr = impedance_controller_hr(robot_hr_dg,gain_value,pos_des_hr)
+    control_torques_hr = impedance_controller_hr(robot_hr_dg,Kp,pos_des_hr)
 
 
     ############################################

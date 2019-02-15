@@ -185,25 +185,35 @@ def impedance_controller_fl(robot_fl_dg, gain_value, des_pos):
 
     return control_torques_fl
 
-def impedance_controller_fr(robot_fr_dg, gain_value,des_pos):
+def impedance_controller_fr(robot_fr_dg, Kp, Kd, des_pos, des_vel):
     ## Impdance control implementation
     xyzpos_hip_fr = hom2pos(robot_fr_dg.pos_hip_fr, "xyzpos_hip_fr")
     xyzpos_foot_fr = hom2pos(robot_fr_dg.pos_foot_fr, "xyzpos_foot_fr")
     # relative foot position to hip
     rel_pos_foot_fr = compute_pos_diff(xyzpos_foot_fr, xyzpos_hip_fr, "rel_pos_foot_fr")
-    ## removing the values of the base
-    ##rel_pos_foot = remove_base_pos(rel_pos_foot,rel_pos_foot)
 
     jac_fr = robot_fr_dg.jac_contact_fr
     pos_error_fr = compute_pos_diff(rel_pos_foot_fr, des_pos, "pos_error_fr")
     ## adding force in fz and also rotation forces for proper jacobian multiplication
     pos_error_fr = stack_two_vectors(pos_error_fr, constVector([0.0, 0.0, 0.0],'stack_to_wrench_fr'), 3, 3)
 
+    rel_vel_foot_fr = compute_pos_diff(robot_fr_dg.vel_foot_fr, robot_fr_dg.vel_hip_fr, "rel_vel_foot_fr")
+    vel_error_fr = compute_pos_diff(rel_vel_foot_fr, des_vel, 'vel_error_fr')
+
     mul_double_vec_op_fr = Multiply_double_vector("gain_multiplication_fr")
-    plug(gain_value, mul_double_vec_op_fr.sin1)
+    plug(Kp, mul_double_vec_op_fr.sin1)
     plug(pos_error_fr, mul_double_vec_op_fr.sin2)
     pos_error_with_gains_fr = mul_double_vec_op_fr.sout
-    control_torques_fr = compute_control_torques_fr(jac_fr, pos_error_with_gains_fr)
+
+    mul_double_vec_op_vel_fr = Multiply_double_vector("gain_multiplication_vel_fr")
+    plug(Kd, mul_double_vec_op_fr.sin1)
+    plug(vel_error_fr, mul_double_vec_op_fr.sin2)
+    vel_error_with_gains_fr = mul_double_vec_op_vel_fr.sout
+
+    ### error = Kp*(pos_error) + Kd*(vel_error)
+    total_error_fr = add_vec_vec(pos_error_with_gains_fr, vel_error_with_gains_fr, "total_error_fr")
+
+    control_torques_fr = compute_control_torques_fr(jac_fr, total_error_fr)
 
     return control_torques_fr
 
@@ -264,6 +274,7 @@ def createLegs():
     robot_fl_dg.createJacobianEndEffWorld('jac_contact_fl', 'contact')
     robot_fl_dg.createPosition('pos_hip_fl', 'HFE')
     robot_fl_dg.createPosition('pos_foot_fl', 'END')
+    robot_fl_dg.createVelocity('vel_hip_fl', 'HFE')
     robot_fl_dg.createVelocity('vel_foot_fl', 'END')
 
     robot_fr_py = TeststandConfig.buildRobotWrapper()
@@ -273,7 +284,8 @@ def createLegs():
     robot_fr_dg.createJacobianEndEffWorld('jac_contact_fr', 'contact')
     robot_fr_dg.createPosition('pos_hip_fr', 'HFE')
     robot_fr_dg.createPosition('pos_foot_fr', 'END')
-    robot_fr_dg.createVelocity('vel_foot_fl', 'END')
+    robot_fr_dg.createVelocity('vel_hip_fr', 'HFE')
+    robot_fr_dg.createVelocity('vel_foot_fr', 'END')
 
     robot_hl_py = TeststandConfig.buildRobotWrapper()
     robot_hl_dg = dp.DynamicPinocchio('hopper_hl')
@@ -282,7 +294,8 @@ def createLegs():
     robot_hl_dg.createJacobianEndEffWorld('jac_contact_hl', 'contact')
     robot_hl_dg.createPosition('pos_hip_hl', 'HFE')
     robot_hl_dg.createPosition('pos_foot_hl', 'END')
-    robot_fl_dg.createVelocity('vel_foot_fl', 'END')
+    robot_hl_dg.createVelocity('vel_hip_hl', 'HFE')
+    robot_hl_dg.createVelocity('vel_foot_hl', 'END')
 
     robot_hr_py = TeststandConfig.buildRobotWrapper()
     robot_hr_dg = dp.DynamicPinocchio('hopper_hr')
@@ -291,6 +304,7 @@ def createLegs():
     robot_hr_dg.createJacobianEndEffWorld('jac_contact_hr', 'contact')
     robot_hr_dg.createPosition('pos_hip_hr', 'HFE')
     robot_hr_dg.createPosition('pos_foot_hr', 'END')
-    robot_hr_dg.createVelocity('vel_foot_fl', 'END')
+    robot_hr_dg.createVelocity('vel_hip_hr', 'HFE')
+    robot_hr_dg.createVelocity('vel_foot_hr', 'END')
 
     return robot_fl_py, robot_fl_dg, robot_fr_py, robot_fr_dg, robot_hl_py, robot_hl_dg, robot_hr_py, robot_hr_dg

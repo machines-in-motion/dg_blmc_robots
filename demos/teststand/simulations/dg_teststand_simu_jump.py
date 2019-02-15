@@ -118,7 +118,7 @@ def impedance_controller(robot_dg, kp, kd ,des_pos, des_vel):
 
     mul_double_vec_op2 = Multiply_double_vector("gain_multiplication_vel")
     plug(Kd, mul_double_vec_op2.sin1)
-    plug(pos_error, mul_double_vec_op2.sin2)
+    plug(vel_error, mul_double_vec_op2.sin2)
     vel_error_with_gains = mul_double_vec_op2.sout
 
     ### error = Kp*(pos_error) + Kd*(vel_error)
@@ -139,7 +139,7 @@ plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocit
 kp = Add_of_double('mult')
 kp.sin1.value = 0
 ### Change this value for different gains
-kp.sin2.value = 180.0
+kp.sin2.value = 100.0
 Kp = kp.sout
 
 kd = Add_of_double('mult')
@@ -149,12 +149,7 @@ kd.sin2.value = 50.0
 Kd = kd.sout
 
 
-# des_pos = constVector([0.0, 0.0, -0.2],"pos_des")
-# des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
-## Impdance control implementation
-
-
-des_pos, des_vel = linear_sine_generator(0.06, 1.0, 0.0 , -.2, "hopper")
+des_pos, des_vel = linear_sine_generator(0.08, 3.5, 0.0 , -.2, "hopper")
 
 control_torques = impedance_controller(robot_dg, Kp, Kd, des_pos, des_vel)
 
