@@ -8,6 +8,7 @@ import numpy as np
 import rospkg
 
 import pinocchio as se3
+from pinocchio.utils import zero
 from pinocchio.robot_wrapper import RobotWrapper
 
 from dynamic_graph import plug
@@ -19,7 +20,15 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
+############################################################################
 
+from leg_impedance_control.utils import *
+
+
+##########################################################################################
+
+
+###################################################################################
 robot_py = TeststandConfig.buildRobotWrapper()
 
 robot_dg = dp.DynamicPinocchio('hopper')

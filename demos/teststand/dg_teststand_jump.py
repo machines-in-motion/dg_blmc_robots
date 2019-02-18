@@ -25,25 +25,8 @@ from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 from leg_impedance_control.utils import *
 from leg_impedance_control.traj_generators import *
 
+##########################################################################################
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.teststand import get_teststand_robot
-from py_dg_blmc_robots.teststand import TeststandConfig
-
-
-# Get the robot corresponding to the quadruped.
-robot = get_teststand_robot()
-
-# Define the desired position.
-q = zero(robot.pin_robot.nq)
-dq = zero(robot.pin_robot.nv)
-
-q[0] = 0.4
-q[1] = 0.8
-q[2] = -1.6
-
-# Update the initial state of the robot.
-robot.reset_state(q, dq)
 
 ###################################################################################
 robot_py = TeststandConfig.buildRobotWrapper()
@@ -90,7 +73,7 @@ def impedance_controller(robot_dg, kp, kd ,des_pos, des_vel):
 
     rel_vel_foot = mul_mat_vec(jac, robot_dg.velocity, "rel_vel_foot")
     vel_error = compute_pos_diff(rel_vel_foot, des_vel, 'vel_error')
-
+    #
     mul_double_vec_op2 = Multiply_double_vector("gain_multiplication_vel")
     plug(Kd, mul_double_vec_op2.sin1)
     plug(vel_error, mul_double_vec_op2.sin2)
@@ -114,28 +97,23 @@ plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocit
 kp = Add_of_double('Kp')
 kp.sin1.value = 0
 ### Change this value for different gains
-kp.sin2.value = 100.0
+kp.sin2.value = 50.0
 Kp = kp.sout
 
 kd = Add_of_double('Kd')
 kd.sin1.value = 0
 ### Change this value for different gains
-kd.sin2.value = 0.05
+kd.sin2.value = 0.0
 Kd = kd.sout
 
 
-des_pos, des_vel = linear_sine_generator(0.08, 1.5, 0.0 , -.2, "hopper")
+des_pos, des_vel = linear_sine_generator(0.08, 4.0, 0.0 , -.2, "hopper")
 
 control_torques = impedance_controller(robot_dg, Kp, Kd, des_pos, des_vel)
 
-
 plug(control_torques, robot.device.ctrl_joint_torques)
+
 #########################################################################
-
-robot.run(10000, 1./60.)
-
-
-############ Plotting #############################################
 
 robot.add_trace("pos_error", "sout")
 robot.add_ros_and_trace("pos_error", "sout")

@@ -50,7 +50,10 @@ class TeststandBulletRobot(Robot):
             p.changeDynamics(self.robotId, ji, linearDamping=.04, angularDamping=0.04,
                              restitution=0.0, lateralFriction=0.5)
 
-        p.setGravity(0,0, -9.81)
+
+        p.setGravity(0,0,0)     
+
+        #p.setGravity(0,0, -9.81)
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
         self.joint_names = ['joint_z', 'HFE', 'KFE']
