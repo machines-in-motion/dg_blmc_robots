@@ -90,6 +90,29 @@ robot_dg.acceleration.value = 3 * (0.0, )
 
 ########################################################################################################
 
+entityName = "hopper"
+osc_pos = dynamic_graph.sot.tools.Oscillator(entityName + "_pos")
+osc_pos.setTimePeriod(0.001)
+osc_pos.omega.value = 1.0*np.pi
+osc_pos.magnitude.value = 0.06
+osc_pos.phase.value = 0.0
+osc_pos.bias.value = -0.22
+
+osc_vel = dynamic_graph.sot.tools.Oscillator(entityName + '_vel')
+osc_vel.setTimePeriod(0.001)
+osc_vel.omega.value = osc_pos.omega.value
+osc_vel.magnitude.value = osc_pos.magnitude.value*osc_pos.omega.value
+osc_vel.phase.value = osc_pos.phase.value + np.pi/2.0
+osc_vel.bias.value = 0
+
+unit_vector_pos = constVector([0.0, 0.0, 1.0], "unit_vector_pos")
+unit_vector_vel = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_vector_vel")
+
+pos_traj = mul_double_vec_2(osc_pos.sout, unit_vector_pos, "des_position")
+vel_traj = mul_double_vec_2(osc_vel.sout, unit_vector_vel, "des_velocity")
+
+########################################################################################################
+
 plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), robot_dg.position)
 plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), robot_dg.velocity)
 
@@ -107,7 +130,9 @@ kd.sin2.value = 0.0
 Kd = kd.sout
 
 
-des_pos, des_vel = linear_sine_generator(0.08, 4.0, 0.0 , -.2, "hopper")
+#des_pos, des_vel = linear_sine_generator(0.08, 1.0, 0.0 , -.2, "hopper")
+des_pos = pos_traj
+des_vel = vel_traj
 
 control_torques = impedance_controller(robot_dg, Kp, Kd, des_pos, des_vel)
 

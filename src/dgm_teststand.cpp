@@ -40,6 +40,17 @@ namespace dg_blmc_robots
       teststand_.acquire_sensors();
 
       /**
+        * Motor data
+        */
+      map.at("motor_positions") = teststand_.get_motor_positions();
+      map.at("motor_velocities") = teststand_.get_motor_velocities();
+      map.at("motor_currents") = teststand_.get_motor_currents();
+      map.at("motor_target_currents") = teststand_.get_motor_target_currents();
+      map.at("motor_torques") = teststand_.get_motor_torques();
+      map.at("motor_target_torques") = teststand_.get_target_motor_torques();
+      map.at("motor_encoder_indexes") = teststand_.get_motor_encoder_indexes();
+
+      /**
         * Joint data
         */
       map.at("joint_positions") = teststand_.get_joint_positions();
@@ -60,6 +71,17 @@ namespace dg_blmc_robots
     }catch(...){
       printf("Error in acquiring the sensors data\n");
       printf("Setting all of them 0.0\n");
+
+      /**
+        * Motor data
+        */
+      map.at("motor_positions").fill(0.0);
+      map.at("motor_velocities").fill(0.0);
+      map.at("motor_currents").fill(0.0);
+      map.at("motor_target_currents").fill(0.0);
+      map.at("motor_torques").fill(0.0);
+      map.at("motor_target_torques").fill(0.0);
+      map.at("motor_encoder_indexes").fill(0.0);
 
       /**
         * Joint data

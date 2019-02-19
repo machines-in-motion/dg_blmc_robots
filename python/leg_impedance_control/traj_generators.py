@@ -32,7 +32,7 @@ def linear_sine_generator(amplitude, omega, phase , bias ,entityName):
 
     osc_vel = dynamic_graph.sot.tools.Oscillator(entityName + '_vel')
     osc_vel.setTimePeriod(0.001)
-    osc_vel.omega.value = omega*np.pi
+    osc_vel.omega.value = osc_pos.omega.value
     osc_vel.magnitude.value = osc_pos.magnitude.value*osc_pos.omega.value
     osc_vel.phase.value = osc_pos.phase.value + np.pi/2.0
     osc_vel.bias.value = 0
