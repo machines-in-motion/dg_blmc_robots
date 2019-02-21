@@ -50,7 +50,7 @@ for i in range(40000):
     robot.device.joint_velocities.value = dq.T.tolist()[0][:]
 
     # "Execute the dynamic graph"
-    robot.device.executeGraph()
+    robot.device.execute_graph()
 
 
     joint_torques[:] = np.asmatrix(robot.device.ctrl_joint_torques.value).T
