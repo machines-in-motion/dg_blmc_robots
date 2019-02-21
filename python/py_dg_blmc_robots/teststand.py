@@ -29,7 +29,7 @@ class TeststandBulletRobot(Robot):
         "/urdf/plane_with_restitution.urdf"
         self.planeId = p.loadURDF(plain_urdf)
 
-        print("Loaded plain.")
+        print("Loaded ground.")
 
         # Load the robot
         robotStartPos = [0., 0., 0.]
