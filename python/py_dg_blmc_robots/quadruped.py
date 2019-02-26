@@ -115,6 +115,13 @@ class QuadrupedBulletRobot(Robot):
         
 
     def run(self, steps=1, delay=0.):
+        """
+        Executes the simulation for n `steps`. To slow down the simulation
+        steps for visualization, applies `delay` ms of waiting after performing
+        17 (~= 1000/60) simulation steps. This allows to adjust the timing for
+        visualization at 60 Hz.
+        """
+        
         for i in range(steps):
             self.device.execute_graph()
             self.wrapper.send_joint_command(np.matrix(
