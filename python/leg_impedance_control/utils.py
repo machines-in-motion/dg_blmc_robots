@@ -70,62 +70,26 @@ def stack_zero(sig, entityName):
     plug(sig, op.sin2)
     return op.sout
 
-def compute_control_torques_fl(jac_fl,errors_fl):
-    ##Transpose [tau1, tau2] = JacT*(errors)
+def compute_impedance_torques(jac, errors_vec, names = ["","","",""]):
+    '''
+    TODO: add a selector matrix
+    '''
+    if len(names) != 4:
+        print("compute_impedance_torques requires 4 unique names for entities. " 
+               +"You can also leave this empty, and it will generate names.")
+
+    ##Transpose tau = JacT*(errors)
     ## errors = [x - xdes, y-ydes]T
-    jacT_fl = Mat_transpose(jac_fl, "jacTranspose_fl")
+    jac_T = Mat_transpose(jac, names[0]) # TODO: Is this safe?
     ## multiplying negative
-    errors_fl = mul_double_vec(-1.0, errors_fl, "neg_op_fl")
-    control_torques_fl = mul_mat_vec(jacT_fl,errors_fl, "compute_control_torques_fl")
-
+    errors_vec = mul_double_vec(-1.0, errors_vec, names[1])
+    control_torques = mul_mat_vec(jac_T, errors_vec, 
+                                        names[2])
     ## selecting only 2nd and 3rd element in torques as element one represent base acceleration
-    sel_fl = Selec_of_vector("impedance_torques_fl")
-    sel_fl.selec(1,3)
-    plug(control_torques_fl, sel_fl.signal('sin'))
-    return sel_fl.signal('sout')
-
-def compute_control_torques_fr(jac_fr,errors_fr):
-    ##Transpose [tau1, tau2] = JacT*(errors)
-    ## errors = [x - xdes, y-ydes]T
-    jacT_fr = Mat_transpose(jac_fr, "jacTranspose_fr")
-    ## multiplying negative
-    errors_fr = mul_double_vec(-1.0, errors_fr, "neg_op_fr")
-    control_torques_fr = mul_mat_vec(jacT_fr,errors_fr, "compute_control_torques_fr")
-
-    ## selecting only 2nd and 3rd element in torques as element one represent base acceleration
-    sel_fr = Selec_of_vector("impedance_torques_fr")
-    sel_fr.selec(1,3)
-    plug(control_torques_fr, sel_fr.signal('sin'))
-    return sel_fr.signal('sout')
-
-def compute_control_torques_hl(jac_hl,errors_hl):
-    ##Transpose [tau1, tau2] = JacT*(errors)
-    ## errors = [x - xdes, y-ydes]T
-    jacT_hl = Mat_transpose(jac_hl, "jacTranspose_hl")
-    ## multiplying negative
-    errors_hl = mul_double_vec(-1.0, errors_hl, "neg_op_hl")
-    control_torques_hl = mul_mat_vec(jacT_hl,errors_hl, "compute_control_torques_hl")
-
-    ## selecting only 2nd and 3rd element in torques as element one represent base acceleration
-    sel_hl = Selec_of_vector("impedance_torques_hl")
-    sel_hl.selec(1,3)
-    plug(control_torques_hl, sel_hl.signal('sin'))
-    return sel_hl.signal('sout')
-
-def compute_control_torques_hr(jac_hr,errors_hr):
-    ##Transpose [tau1, tau2] = JacT*(errors)
-    ## errors = [x - xdes, y-ydes]T
-    jacT_hr = Mat_transpose(jac_hr, "jacTranspose_hr")
-    ## multiplying negative
-    errors_hr = mul_double_vec(-1.0, errors_hr, "neg_op_hr")
-    control_torques_hr = mul_mat_vec(jacT_hr,errors_hr, "compute_control_torques_hr")
-
-    ## selecting only 2nd and 3rd element in torques as element one represent base acceleration
-    sel_hr = Selec_of_vector("impedance_torques_hr")
-    sel_hr.selec(1,3)
-    plug(control_torques_hr, sel_hr.signal('sin'))
-    return sel_hr.signal('sout')
-
+    select_mat = Selec_of_vector(names[3])
+    select_mat.selec(1,3) # This is not generic... should have a selector matrix
+    plug(control_torques, select_mat.signal('sin'))
+    return select_mat.signal('sout')
 
 def ele_mat_mul(mat1, mat2, entityName):
     ## elements wise multiplication
@@ -181,7 +145,8 @@ def impedance_controller_fl(robot_fl_dg, gain_value, des_pos):
     plug(gain_value, mul_double_vec_op_fl.sin1)
     plug(pos_error_fl, mul_double_vec_op_fl.sin2)
     pos_error_with_gains_fl = mul_double_vec_op_fl.sout
-    control_torques_fl = compute_control_torques_fl(jac_fl, pos_error_with_gains_fl)
+    control_torques_fl = compute_impedance_torques(jac_fl, pos_error_with_gains_fl,
+        ["jacTranspose_fl","neg_op_fl","compute_control_torques_fl","impedance_torques_fl"])
 
     return control_torques_fl
 
@@ -202,7 +167,8 @@ def impedance_controller_fr(robot_fr_dg, Kp, des_pos):
     plug(pos_error_fr, mul_double_vec_op_fr.sin2)
     pos_error_with_gains_fr = mul_double_vec_op_fr.sout
 
-    control_torques_fr = compute_control_torques_fr(jac_fr, pos_error_with_gains_fr)
+    control_torques_fr = compute_impedance_torques(jac_fr, pos_error_with_gains_fr,
+        ["jacTranspose_fr","neg_op_fr","compute_control_torques_fr","impedance_torques_fr"])
 
     return control_torques_fr
 
@@ -224,7 +190,8 @@ def impedance_controller_hl(robot_hl_dg, gain_value,des_pos):
     plug(gain_value, mul_double_vec_op_hl.sin1)
     plug(pos_error_hl, mul_double_vec_op_hl.sin2)
     pos_error_with_gains_hl = mul_double_vec_op_hl.sout
-    control_torques_hl = compute_control_torques_hl(jac_hl, pos_error_with_gains_hl)
+    control_torques_hl = compute_impedance_torques(jac_hl, pos_error_with_gains_hl,
+        ["jacTranspose_hl","neg_op_hl","compute_control_torques_hl","impedance_torques_hl"])
 
     return control_torques_hl
 
@@ -247,7 +214,8 @@ def impedance_controller_hr(robot_hr_dg, gain_value,des_pos):
     plug(gain_value, mul_double_vec_op_hr.sin1)
     plug(pos_error_hr, mul_double_vec_op_hr.sin2)
     pos_error_with_gains_hr = mul_double_vec_op_hr.sout
-    control_torques_hr = compute_control_torques_hr(jac_hr, pos_error_with_gains_hr)
+    control_torques_hr = compute_impedance_torques(jac_hr, pos_error_with_gains_hr,
+        ["jacTranspose_hr","neg_op_hr","compute_control_torques_hr","impedance_torques_hr"])
 
     return control_torques_hr
 
