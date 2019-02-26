@@ -7,7 +7,8 @@ import py_dg_blmc_robots
 from py_dg_blmc_robots.stuggihop import get_stuggihop_robot
 
 from dynamic_graph import plug
-from dynamic_graph.sot.core.control_pd import ControlPD
+# from dynamic_graph.sot.core.control_pd import ControlPD
+from dynamic_graph_manager.dg_tools import PDController
 from dynamic_graph.sot.core.operator import Stack_of_vector
 
 
@@ -27,13 +28,13 @@ q[3] = -1.6
 robot.reset_state(q, dq)
 
 # Setup the control graph to track the desired joint positions.
-pd = ControlPD("PDController")
+pd = PDController("controller_1")
 # setup the gains
 pd.Kp.value = 2 * (5.,)
 pd.Kd.value = 2 * (0.1,)
 # define the desired position and set teh desired velocity 0.
-pd.desiredposition.value = 2 * (0.,)
-pd.desiredvelocity.value = 2 * (0.,)
+pd.desired_position.value = (np.pi/4.0, -np.pi/4)
+pd.desired_velocity.value = 2 * (0.,)
 # plug the desired quantity signals in the pd controller.
 plug(robot.device.joint_positions, pd.position)
 plug(robot.device.joint_velocities, pd.velocity)
@@ -41,6 +42,6 @@ plug(robot.device.joint_velocities, pd.velocity)
 # plug the ouput of the pd controller to the robot motor torques
 plug(pd.control, robot.device.ctrl_joint_torques)
 
-robot.run(5000, 1./60.)
+robot.run(50000, 1./60.)
 
 raw_input("Press Enter to continue...")
