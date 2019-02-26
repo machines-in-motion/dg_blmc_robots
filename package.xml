@@ -25,6 +25,9 @@
   <build_depend> robot_properties_teststand </build_depend>
   <run_depend>   robot_properties_teststand </run_depend>
 
+  <build_depend> robot_properties_stuggihop </build_depend>
+  <run_depend>   robot_properties_stuggihop </run_depend>
+
   <build_depend> dynamic_graph_manager </build_depend>
   <run_depend>   dynamic_graph_manager </run_depend>
 

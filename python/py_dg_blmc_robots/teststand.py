@@ -25,41 +25,41 @@ class TeststandBulletRobot(Robot):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
-        plain_urdf = rospkg.RosPack().get_path("robot_properties_teststand") + "/urdf/plane_with_restitution.urdf"
+        plain_urdf = rospkg.RosPack().get_path("robot_properties_teststand") + \
+        "/urdf/plane_with_restitution.urdf"
         self.planeId = p.loadURDF(plain_urdf)
 
-        print("Loaded plain.")
+        print("Loaded ground.")
 
         # Load the robot
         robotStartPos = [0., 0., 0.]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = TeststandConfig.urdf_path
-        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, robotStartOrientation,
-                                  flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=True)
+        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, 
+            robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE, 
+            useFixedBase=True)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
-        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) + '/urdf']
+        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) 
+        + '/urdf']
         self.pin_robot = TeststandConfig.buildRobotWrapper()
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
 
         for ji in range(num_joints):
-            p.changeDynamics(self.robotId, ji, linearDamping=.04, angularDamping=0.04,
-                             restitution=0.0, lateralFriction=0.5)
+            p.changeDynamics(self.robotId, ji, linearDamping=.04, 
+                angularDamping=0.04, restitution=0.0, lateralFriction=0.5)
 
-
-        p.setGravity(0,0,0)     
-
-        #p.setGravity(0,0, -9.81)
+        p.setGravity(0,0, -9.81)
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
         self.joint_names = ['joint_z', 'HFE', 'KFE']
 
-        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot, self.joint_names,
-                                       ['END'], useFixedBase=True)
+        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot, 
+            self.joint_names, ['END'], useFixedBase=True)
 
         # Initialize the device.
         self.device = Device('bullet_teststand')
@@ -77,19 +77,22 @@ class TeststandBulletRobot(Robot):
 
         self.steps_ = 0
 
-        super(TeststandBulletRobot, self).__init__('bullet_teststand', self.device)
+        super(TeststandBulletRobot, self).__init__('bullet_teststand', 
+            self.device)
 
     def pinocchio_robot_wrapper(self):
         return self.pin_robot
 
     def sim2signal_(self):
-        """ Reads the state from the simulator and fills the corresponding signals. """
+        """ Reads the state from the simulator and fills 
+        the corresponding signals. """
 
         # TODO: Handle the following signals:
         # - joint_target_torques
         # - joint_torques
 
-        q, dq = [np.array(t).reshape(-1).tolist() for t in self.wrapper.get_state()]
+        q, dq = [np.array(t).reshape(-1).tolist() for t in 
+        self.wrapper.get_state()]
 
         device = self.device
         device.joint_positions.value = q[1:]
@@ -108,7 +111,7 @@ class TeststandBulletRobot(Robot):
     def run(self, steps=1, delay=0.):
         tau = zero(self.wrapper.nv)
         for i in range(steps):
-            self.device.executeGraph()
+            self.device.execute_graph()
             # The base is not actuated.
             tau[1:] = np.matrix(self.device.ctrl_joint_torques.value).T
             self.wrapper.send_joint_command(tau)
@@ -120,7 +123,8 @@ class TeststandBulletRobot(Robot):
                 time.sleep(delay)
 
     def reset_state(self, q, dq):
-        """ Sets the bullet simulator and the signals to the provided state values. """
+        """ Sets the bullet simulator and the signals to 
+        the provided state values. """
         self.wrapper.reset_state(q, dq)
         self.sim2signal_()
 

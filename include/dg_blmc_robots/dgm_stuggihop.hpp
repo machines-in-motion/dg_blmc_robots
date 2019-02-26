@@ -31,6 +31,7 @@ namespace dg_blmc_robots
      */
     ~DGMStuggihop();
 
+
     /**
      * @brief initialize_hardware_communication_process is the function that
      * initialize the hardware.
