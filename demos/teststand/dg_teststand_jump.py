@@ -88,7 +88,8 @@ def impedance_controller(robot_dg, kp, kd ,des_pos, des_vel):
 
 robot_dg.acceleration.value = 3 * (0.0, )
 
-########################################################################################################
+
+######################################################################################################
 
 entityName = "hopper"
 osc_pos = dynamic_graph.sot.tools.Oscillator(entityName + "_pos")
@@ -139,6 +140,9 @@ control_torques = impedance_controller(robot_dg, Kp, Kd, des_pos, des_vel)
 plug(control_torques, robot.device.ctrl_joint_torques)
 
 #########################################################################
+
+# robot.add_trace("slider_one", "sout")
+# robot.add_ros_and_trace("slider_one", "sout")
 
 robot.add_trace("pos_error", "sout")
 robot.add_ros_and_trace("pos_error", "sout")
