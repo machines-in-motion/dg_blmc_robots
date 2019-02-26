@@ -121,15 +121,17 @@ class StuggihopBulletRobot(Robot):
         
 
     def run(self, steps=1, delay=0.):
+        tau = zero(self.wrapper.nv) # we need to skip the unactuated DoFs
         for i in range(steps):
             self.device.execute_graph()
-            self.wrapper.send_joint_command(np.matrix(
-                self.device.ctrl_joint_torques.value).T)
+            tau[2:] = np.matrix(self.device.ctrl_joint_torques.value).T
+            self.wrapper.send_joint_command(tau)
             p.stepSimulation()
             self.sim2signal_()
             self.steps_ += 1
 
-            if delay != 0. and self.steps_ % 17 == 0: # what is this magic nbr?
+            # TODO: what is this magic nbr?
+            if delay != 0. and self.steps_ % 17 == 0:
                 time.sleep(delay)
 
     def reset_state(self, q, dq):

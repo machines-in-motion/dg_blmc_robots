@@ -32,7 +32,7 @@ pd = ControlPD("PDController")
 pd.Kp.value = 2 * (5.,)
 pd.Kd.value = 2 * (0.1,)
 # define the desired position and set teh desired velocity 0.
-pd.desiredposition.value = np.array(q[1:]).T[0].tolist()
+pd.desiredposition.value = 2 * (0.,)
 pd.desiredvelocity.value = 2 * (0.,)
 # plug the desired quantity signals in the pd controller.
 plug(robot.device.joint_positions, pd.position)
@@ -41,14 +41,6 @@ plug(robot.device.joint_velocities, pd.velocity)
 # plug the ouput of the pd controller to the robot motor torques
 plug(pd.control, robot.device.ctrl_joint_torques)
 
-# Run the robot (here the simulator) for 5000 steps (= 5 seconds). The second
-# optional parameter specifies how much to sleep every 1/60. steps. This allows
-# a plugged visualizer to display the evolving trajectory.
-# for i in range(5):
-#     # Pull the robot upwards again.
-#     robot.reset_state(q, dq)
-#
-#     robot.run(1000, 1./60.)
-#     print("Contact forces:", robot.device.ati_force.value)
-#
-# raw_input("Press Enter to continue...")
+robot.run(5000, 1./60.)
+
+raw_input("Press Enter to continue...")
