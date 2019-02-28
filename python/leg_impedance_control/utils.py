@@ -13,7 +13,8 @@ from pinocchio.robot_wrapper import RobotWrapper
 from pinocchio.utils import zero
 
 from dynamic_graph import plug
-from dynamic_graph.sot.core import *
+# from dynamic_graph.sot.core import *
+from dynamic_graph.sot.core import Selec_of_vector
 import dynamic_graph.sot.dynamics_pinocchio as dp
 from dynamic_graph.sot.core.operator import *
 from dynamic_graph.sot.core.vector_constant import VectorConstant
@@ -71,12 +72,11 @@ def stack_zero(sig, entityName):
     return op.sout
 
 def compute_impedance_torques(jac, errors_vec, names = ["","","",""]):
-    '''
-    TODO: add a selector matrix
-    '''
     if len(names) != 4:
-        print("compute_impedance_torques requires 4 unique names for entities. " 
+        print("ERROR: compute_impedance_torques requires 4 unique names for entities. " 
                +"You can also leave this empty, and it will generate names.")
+    if names[0] == "":
+        print("WARNING: it is recommended to give names to every entity yoursef.")
 
     ##Transpose tau = JacT*(errors)
     ## errors = [x - xdes, y-ydes]T
@@ -85,7 +85,8 @@ def compute_impedance_torques(jac, errors_vec, names = ["","","",""]):
     errors_vec = mul_double_vec(-1.0, errors_vec, names[1])
     control_torques = mul_mat_vec(jac_T, errors_vec, 
                                         names[2])
-    ## selecting only 2nd and 3rd element in torques as element one represent base acceleration
+    # selecting only 2nd and 3rd element in torques as element one 
+    # represents base acceleration
     select_mat = Selec_of_vector(names[3])
     select_mat.selec(1,3) # This is not generic... should have a selector matrix
     plug(control_torques, select_mat.signal('sin'))
