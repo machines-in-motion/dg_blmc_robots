@@ -14,7 +14,7 @@ from py_dg_blmc_robots.stuggihop import StuggihopConfig
 import dynamic_graph.sot.dynamics_pinocchio as dyn_pin
 
 from leg_impedance_control.utils import hom2pos, stack_zero, constVector, mul_double_vec, mul_mat_vec
-from leg_impedance_control.utils import compute_pos_diff, stack_two_vectors, Mat_transpose
+from leg_impedance_control.utils import compute_pos_diff, stack_two_vectors, Mat_transpose, add_vec_vec
 
 from dynamic_graph.sot.core import Selec_of_vector
 from dynamic_graph.sot.core.operator import Multiply_double_vector, Add_of_double
@@ -47,7 +47,7 @@ q[2] = 0.8
 q[3] = -1.6
 
 # Update the initial state of the robot.
-robot.set_gravity((0,0,-9.81))
+robot.set_gravity((0,0,-10.0))
 robot.reset_state(q, dq)
 
 # Plug the position and velocity from the robot into the robot_dg.
@@ -79,54 +79,119 @@ def compute_impedance_torques(jac, errors_vec, names = ["","","",""]):
     errors_vec = mul_double_vec(-1.0, errors_vec, names[1])
     control_torques = mul_mat_vec(jac_T, errors_vec, 
                                         names[2])
-    # selecting only 2nd and 3rd element in torques as element one 
-    # represents base acceleration
+    # selecting only 3rd and 4th element in torques as element one 
+    # represents base accelerations
     select_mat = Selec_of_vector(names[3])
     select_mat.selec(2,4) # This is not generic... should have a selector matrix
     plug(control_torques, select_mat.signal('sin'))
     return select_mat.signal('sout')
 
-def impedance_controller(robot_dg, kv, des_pos):
-    ##### Single leg impedance controller
+# def impedance_controller(robot_dg, kv, des_pos):
+#     ##### Single leg impedance controller
 
-    xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip")
-    xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot")
-    # relative foot position to hip
-    rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip, "rel_pos_foot")
+#     xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip")
+#     xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot")
+#     # relative foot position to hip
+#     rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip, "rel_pos_foot")
 
-    jac = robot_dg.jac_contact
-    pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error")
-    # Stacking rotations after cartesian pos_error, to make this into a twist,
-    # since the Jacobian has been taken w.r.t. to a twist (pos, rot)
-    pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0,0.0],
-                                'stack_to_twist'), 3, 3)
+#     jac = robot_dg.jac_contact
+#     pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error")
+#     # Stacking rotations after Cartesian pos_error, to make this into a twist,
+#     # since the Jacobian has been taken w.r.t. to a twist (pos, rot)
+#     pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0,0.0],
+#                                 'stack_to_twist'), 3, 3)
 
-    mul_double_vec_op = Multiply_double_vector("gain_multiplication")
-    plug(kv, mul_double_vec_op.sin1)
-    plug(pos_error, mul_double_vec_op.sin2)
-    pos_error_with_gains = mul_double_vec_op.sout
+#     mul_double_vec_op = Multiply_double_vector("gain_multiplication")
+#     plug(kv, mul_double_vec_op.sin1)
+#     plug(pos_error, mul_double_vec_op.sin2)
+#     pos_error_with_gains = mul_double_vec_op.sout
 
-    control_torques = compute_impedance_torques(jac, pos_error_with_gains,
+#     control_torques = compute_impedance_torques(jac, pos_error_with_gains,
+#         ["jacTranspose","neg_op","compute_control_torques","impedance_torques"])
+#     # control_torques = 0
+#     return control_torques
+
+def impedance_controller(robot_dg, kv, des_pos, kd = None, des_vel = None):
+
+    if kd == None:
+        xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip")
+        xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot")
+        # relative foot position to hip
+        rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip, "rel_pos_foot")
+
+        jac = robot_dg.jac_contact
+        pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error")
+        # Stacking rotations after Cartesian pos_error, to make this into a twist,
+        # since the Jacobian has been taken w.r.t. to a twist (pos, rot)
+        pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0,0.0],
+                                    'stack_to_twist'), 3, 3)
+
+        mul_double_vec_op = Multiply_double_vector("gain_multiplication")
+        plug(kv, mul_double_vec_op.sin1)
+        plug(pos_error, mul_double_vec_op.sin2)
+        virtual_force = mul_double_vec_op.sout
+    else:
+        # TODO: slim down
+        ## Impedance control implementation
+        xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip")
+        xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot")
+        # relative foot position to hip
+        rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip, "rel_pos_foot")
+        ## removing the values of the base
+        jac = robot_dg.jac_contact
+        pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error")
+        # Stacking rotations after Cartesian pos_error, to make this into a twist,
+        # since the Jacobian has been taken w.r.t. to a twist (pos, rot)
+        pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0, 0.0],
+                                    'stack_to_twist'), 3, 3)
+        mul_double_vec_op1 = Multiply_double_vector("gain_multiplication_pos")
+        plug(kv, mul_double_vec_op1.sin1)
+        plug(pos_error, mul_double_vec_op1.sin2)
+        pos_error_with_gains = mul_double_vec_op1.sout
+
+        rel_vel_foot = mul_mat_vec(jac, robot_dg.velocity, "rel_vel_foot")
+        vel_error = compute_pos_diff(rel_vel_foot, des_vel, 'vel_error')
+        vel_error = stack_two_vectors(vel_error, constVector([0.0, 0.0, 0.0],
+                                    'stack_to_twist'), 3, 3)
+
+        mul_double_vec_op2 = Multiply_double_vector("gain_multiplication_vel")
+        plug(Kd, mul_double_vec_op2.sin1)
+        plug(vel_error, mul_double_vec_op2.sin2)
+        vel_error_with_gains = mul_double_vec_op2.sout
+
+        ### virtual-force =kv*(pos_error) + Kd*(vel_error)
+        virtual_force = add_vec_vec(pos_error_with_gains, vel_error_with_gains, "virtual_force")
+    control_torques = compute_impedance_torques(jac, virtual_force,
         ["jacTranspose","neg_op","compute_control_torques","impedance_torques"])
-    # control_torques = 0
+
     return control_torques
 
 ######## CONTROL ########
 
 # For making gain input dynamic through terminal
 # TODO: use a const instead....
-add = Add_of_double('mult')
+add = Add_of_double('kv')
 add.sin1.value = 0
 ### Change this value for different gains
 add.sin2.value = 120.0
 kv = add.sout # virtual spring stiffness
 
+kd = Add_of_double('Kd')
+kd.sin1.value = 0
+### Change this value for different gains
+kd.sin2.value = 10.0
+Kd = kd.sout
+
 # in end-effector cartesian frame (x-y-z)
 des_pos = constVector([0.0, 0.0, -0.2],"pos_des")
 
+# in end-effector cartesian frame (x-y-z)
+des_vel = constVector([0.0, 0.0, 0.0],"pos_vel")
+
 ## Impdance control implementation
 
-control_torques = impedance_controller(robot_dg, kv, des_pos)
+# control_torques = impedance_controller(robot_dg, kv, des_pos)
+control_torques = impedance_controller(robot_dg, kv,  des_pos,kd, des_vel)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 
@@ -147,7 +212,7 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 
 ##### RUNNING SIMULATION
-robot.run(500000, 1./60.)
+robot.run(50000, 1./60.)
 
 ######## robot simulation ################################################
 
