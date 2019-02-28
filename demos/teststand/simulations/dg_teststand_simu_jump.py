@@ -26,7 +26,6 @@ from leg_impedance_control.utils import *
 from leg_impedance_control.traj_generators import *
 
 
-import py_dg_blmc_robots
 from py_dg_blmc_robots.teststand import get_teststand_robot
 from py_dg_blmc_robots.teststand import TeststandConfig
 
