@@ -22,11 +22,10 @@ from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
 ############################################################################
 
-from leg_impedance_control.utils import *
-from leg_impedance_control.traj_generators import *
+# from leg_impedance_control.utils import *
+# from leg_impedance_control.traj_generators import *
 
 ##########################################################################################
-
 
 ###################################################################################
 robot_py = TeststandConfig.buildRobotWrapper()

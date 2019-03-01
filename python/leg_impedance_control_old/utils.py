@@ -76,7 +76,7 @@ def compute_impedance_torques(jac, errors_vec, names = ["","","",""]):
     TODO: add a selector matrix. Currently the selection is not generic at all.
     """
     if len(names) != 4:
-        print("ERROR: 4 unique names are required for entities. " 
+        print("ERROR: 4 unique names are required for entities. "
                +"You can also leave this empty, and it will generate names.")
     if names[0] == "":
         print("WARNING: it is recommended to name every entity yoursef.")
@@ -86,7 +86,7 @@ def compute_impedance_torques(jac, errors_vec, names = ["","","",""]):
     jac_T = Mat_transpose(jac, names[0]) # TODO: Is this safe?
     ## multiplying negative
     errors_vec = mul_double_vec(-1.0, errors_vec, names[1])
-    control_torques = mul_mat_vec(jac_T, errors_vec, 
+    control_torques = mul_mat_vec(jac_T, errors_vec,
                                         names[2])
     select_mat = Selec_of_vector(names[3])
     select_mat.selec(2,4) # This is not generic... should have a selector matrix
@@ -99,12 +99,12 @@ def impedance_controller(robot_dg, kv, des_pos, kd = None, des_vel = None,
     xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip"+ent_append)
     xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot"+ent_append)
     # relative foot position to hip
-    rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip, 
+    rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip,
         "rel_pos_foot"+ent_append)
 
     jac = robot_dg.jac_contact
     pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error"+ent_append)
-    # Stacking rotations after Cartesian pos_error, to make this into 
+    # Stacking rotations after Cartesian pos_error, to make this into
     # an SE3 pos,  since the Jacobian has been taken w.r.t. this (pos, rot)
     pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0,0.0],
                                 "stack_to_se3_p"+ent_append), 3, 3)
@@ -119,10 +119,10 @@ def impedance_controller(robot_dg, kv, des_pos, kd = None, des_vel = None,
         "impedance_torques"]])
     else:
         # also compute virtual damping
-        rel_vel_foot = mul_mat_vec(jac, robot_dg.velocity, 
+        rel_vel_foot = mul_mat_vec(jac, robot_dg.velocity,
             "rel_vel_foot"+ent_append)
-        vel_error = compute_pos_diff(rel_vel_foot,  stack_two_vectors(des_vel, 
-            constVector([0.0, 0.0, 0.0], "stack_to_se3_v"+ent_append), 3, 3), 
+        vel_error = compute_pos_diff(rel_vel_foot,  stack_two_vectors(des_vel,
+            constVector([0.0, 0.0, 0.0], "stack_to_se3_v"+ent_append), 3, 3),
         "vel_error"+ent_append)
         mul_double_vec_op2 = Multiply_double_vector(
             "gain_multiplication_vel"+ent_append)
@@ -131,7 +131,7 @@ def impedance_controller(robot_dg, kv, des_pos, kd = None, des_vel = None,
         virtual_damper_force = mul_double_vec_op2.sout
 
         ### virtual-force =kv*(pos_error) + Kd*(vel_error)
-        virtual_force = add_vec_vec(virtual_spring_force, virtual_damper_force, 
+        virtual_force = add_vec_vec(virtual_spring_force, virtual_damper_force,
             "virtual_force"+ent_append)
         control_torques = compute_impedance_torques(jac, virtual_force,
         [s+ent_append for s in ["jacTranspose","neg_op","comp_ctrl_torques",
