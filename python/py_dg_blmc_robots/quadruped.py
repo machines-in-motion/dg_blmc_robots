@@ -21,7 +21,7 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
-    def __init__(self):
+    def __init__(self, use_fixed_base = False):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
@@ -37,7 +37,8 @@ class QuadrupedBulletRobot(Robot):
 
         self.urdf_path = QuadrupedConfig.urdf_path
         self.robotId = p.loadURDF(self.urdf_path, robotStartPos,
-            robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE)
+            robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE,
+            useFixedBase=use_fixed_base)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
@@ -54,7 +55,7 @@ class QuadrupedBulletRobot(Robot):
 
         #p.setGravity(0,0, 0)
         p.setGravity(0,0, -9.81)
-        p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
+        p.setPhysicsEngineParameter(fixedTimeStep=1.0/1000.0, numSubSteps=1)
 
         self.base_link_name = "base_link"
         self.joint_names = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE',
@@ -190,5 +191,5 @@ class QuadrupedBulletRobot(Robot):
               print ("    - contact_damping : " , contact_damping)
               print ("    - contact_stiffness : " , contact_stiffness)
 
-def get_quadruped_robot():
-    return QuadrupedBulletRobot()
+def get_quadruped_robot(use_fixed_base=False):
+    return QuadrupedBulletRobot(use_fixed_base)
