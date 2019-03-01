@@ -36,12 +36,12 @@ class QuadrupedBulletRobot(Robot):
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = QuadrupedConfig.urdf_path
-        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, 
+        self.robotId = p.loadURDF(self.urdf_path, robotStartPos,
             robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
-        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) + 
+        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) +
         '/urdf']
         self.pin_robot = QuadrupedConfig.buildRobotWrapper()
 
@@ -49,16 +49,17 @@ class QuadrupedBulletRobot(Robot):
         num_joints = p.getNumJoints(self.robotId)
 
         for ji in range(num_joints):
-            p.changeDynamics(self.robotId, ji, linearDamping=.04, 
+            p.changeDynamics(self.robotId, ji, linearDamping=.04,
                 angularDamping=0.04, restitution=0.0, lateralFriction=0.5)
 
+        #p.setGravity(0,0, 0)
         p.setGravity(0,0, -9.81)
         p.setPhysicsEngineParameter(1e-3, numSubSteps=1)
 
         self.base_link_name = "base_link"
-        self.joint_names = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE', 
+        self.joint_names = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE',
         'HL_KFE', 'HR_HFE', 'HR_KFE']
-        controlled_joints = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE', 
+        controlled_joints = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE',
         'HL_KFE', 'HR_HFE', 'HR_KFE']
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
@@ -73,7 +74,7 @@ class QuadrupedBulletRobot(Robot):
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
         self.signal_base_vel_ = VectorConstant("bullet_quadruped_base_vel")
-        self.signal_base_pos_.sout.value = np.hstack([robotStartPos, 
+        self.signal_base_pos_.sout.value = np.hstack([robotStartPos,
             robotStartOrientation]).tolist()
         self.signal_base_vel_.sout.value = [0., 0., 0., 0., 0., 0.]
 
@@ -88,7 +89,7 @@ class QuadrupedBulletRobot(Robot):
 
         self.print_physics_engine_params()
         #self.print_physics_params()
-        super(QuadrupedBulletRobot, self).__init__('bullet_quadruped', 
+        super(QuadrupedBulletRobot, self).__init__('bullet_quadruped',
             self.device)
 
 
@@ -99,14 +100,14 @@ class QuadrupedBulletRobot(Robot):
         return self.signal_base_pos_.sout, self.signal_base_vel_.sout
 
     def sim2signal_(self):
-        """ Reads the state from the simulator and fills 
+        """ Reads the state from the simulator and fills
         the corresponding signals. """
 
         # TODO: Handle the following signals:
         # - joint_target_torques
         # - joint_torques
 
-        q, dq = [np.array(t).reshape(-1).tolist() for t in 
+        q, dq = [np.array(t).reshape(-1).tolist() for t in
         self.wrapper.get_state()]
 
         device = self.device
@@ -115,7 +116,7 @@ class QuadrupedBulletRobot(Robot):
 
         self.signal_base_pos_.sout.value = q[0:7]
         self.signal_base_vel_.sout.value = dq[0:6]
-        
+
 
     def run(self, steps=1, delay=0.):
         """
@@ -124,7 +125,7 @@ class QuadrupedBulletRobot(Robot):
         17 (~= 1000/60) simulation steps. This allows to adjust the timing for
         visualization at 60 Hz.
         """
-        
+
         for i in range(steps):
             self.device.execute_graph()
             self.wrapper.send_joint_command(np.matrix(
@@ -137,13 +138,13 @@ class QuadrupedBulletRobot(Robot):
                 time.sleep(delay)
 
     def reset_state(self, q, dq):
-        """ Sets the bullet simulator and the signals to 
+        """ Sets the bullet simulator and the signals to
         the provided state values. """
         self.wrapper.reset_state(q, dq)
         self.sim2signal_()
 
     def set_gravity(self, vec):
-        """ Sets gravity in the simulator to (x,y,z), where z is 
+        """ Sets gravity in the simulator to (x,y,z), where z is
         the vertical axis. """
         p.setGravity(vec[0],vec[1], vec[2])
 
