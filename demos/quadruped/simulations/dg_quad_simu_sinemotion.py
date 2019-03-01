@@ -53,7 +53,7 @@ Kd = kp.sout
 
 
 
-control_torques = quad_impedance_controller(robot, des_pos, des_pos, des_pos, des_pos, des_vel, Kp, Kd )
+control_torques = quad_impedance_controller(robot, des_pos, des_pos, des_pos, des_pos, Kp)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 

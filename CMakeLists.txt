@@ -20,7 +20,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 set(CATKIN_PKGS ${CATKIN_PKGS}
   robot_properties_quadruped
   robot_properties_teststand
-  robot_properties_stuggihop
+#  robot_properties_stuggihop
   blmc_drivers
   blmc_robots
   #yaml_cpp
