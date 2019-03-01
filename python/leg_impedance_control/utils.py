@@ -23,50 +23,50 @@ from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 ################### Initialisers #############################################
 
 def constVector(val, entityName):
-     """
-     ## This function initialises an constant vector
-     ## Input : array (python list)
-     """
+    """
+    ## This function initialises an constant vector
+    ## Input : array (python list)
+    """
     op = VectorConstant(entityName).sout
     op.value = list(val)
     return op
 
 def matrixConstant(val):
-     """
-     ## This function initialises an constant matrix
-     ## Input : matrix (python array)
-     """
+    """
+    ## This function initialises an constant matrix
+    ## Input : matrix (python array)
+    """
     op = MatrixConstant("").sout
     op.value = val
     return op
 
 
 
-#################### Operators ################################################
+    #################### Operators ################################################
 
- def stack_two_vectors(vec1, vec2, vec1_size, vec2_size):
-     """
-     ## This function stacks two vectors
-     ## Input : Constant vector (not numpy arrays)
-              : Constant vector (not numpy arrays)
-              : size of first vector (int)
-              : size of first vector (int)
-     """
-     op = Stack_of_vector("")
-     op.selec1(0, vec1_size)
-     op.selec2(0, vec2_size)
-     plug(vec1, op.signal('sin1'))
-     plug(vec2, op.signal('sin2'))
-     return op.signal('sout')
+def stack_two_vectors(vec1, vec2, vec1_size, vec2_size):
+    """
+    ## This function stacks two vectors
+    ## Input : Constant vector (not numpy arrays)
+          : Constant vector (not numpy arrays)
+          : size of first vector (int)
+          : size of first vector (int)
+    """
+    op = Stack_of_vector("")
+    op.selec1(0, vec1_size)
+    op.selec2(0, vec2_size)
+    plug(vec1, op.signal('sin1'))
+    plug(vec2, op.signal('sin2'))
+    return op.signal('sout')
 
 def stack_zero(vec, entityName):
-     """
-     ## This function stacks a zeros before the vector
-     ## Input : Constant vector (not numpy arrays)
-              : Constant vector (not numpy arrays)
-              : size of first vector (int)
-              : size of first vector (int)
-     """
+    """
+    ## This function stacks a zeros before the vector
+    ## Input : Constant vector (not numpy arrays)
+          : Constant vector (not numpy arrays)
+          : size of first vector (int)
+          : size of first vector (int)
+    """
     zero = VectorConstant("zero")
     zero.sout.value = (0.,)
 
@@ -81,8 +81,8 @@ def selec_vector(vec, start_index, end_index, entityName):
     """
     ## This function selects a part of the input vector (slices vector)
     ## Input : Constant vector (not numpy array)
-             : start index (int)
-             : end index (int)
+         : start index (int)
+         : end index (int)
     ## Ex    : selec_vector([1,2,3,4], 1,3) = [2,3] {input must be a const vector}
     """
     op = Selec_of_vector(entityName)
@@ -91,7 +91,7 @@ def selec_vector(vec, start_index, end_index, entityName):
     return op.sout
 
 
-###################  Math Operators ##########################################
+    ###################  Math Operators ##########################################
 
 def add_vec_vec(vec1, vec2, entityName):
     """
@@ -144,7 +144,7 @@ def mul_double_vec(doub, vec, entityName):
     plug(vec, mul.signal('sin2'))
     return mul.sout
 
-######################### Robotics operators ##################################
+    ######################### Robotics operators ##################################
 
 def hom2pos(robot_joint_signal, entityName):
     """

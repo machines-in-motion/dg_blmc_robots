@@ -1,18 +1,19 @@
 ## This code is a simulation for the impedance controller
 
 ## Author: Avadesh Meduri
-## Date: 12/02./2019
+## Date: 1/03/2019
 
+from leg_impedance_control.utils import *
+from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller
 
+##########################################################################################
 import py_dg_blmc_robots
 from py_dg_blmc_robots.quadruped import get_quadruped_robot
 
 import pinocchio as se3
 from pinocchio.utils import zero
 
-from leg_impedance_control.utils import *
-from leg_impedance_control.controller import *
-##########################################################################################
+
 # Get the robot corresponding to the quadruped.
 robot = get_quadruped_robot()
 
@@ -34,15 +35,34 @@ robot.reset_state(q, dq)
 #########################################################################################
 
 # ## setting desired position
-pos_des = constVector([0.0, 0.0, -0.25], "pos_des")
-##For making gain input dynamic through terminal
-add = Add_of_double('gain')
-add.sin1.value = 0
-### Change this value for different gains
-add.sin2.value = 100.0
-gain_value = add.sout
+des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0],
+                        "pos_des")
 
-control_torques = quad_impedance_controller(robot, pos_des, pos_des, pos_des, pos_des, gain_value)
+des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                        "vel_des")
+
+##For making gain input dynamic through terminal
+add_kp = Add_of_double('kp')
+add_kp.sin1.value = 0
+### Change this value for different gains
+add_kp.sin2.value = 100.0
+kp = add_kp.sout
+
+##For making gain input dynamic through terminal
+add_kd = Add_of_double('kd')
+add_kd.sin1.value = 0
+### Change this value for different gains
+add_kd.sin2.value = 0.01
+kd = add_kd.sout
+
+quad_imp_ctrl = quad_leg_impedance_controller(robot)
+control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 

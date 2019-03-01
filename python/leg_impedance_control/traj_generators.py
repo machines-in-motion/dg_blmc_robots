@@ -7,7 +7,7 @@ import numpy as np
 from numpy import math
 import dynamic_graph.sot.tools
 
-from utils import *
+from leg_impedance_control.utils import *
 
 #########################################################################
 
@@ -37,7 +37,7 @@ def linear_sine_generator(amplitude, omega, phase , bias ,entityName):
     osc_vel.phase.value = osc_pos.phase.value + np.pi/2.0
     osc_vel.bias.value = 0
 
-    unit_vector_pos = constVector([0.0, 0.0, 1.0], "unit_vector_pos")
+    unit_vector_pos = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_vector_pos")
     unit_vector_vel = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_vector_vel")
 
     pos_traj = mul_double_vec_2(osc_pos.sout, unit_vector_pos, "des_position")
@@ -59,7 +59,6 @@ def circular_trajectory_generator(radius, omega, phase, entityName):
     osc_y.omega.value = omega*np.pi
     osc_y.magnitude.value = radius
     osc_y.bias.value = phase + np.pi/2.0
-
 
 
 #############################################################################
