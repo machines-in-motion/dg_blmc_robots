@@ -107,7 +107,11 @@ class TeststandBulletRobot(Robot):
         # else:
         #     device.ati_force.value = 3 * [0.]
 
-
+    def set_gravity(self, vec):
+        """ Sets gravity in the simulator to (x,y,z), where z is 
+        the vertical axis. """
+        p.setGravity(vec[0],vec[1], vec[2])
+        
     def run(self, steps=1, delay=0.):
         tau = zero(self.wrapper.nv)
         for i in range(steps):

@@ -25,8 +25,8 @@ class QuadrupedBulletRobot(Robot):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
-        plain_urdf = rospkg.RosPack().get_path("robot_properties_quadruped") + \
-        "/urdf/plane_with_restitution.urdf"
+        plain_urdf = (rospkg.RosPack().get_path("robot_properties_quadruped") +
+                      "/urdf/plane_with_restitution.urdf")
         self.planeId = p.loadURDF(plain_urdf)
 
         print("Loaded plain.")
@@ -87,8 +87,11 @@ class QuadrupedBulletRobot(Robot):
 
         self.steps_ = 0
 
+        self.print_physics_engine_params()
+        #self.print_physics_params()
         super(QuadrupedBulletRobot, self).__init__('bullet_quadruped',
             self.device)
+
 
     def pinocchio_robot_wrapper(self):
         return self.pin_robot
@@ -144,6 +147,48 @@ class QuadrupedBulletRobot(Robot):
         """ Sets gravity in the simulator to (x,y,z), where z is
         the vertical axis. """
         p.setGravity(vec[0],vec[1], vec[2])
+
+    def print_physics_engine_params(self):
+        params = p.getPhysicsEngineParameters(self.physicsClient)
+        print ("physics_engine_params:")
+        for key in params:
+            print("    - ", key, ": ", params[key])
+
+        params = p.getPhysicsEngineParameters()
+        print ("physics_engine_params:")
+        for key in params:
+            print("    - ", key, ": ", params[key])
+
+    def print_physics_params(self):
+        # Query all the joints.
+        num_joints = p.getNumJoints(self.robotId)
+
+        for ji in range(num_joints):
+              (mass,
+               lateral_friction,
+               local_inertia_diag,
+               local_inertia_pos,
+               local_inertia_ori,
+               resitution,
+               rolling_friction,
+               spinning_friction,
+               contact_damping,
+               contact_stiffness) = p.getDynamicsInfo(
+                  bodyUniqueId=self.robotId,
+                  linkIndex=ji)
+              # for el in dynamics_info:
+              #     print(el)
+              print ("link ", ji)
+              print ("    - mass : " , mass)
+              print ("    - lateral_friction : " , lateral_friction)
+              print ("    - local_inertia_diag : " , local_inertia_diag)
+              print ("    - local_inertia_pos : " , local_inertia_pos)
+              print ("    - local_inertia_ori : " , local_inertia_ori)
+              print ("    - resitution : " , resitution)
+              print ("    - rolling_friction : " , rolling_friction)
+              print ("    - spinning_friction : " , spinning_friction)
+              print ("    - contact_damping : " , contact_damping)
+              print ("    - contact_stiffness : " , contact_stiffness)
 
 def get_quadruped_robot():
     return QuadrupedBulletRobot()
