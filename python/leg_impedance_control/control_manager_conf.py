@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 TAU_MAX = 10.0
 CURRENT_MAX = 3.
@@ -37,7 +37,7 @@ mapJointLimits={
   7 : [-1.5, 1.5],
 }
 
-fMax=numpy.array([100.0,100.0,300.0,80.0,80.0,30.0])
+fMax=np.array([100.0,100.0,300.0,80.0,80.0,30.0])
 fMin=-fMax
 mapForceIdToForceLimits={
   0: [fMin,fMax],

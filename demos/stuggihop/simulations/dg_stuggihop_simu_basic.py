@@ -12,7 +12,7 @@ from dynamic_graph_manager.dg_tools import PDController
 from dynamic_graph.sot.core.operator import Stack_of_vector
 
 
-# Get the robot corresponding to the quadruped.
+# Get the robot corresponding to the robot.
 robot = get_stuggihop_robot()
 
 # Define the desired position.
