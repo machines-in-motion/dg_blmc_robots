@@ -65,7 +65,7 @@ class QuadrupedBulletRobot(Robot):
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
             controlled_joints,
-            ['HL_KFE', 'HR_KFE', 'FL_KFE', 'FR_KFE']
+            ['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']
         )
 
         # Initialize the device.
