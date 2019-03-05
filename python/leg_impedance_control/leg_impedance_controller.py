@@ -88,5 +88,21 @@ class leg_impedance_controller():
 
         return control_torques
 
+    def record_data(self, robot):
+
+        robot.add_trace("rel_pos_foot" + self.leg_name, "sout")
+        robot.add_ros_and_trace("rel_pos_foot" + self.leg_name, "sout")
+
+        robot.add_trace("rel_vel_foot" + self.leg_name, "sout")
+        robot.add_ros_and_trace("rel_vel_foot" + self.leg_name, "sout")
+
+        robot.add_trace("pos_error" + self.leg_name, "sout")
+        robot.add_ros_and_trace("pos_error" + self.leg_name, "sout")
+
+        robot.add_trace("vel_error" + self.leg_name, "sout")
+        robot.add_ros_and_trace("vel_error" + self.leg_name, "sout")
+
+
+
 # def get_leg_impedance_controller():
 #     return leg_impedance_controller

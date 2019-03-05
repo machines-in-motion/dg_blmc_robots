@@ -58,7 +58,7 @@ kp = add_kp.sout
 add_kd = Add_of_double('kd')
 add_kd.sin1.value = 0
 ### Change this value for different gains
-add_kd.sin2.value = 0.01
+add_kd.sin2.value = 0.0
 kd = add_kd.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)

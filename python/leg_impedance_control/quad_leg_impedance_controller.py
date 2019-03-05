@@ -14,10 +14,10 @@ class quad_leg_impedance_controller():
     def __init__(self, robot):
         self.robot = robot
 
-        self.imp_ctrl_leg_fl = leg_impedance_controller("leg_fl")
-        self.imp_ctrl_leg_fr = leg_impedance_controller("leg_fr")
-        self.imp_ctrl_leg_hl = leg_impedance_controller("leg_hl")
-        self.imp_ctrl_leg_hr = leg_impedance_controller("leg_hr")
+        self.imp_ctrl_leg_fl = leg_impedance_controller("_fl")
+        self.imp_ctrl_leg_fr = leg_impedance_controller("_fr")
+        self.imp_ctrl_leg_hl = leg_impedance_controller("_hl")
+        self.imp_ctrl_leg_hr = leg_impedance_controller("_hr")
 
     def return_control_torques(self, kp, des_pos, kd=None, des_vel=None):
         """
@@ -101,3 +101,35 @@ class quad_leg_impedance_controller():
         control_torques = stack_two_vectors(control_torques_fl_fr,control_torques_hl_hr, 4, 4)
 
         return control_torques
+
+
+    def record_data(self, record_vicon = False):
+        self.imp_ctrl_leg_fl.record_data(self.robot)
+        self.imp_ctrl_leg_fr.record_data(self.robot)
+        self.imp_ctrl_leg_hl.record_data(self.robot)
+        self.imp_ctrl_leg_hr.record_data(self.robot)
+
+        ########################## Vicon #############################################
+        if record_vicon:
+            from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+
+            # Create vicon tracker.
+            vicon_client = ViconClientEntity("vicon_client")
+
+            #print("Display the initial state of the entity")
+            #print("Commands: ", vicon_client.commands())
+            #print("Signals: ", vicon_client.displaySignals())
+            #print("")
+
+            host_name_quadruped = '10.32.24.190:801'
+            #print("connect to the host")
+            vicon_client.connect_to_vicon(host_name_quadruped)
+            #print("")
+
+            robot_vicon_name = 'quadruped'
+            #print("create the signals for the {}/{}".format(robot_vicon_name, robot_vicon_name))
+            vicon_client.add_object_to_track("{}/{}".format(robot_vicon_name, robot_vicon_name))
+            #print("from now the signal {} is available:".format(robot_vicon_name))
+            vicon_client.displaySignals()
+            # Trace and expose the vicon base.
+            self.robot.add_ros_and_trace("vicon_client", robot_vicon_name)
