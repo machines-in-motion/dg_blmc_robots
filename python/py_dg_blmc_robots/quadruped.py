@@ -65,7 +65,7 @@ class QuadrupedBulletRobot(Robot):
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
             controlled_joints,
-            ['HL_END', 'HR_END', 'FL_END', 'FR_END']
+            ['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']
         )
 
         # Initialize the device.
@@ -88,8 +88,6 @@ class QuadrupedBulletRobot(Robot):
 
         self.steps_ = 0
 
-        self.print_physics_engine_params()
-        #self.print_physics_params()
         super(QuadrupedBulletRobot, self).__init__('bullet_quadruped',
             self.device)
 
@@ -151,11 +149,6 @@ class QuadrupedBulletRobot(Robot):
 
     def print_physics_engine_params(self):
         params = p.getPhysicsEngineParameters(self.physicsClient)
-        print ("physics_engine_params:")
-        for key in params:
-            print("    - ", key, ": ", params[key])
-
-        params = p.getPhysicsEngineParameters()
         print ("physics_engine_params:")
         for key in params:
             print("    - ", key, ": ", params[key])
