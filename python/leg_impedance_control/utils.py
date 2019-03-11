@@ -90,8 +90,31 @@ def selec_vector(vec, start_index, end_index, entityName):
     plug(vec, op.signal('sin'))
     return op.sout
 
+def component_of_vector(vector, index, entityName):
+    """
+    ## This function selects a compnent of the input vector
+    ## Input : Constant vector (not numpy array)
+         : index (int)
+    """
+    comp_of_vect = Component_of_vector(entityName)
+    comp_of_vect.setIndex(index)
+    plug(vector, comp_of_vect.sin)
+    return comp_of_vect.sout
+
 
     ###################  Math Operators ##########################################
+
+def add_doub_doub(db1, db2, entityName):
+    """
+    ## This function adds two doubles
+    ## Input : db1 - double (number)
+             : db2 - double (value)
+    """
+    add = Add_of_double(entityName)
+    add.sin1.value = db1
+    add.sin2.value = db2
+    return add
+
 
 def add_vec_vec(vec1, vec2, entityName):
     """

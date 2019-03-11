@@ -6,6 +6,8 @@
 
 from leg_impedance_control.utils import *
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
+from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+
 
 ###############################################################################
 
@@ -102,34 +104,81 @@ class quad_leg_impedance_controller():
 
         return control_torques
 
-
     def record_data(self, record_vicon = False):
         self.imp_ctrl_leg_fl.record_data(self.robot)
         self.imp_ctrl_leg_fr.record_data(self.robot)
         self.imp_ctrl_leg_hl.record_data(self.robot)
         self.imp_ctrl_leg_hr.record_data(self.robot)
 
-        ########################## Vicon #############################################
-        if record_vicon:
-            from dynamic_graph_manager.vicon_sdk import ViconClientEntity
 
-            # Create vicon tracker.
-            vicon_client = ViconClientEntity("vicon_client")
+class quad_com_control():
+    def __init__(self, robot, client_name = "vicon_client" , vicon_ip = '10.32.24.190:801'):
 
-            #print("Display the initial state of the entity")
-            #print("Commands: ", vicon_client.commands())
-            #print("Signals: ", vicon_client.displaySignals())
-            #print("")
+        self.robot = robot
+        self.client_name = client_name
+        self.host_name_quadruped = vicon_ip
+        self.robot_vicon_name = "quadruped"
 
-            host_name_quadruped = '10.32.24.190:801'
-            #print("connect to the host")
-            vicon_client.connect_to_vicon(host_name_quadruped)
-            #print("")
+        self.vicon_client = ViconClientEntity(self.client_name)
+        self.vicon_client.connect_to_vicon(self.host_name_quadruped)
+        self.vicon_client.displaySignals()
 
-            robot_vicon_name = 'quadruped'
-            #print("create the signals for the {}/{}".format(robot_vicon_name, robot_vicon_name))
-            vicon_client.add_object_to_track("{}/{}".format(robot_vicon_name, robot_vicon_name))
-            #print("from now the signal {} is available:".format(robot_vicon_name))
-            vicon_client.displaySignals()
-            # Trace and expose the vicon base.
-            self.robot.add_ros_and_trace("vicon_client", robot_vicon_name)
+        self.vicon_client.add_object_to_track("{}/{}".format(self.robot_vicon_name, self.robot_vicon_name))
+
+        self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_position")
+        self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_velocity_body")
+        self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_velocity_world")
+
+
+        self.vicon_client.signal(self.robot_vicon_name + "_position").recompute(0)
+        self.com_pos_bias = self.vicon_client.signal(self.robot_vicon_name + "_position")
+        self.vicon_client.signal(self.robot_vicon_name + "_velocity_body").recompute(0)
+        self.com_vel_bias = self.vicon_client.signal(self.robot_vicon_name + "_velocity_body")
+
+
+        ### To bring all COM values to a relatice co-ordinate frame
+        for t in range(1, 1000):
+            self.vicon_client.signal(self.robot_vicon_name + "_position").recompute(t)
+            self.com_pos_bias = add_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"),
+                                            self.com_pos_bias, "pos_bias_" + str(t))
+
+            self.vicon_client.signal(self.robot_vicon_name + "_velocity_body").recompute(t)
+            self.com_vel_bias = add_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_velocity_body"),
+                                            self.com_vel_bias, "vel_bias_" + str(t))
+
+        self.com_pos_bias = mul_double_vec(0.001, self.com_pos_bias, "com_pos_bias")
+        self.com_vel_bias = mul_double_vec(0.001, self.com_vel_bias, "com_vel_bias")
+
+    def return_com_control_torques(self, kp, des_pos, kd = None, des_vel = None):
+
+        self.com_pos = subtract_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"), self.com_pos_bias, "com_position")
+        self.com_vel = subtract_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_velocity_body"), self.com_vel_bias, "com_velocity")
+
+        self.pos_error = subtract_vec_vec(self.com_pos, des_pos, "com_pos_error")
+        mul_kp_gains = Multiply_double_vector("Kp_com")
+        plug(kp, mul_kp_gains.sin1)
+        plug(self.pos_error, mul_kp_gains.sin2)
+        self.pos_error_with_gains = mul_kp_gains.sout
+
+        if des_vel is not None:
+            self.vel_error = subtract_vec_vec(self.com_vel, des_vel, "com_vel_error")
+            print("Kd !!!!!")
+            mul_kd_gains = Multiply_double_vector("Kd_com")
+            plug(kd, mul_kd_gains.sin1)
+            plug(self.vel_error, mul_kd_gains.sin2)
+            self.vel_error_with_gains = mul_kd_gains.sout
+
+            self.total_error = add_vec_vec(self.pos_error_with_gains, self.vel_error_with_gains, "total_error")
+
+        else:
+            self.total_error = self.pos_error_with_gains
+
+        return self.total_error
+
+    def record_data(self):
+
+        self.robot.add_trace("com_position", "sout")
+        self.robot.add_ros_and_trace("com_position", "sout")
+
+        self.robot.add_trace("com_velocity", "sout")
+        self.robot.add_ros_and_trace("com_velocity", "sout")

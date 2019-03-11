@@ -27,6 +27,7 @@ class leg_impedance_controller():
 
         print("Warning: Robot acceleration has been set to zero")
         self.robot_dg.acceleration.value = 3 * (0.0, )
+        self.pos_error_old = None
 
     def compute_control_torques(self, start_index = 1, end_index = 3):
         '''
@@ -83,7 +84,6 @@ class leg_impedance_controller():
         else:
             self.total_error = pos_error_with_gains
 
-
         control_torques = self.compute_control_torques()
 
         return control_torques
@@ -101,8 +101,3 @@ class leg_impedance_controller():
 
         robot.add_trace("vel_error" + self.leg_name, "sout")
         robot.add_ros_and_trace("vel_error" + self.leg_name, "sout")
-
-
-
-# def get_leg_impedance_controller():
-#     return leg_impedance_controller

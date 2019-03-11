@@ -19,22 +19,28 @@ def mul_double_vec_2(doub, vec, entityName):
     plug(vec, mul.signal('sin2'))
     return mul.sout
 
+def scale_values(double, scale, entityName):
+    mul = Multiply_of_double(entityName)
+    mul.sin0.value = scale
+    plug(double, mul.sin1)
+    return mul.sout
+
 ###############################################################################
 
-def linear_sine_generator(amplitude, omega, phase , bias ,entityName):
+def sine_generator(amplitude, omega, phase , bias ,entityName):
     ## generates a y = a*sin(W.t + phi)
     osc_pos = dynamic_graph.sot.tools.Oscillator(entityName + "_pos")
     osc_pos.setTimePeriod(0.001)
-    osc_pos.omega.value = omega*np.pi
-    osc_pos.magnitude.value = amplitude
-    osc_pos.phase.value = phase
+    plug(omega, osc_pos.omega)
+    plug(amplitude, osc_pos.magnitude)
+    plug(phase, osc_pos.phase)
     osc_pos.bias.value = bias
 
     osc_vel = dynamic_graph.sot.tools.Oscillator(entityName + '_vel')
     osc_vel.setTimePeriod(0.001)
-    osc_vel.omega.value = osc_pos.omega.value
-    osc_vel.magnitude.value = osc_pos.magnitude.value*osc_pos.omega.value
-    osc_vel.phase.value = osc_pos.phase.value + np.pi/2.0
+    plug(osc_pos.omega, osc_vel.omega)
+    plug(osc_pos.magnitude, osc_vel.magnitude)
+    plug(add_doub_doub(osc_pos.phase.value, np.pi/2.0, "phase_add").sout, osc_vel.phase )
     osc_vel.bias.value = 0
 
     unit_vector_pos = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_vector_pos")

@@ -77,14 +77,14 @@ des_vel = reader_vel.vector
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
 ### Change this value for different gains
-add_kp.sin2.value = 150.0
+add_kp.sin2.value = 300.0
 kp = add_kp.sout
 
 ##For making gain input dynamic through terminal
 add_kd = Add_of_double('kd')
 add_kd.sin1.value = 0
 ### Change this value for different gains
-add_kd.sin2.value = 0.01
+add_kd.sin2.value = .5
 kd = add_kd.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)

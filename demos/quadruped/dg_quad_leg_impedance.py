@@ -5,11 +5,11 @@
 
 from leg_impedance_control.utils import *
 from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller
-
+from leg_impedance_control.traj_generators import mul_double_vec_2
 
 #########################################################################################
 
-# ## setting desired position
+## setting desired position
 des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
@@ -21,6 +21,10 @@ des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                         "vel_des")
+
+
+
+#######################################################################################
 
 ##For making gain input dynamic through terminal
 add_kp = Add_of_double('kp')
@@ -43,7 +47,7 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 #################################################################################
 
-quad_imp_ctrl.record_data(record_vicon=True)
+quad_imp_ctrl.record_data(record_vicon=False)
 
 robot.add_trace("pos_des", "sout")
 robot.add_ros_and_trace("pos_des", "sout")
