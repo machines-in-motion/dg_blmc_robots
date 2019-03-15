@@ -47,6 +47,13 @@ des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                         "vel_des")
 
+des_fff = constVector([0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0],
+                        "fff")
+
+
 ##For making gain input dynamic through terminal
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
@@ -61,8 +68,15 @@ add_kd.sin1.value = 0
 add_kd.sin2.value = 0.0
 kd = add_kd.sout
 
+##For making gain input dynamic through terminal
+add_kf = Add_of_double('kf')
+add_kf.sin1.value = 0
+### Change this value for different gains
+add_kf.sin2.value = 0.0
+kf = add_kf.sout
+
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
-control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)
+control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel, kf, des_fff)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 

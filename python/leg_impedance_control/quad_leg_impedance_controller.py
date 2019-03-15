@@ -21,12 +21,13 @@ class quad_leg_impedance_controller():
         self.imp_ctrl_leg_hl = leg_impedance_controller("_hl")
         self.imp_ctrl_leg_hr = leg_impedance_controller("_hr")
 
-    def return_control_torques(self, kp, des_pos, kd=None, des_vel=None):
+    def return_control_torques(self, kp, des_pos, kd=None, des_vel=None, kf = None, fff=None):
         """
         Input : Kp - proportional gain (double)
-              : des_pos - 1*12 vector of desired_position in current time step
+              : des_pos - 1*12 vector of desired_position in current time step (size : 1*24 )
               : Kd - derivative gain (double)
-              : des_vel - 1*12 vector of desired_velocity in current time step
+              : des_vel - 1*12 vector of desired_velocity in current time step (size : 1*24)
+              : fff - Feed forward force (size : 1*24)
         """
         self.joint_positions = self.robot.device.signal("joint_positions")
         self.joint_velocities = self.robot.device.signal("joint_velocities")
@@ -45,7 +46,12 @@ class quad_leg_impedance_controller():
         else:
             des_vel_fl = None
 
-        control_torques_fl = self.imp_ctrl_leg_fl.return_control_torques(kp, des_pos_fl, kd, des_vel_fl)
+        if fff is not None:
+            fff_fl = selec_vector(fff, 0, 6, 'fff_slicer_fl')
+        else:
+            fff_fl = None
+
+        control_torques_fl = self.imp_ctrl_leg_fl.return_control_torques(kp, des_pos_fl, kd, des_vel_fl, kf, fff_fl)
 
         ## For FR ##############################################################
 
@@ -61,7 +67,12 @@ class quad_leg_impedance_controller():
         else:
             des_vel_fr = None
 
-        control_torques_fr = self.imp_ctrl_leg_fr.return_control_torques(kp, des_pos_fr, kd, des_vel_fr)
+        if fff is not None:
+            fff_fr = selec_vector(fff, 6, 12, 'fff_slicer_fr')
+        else:
+            fff_fr = None
+
+        control_torques_fr = self.imp_ctrl_leg_fr.return_control_torques(kp, des_pos_fr, kd, des_vel_fr, kf, fff_fr)
 
         ### For HL #############################################################
 
@@ -77,7 +88,12 @@ class quad_leg_impedance_controller():
         else:
             des_vel_hl = None
 
-        control_torques_hl = self.imp_ctrl_leg_hl.return_control_torques(kp, des_pos_hl, kd, des_vel_hl)
+        if fff is not None:
+            fff_hl = selec_vector(fff, 12, 18, 'fff_slicer_hl')
+        else:
+            fff_hl = None
+
+        control_torques_hl = self.imp_ctrl_leg_hl.return_control_torques(kp, des_pos_hl, kd, des_vel_hl, kf, fff_hl)
 
         ## For HR ##############################################################
 
@@ -87,13 +103,18 @@ class quad_leg_impedance_controller():
         plug(stack_zero((joint_positions_hr),"add_base_joint_position_hr"), self.imp_ctrl_leg_hr.robot_dg.position)
         plug(stack_zero((joint_velocities_hr), "add_base_joint_velocity_hr"), self.imp_ctrl_leg_hr.robot_dg.velocity )
 
-        des_pos_hr = selec_vector(des_pos, 12, 18, 'des_position_slicer_hr')
+        des_pos_hr = selec_vector(des_pos, 18, 24, 'des_position_slicer_hr')
         if des_vel is not None:
-            des_vel_hr = selec_vector(des_vel, 12, 18, 'des_veolcity_slicer_hr')
+            des_vel_hr = selec_vector(des_vel, 18, 24, 'des_veolcity_slicer_hr')
         else:
             des_vel_hr = None
 
-        control_torques_hr = self.imp_ctrl_leg_hr.return_control_torques(kp, des_pos_hr, kd, des_vel_hr)
+        if fff is not None:
+            fff_hr = selec_vector(fff, 18, 24, 'fff_slicer_hr')
+        else:
+            fff_hr = None
+
+        control_torques_hr = self.imp_ctrl_leg_hr.return_control_torques(kp, des_pos_hr, kd, des_vel_hr, kf, fff_hr)
 
         ####################### Stacking torques of each leg into one vector #####
 
@@ -136,7 +157,7 @@ class quad_com_control():
         self.com_vel_bias = self.vicon_client.signal(self.robot_vicon_name + "_velocity_body")
 
 
-        ### To bring all COM values to a relatice co-ordinate frame
+        ### To bring all COM values to a relative co-ordinate frame
         for t in range(1, 1000):
             self.vicon_client.signal(self.robot_vicon_name + "_position").recompute(t)
             self.com_pos_bias = add_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"),
@@ -151,8 +172,10 @@ class quad_com_control():
 
     def return_com_control_torques(self, kp, des_pos, kd = None, des_vel = None):
 
-        self.com_pos = subtract_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"), self.com_pos_bias, "com_position")
-        self.com_vel = subtract_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_velocity_body"), self.com_vel_bias, "com_velocity")
+        # self.com_pos = subtract_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"), self.com_pos_bias, "com_position")
+        # self.com_vel = subtract_vec_vec(self.vicon_client.signal(sel1f.robot_vicon_name + "_velocity_body"), self.com_vel_bias, "com_velocity")
+        self.com_pos = self.vicon_client.signal(self.robot_vicon_name + "_position")
+        self.com_vel = self.vicon_client.signal(self.robot_vicon_name + "_velocity_body")
 
         self.pos_error = subtract_vec_vec(self.com_pos, des_pos, "com_pos_error")
         mul_kp_gains = Multiply_double_vector("Kp_com")
@@ -175,10 +198,18 @@ class quad_com_control():
 
         return self.total_error
 
+    def compute_com_angle(self):
+        ## Computes the des_position of leg so that the legs are always perpendicular to the ground
+        self.com_pos = self.vicon_client.signal(self.robot_vicon_name + "_position")
+
+        self.ry = selec_vector(self.com_pos, 4, 5, "ry")
+
+        return self.ry
+
     def record_data(self):
 
-        self.robot.add_trace("com_position", "sout")
-        self.robot.add_ros_and_trace("com_position", "sout")
+        self.robot.add_trace("com_pos_error", "sout")
+        self.robot.add_ros_and_trace("com_pos_error", "sout")
 
-        self.robot.add_trace("com_velocity", "sout")
-        self.robot.add_ros_and_trace("com_velocity", "sout")
+        # self.robot.add_trace("com_velocity", "sout")
+        # self.robot.add_ros_and_trace("com_velocity", "sout")

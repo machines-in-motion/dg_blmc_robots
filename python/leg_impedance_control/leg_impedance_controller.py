@@ -46,14 +46,16 @@ class leg_impedance_controller():
         plug(control_torques, sel.signal('sin'))
         return sel.signal('sout')
 
-    def return_control_torques(self, kp, des_pos, kd = None, des_vel = None):
+    def return_control_torques(self, kp, des_pos, kd = None, des_vel = None, kf = None, fff = None):
         '''
         ## Impedance controller implementation. Creates a virtual spring
         ## damper system the base and foot of the leg
         ## Input : Kp - proportional gain
                  : Kd - derivative gain
-                 : des_pos - desired position
-                 : des_vel - desired velocity
+                 : des_pos - desired position (size : 1*6 )
+                 : des_vel - desired velocity (size : 1*6 )
+                 : Kf - feed forward force gain (safety)
+                 : fff - feed forward force (size : 1*6)
         '''
 
         self.jac = self.robot_dg.signal("jac_cnt" + self.leg_name)
@@ -79,10 +81,21 @@ class leg_impedance_controller():
             plug(self.vel_error, mul_kd_gains.sin2)
             vel_error_with_gains = mul_kd_gains.sout
 
-            self.total_error = add_vec_vec(pos_error_with_gains, vel_error_with_gains, "total_error" + self.leg_name)
+            self.pd_error = add_vec_vec(pos_error_with_gains, vel_error_with_gains, "pd_error" + self.leg_name)
 
         else:
-            self.total_error = pos_error_with_gains
+            self.pd_error = pos_error_with_gains
+
+        if kf is not None and fff is not None:
+            print("fff is plugged ....")
+            mul_kf_gains = Multiply_double_vector("Kf" + self.leg_name)
+            plug(kf, mul_kf_gains.sin1)
+            plug(fff, mul_kf_gains.sin2)
+            fff_with_gains = mul_kf_gains.sout
+            self.total_error = add_vec_vec(fff_with_gains, self.pd_error, "total_error" + self.leg_name)
+
+        else:
+            self.total_error = self.pd_error
 
         control_torques = self.compute_control_torques()
 

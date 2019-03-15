@@ -47,11 +47,11 @@ def file_exists(filename):
 reader_pos = Reader('PositionReader')
 reader_vel = Reader('VelocityReader')
 
-#filename_pos = os.path.abspath('../trajectories/huristic_jump_pos.dat')
-#filename_vel = os.path.abspath('../trajectories/huristic_jump_vel.dat')
+#filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
+#filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
 
-filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_pos = "../trajectories/quadruped_positions_eff_rearing.dat"
+filename_vel = "../trajectories/quadruped_velocities_eff_rearing.dat"
 
 
 file_exists(filename_pos)
