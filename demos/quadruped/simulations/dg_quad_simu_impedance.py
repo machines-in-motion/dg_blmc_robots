@@ -54,12 +54,12 @@ des_fff = constVector([0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
                         "fff")
 
 
-##For making gain input dynamic through terminal
-add_kp = Add_of_double('kp')
-add_kp.sin1.value = 0
-### Change this value for different gains
-add_kp.sin2.value = 100.0
-kp = add_kp.sout
+# ##For making gain input dynamic through terminal
+# add_kp = Add_of_double('kp')
+# add_kp.sin1.value = 0
+# ### Change this value for different gains
+# add_kp.sin2.value = 100.0
+# kp = add_kp.sout
 
 ##For making gain input dynamic through terminal
 add_kd = Add_of_double('kd')
@@ -67,6 +67,11 @@ add_kd.sin1.value = 0
 ### Change this value for different gains
 add_kd.sin2.value = 0.0
 kd = add_kd.sout
+
+kp = constVector([50.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
+
+#kd = constVector([0.01, 0.0, 0.01, 0.0, 0.0, 0.0], "kd_split")
+
 
 ##For making gain input dynamic through terminal
 add_kf = Add_of_double('kf')
