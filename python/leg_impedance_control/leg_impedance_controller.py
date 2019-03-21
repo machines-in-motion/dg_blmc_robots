@@ -67,19 +67,21 @@ class leg_impedance_controller():
         self.rel_pos_foot = subtract_vec_vec(self.xyzpos_foot, self.xyzpos_hip, "rel_pos_foot" + self.leg_name)
         self.rel_pos_foot = stack_two_vectors(self.rel_pos_foot, constVector([0.0, 0.0, 0.0], 'stack_to_wrench' + self.leg_name), 3, 3)
         self.pos_error = subtract_vec_vec(self.rel_pos_foot, des_pos, "pos_error" + self.leg_name)
-        mul_kp_gains = Multiply_double_vector("Kp" + self.leg_name)
-        plug(kp, mul_kp_gains.sin1)
-        plug(self.pos_error, mul_kp_gains.sin2)
-        pos_error_with_gains = mul_kp_gains.sout
+        mul_kp_gains_split = Multiply_of_vector("kp_split" + self.leg_name)
+        plug(kp, mul_kp_gains_split.sin0)
+        plug(self.pos_error, mul_kp_gains_split.sin1)
+        pos_error_with_gains = mul_kp_gains_split.sout
+
+        self.estimated_foot_force = pos_error_with_gains
 
         if kd is not None and des_vel is not None:
             print("Kd !!!!!")
             self.rel_vel_foot = multiply_mat_vec(self.jac, self.robot_dg.velocity, "rel_vel_foot" + self.leg_name)
             self.vel_error = subtract_vec_vec(self.rel_vel_foot, des_vel, "vel_error" + self.leg_name)
-            mul_kd_gains = Multiply_double_vector("Kd" + self.leg_name)
-            plug(kd, mul_kd_gains.sin1)
-            plug(self.vel_error, mul_kd_gains.sin2)
-            vel_error_with_gains = mul_kd_gains.sout
+            mul_kd_gains_split = Multiply_of_vector("kd_split" + self.leg_name)
+            plug(kd, mul_kd_gains_split.sin0)
+            plug(self.vel_error, mul_kd_gains_split.sin1)
+            vel_error_with_gains = mul_kd_gains_split.sout
 
             self.pd_error = add_vec_vec(pos_error_with_gains, vel_error_with_gains, "pd_error" + self.leg_name)
 
@@ -114,3 +116,6 @@ class leg_impedance_controller():
 
         robot.add_trace("vel_error" + self.leg_name, "sout")
         robot.add_ros_and_trace("vel_error" + self.leg_name, "sout")
+
+        robot.add_trace("kp_split" + self.leg_name, "sout")
+        robot.add_ros_and_trace("kp_split" + self.leg_name, "sout")

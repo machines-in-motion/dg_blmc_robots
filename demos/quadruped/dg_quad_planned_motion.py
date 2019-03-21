@@ -18,30 +18,30 @@ def file_exists(filename):
 ### reading createData
 reader_pos = Reader('PositionReader')
 reader_vel = Reader('VelocityReader')
-# reader_com = Reader('ComReader')
+reader_com = Reader('ComReader')
 
-# filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-# filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
-# filename_com = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_com.dat"
+filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_com = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_com.dat"
 #filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
 
-filename_pos = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/quadruped_positions_eff_rearing.dat"
-filename_vel = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/quadruped_velocities_eff_rearing.dat"
+# filename_pos = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/quadruped_positions_eff_rearing.dat"
+# filename_vel = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/quadruped_velocities_eff_rearing.dat"
 
 file_exists(filename_pos)
 file_exists(filename_vel)
-# file_exists(filename_com)
+file_exists(filename_com)
 
 print("Loading data files:")
 reader_pos.load(filename_pos)
 reader_vel.load(filename_vel)
-#reader_com.load(filename_com)
+reader_com.load(filename_com)
 
 # Specify which of the columns to select.
 # NOTE: This is selecting the columns in reverse order - the last number is the first column in the file
 reader_pos.selec.value = '111111111111111111111111'
 reader_vel.selec.value = '111111111111111111111111'
-# reader_com.selec.value = '1111'
+reader_com.selec.value = '1111'
 
 des_pos = reader_pos.vector
 des_vel = reader_vel.vector
@@ -68,8 +68,8 @@ def start_traj():
     reader_pos.vector.recompute(0)
     reader_vel.rewind()
     reader_vel.vector.recompute(0)
-    # reader_com.rewind()
-    # reader_com.vector.recompute(0)
+    reader_com.rewind()
+    reader_com.vector.recompute(0)
 
 
 ##For making gain input dynamic through terminal
@@ -104,5 +104,5 @@ robot.add_ros_and_trace("PositionReader", "vector")
 robot.add_trace("VelocityReader", "vector")
 robot.add_ros_and_trace("VelocityReader", "vector")
 
-# robot.add_trace("ComReader", "vector")
-# robot.add_ros_and_trace("ComReader", "vector")
+robot.add_trace("ComReader", "vector")
+robot.add_ros_and_trace("ComReader", "vector")
