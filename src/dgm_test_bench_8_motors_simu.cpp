@@ -41,16 +41,16 @@ namespace dg_blmc_robots
                         motors_torque_constant_ * motor_currents_;
     slider_positions_.fill(0.0);
 
-    map.at("motor_positions") = motor_positions_;
-    map.at("motor_velocities") = motor_velocities_;
-    map.at("motor_currents") = motor_currents_;
+    map.at("joint_positions") = motor_positions_;
+    map.at("joint_velocities") = motor_velocities_;
+    map.at("joint_torques") = motor_currents_;
     map.at("slider_positions") = slider_positions_;
   }
 
   void DGMTestBench8MotorsSimu::set_motor_controls_from_map(
       const dynamic_graph::VectorDGMap& map)
   {
-    ctrl_motor_currents_ = map.at("ctrl_motor_currents");
+    ctrl_motor_currents_ = map.at("ctrl_joint_torques");
   }
 
 } // namespace dg_blmc_robots
