@@ -18,7 +18,7 @@ from py_dg_blmc_robots.quadruped import get_quadruped_robot
 import pinocchio as se3
 from pinocchio.utils import zero
 
-robot = get_quadruped_robot(record_video = True)
+robot = get_quadruped_robot(record_video = False)
 
 # Define the desired position.
 q = zero(robot.pin_robot.nq)
@@ -90,4 +90,4 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 ##############################################################################
 
-robot.run(5000, 1./20.)
+robot.run(5000, 1./60.)
