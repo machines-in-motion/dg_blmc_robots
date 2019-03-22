@@ -47,9 +47,6 @@ namespace dg_blmc_robots
       /**
         * Motor data
         */
-      map.at("motor_positions") = quadruped_.get_motor_positions();
-      map.at("motor_velocities") = quadruped_.get_motor_velocities();
-      map.at("motor_currents") = quadruped_.get_motor_currents();
       map.at("motor_target_currents") = quadruped_.get_motor_target_currents();
       map.at("motor_torques") = quadruped_.get_motor_torques();
       map.at("motor_target_torques") = quadruped_.get_target_motor_torques();
@@ -75,9 +72,6 @@ namespace dg_blmc_robots
       /**
         * Motor data
         */
-      map.at("motor_positions").fill(0.0);
-      map.at("motor_velocities").fill(0.0);
-      map.at("motor_currents").fill(0.0);
       map.at("motor_target_currents").fill(0.0);
       map.at("motor_torques").fill(0.0);
       map.at("motor_target_torques").fill(0.0);
