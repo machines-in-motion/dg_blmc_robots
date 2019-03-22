@@ -69,7 +69,7 @@ phase_pi = add_phase_2.sout
 add_omega = Add_of_double('omega_op')
 add_omega.sin1.value = 0.0
 ### Change this value for different gains
-add_omega.sin2.value = 4.0*np.pi
+add_omega.sin2.value = 6.0*np.pi
 omega = add_omega.sout
 
 
@@ -79,10 +79,10 @@ amplitude = scale_values(slider_3, 0.04, "amplitdue_scale")
 stride = scale_values(slider_4, 0.1, "stride_value")
 
 
-des_pos_fl, des_vel_fl = circular_trajectory_generator(stride, amplitude, omega , phase_zero, -0.18, "fl_des")
-des_pos_fr, des_vel_fr = circular_trajectory_generator(stride, amplitude, omega, phase_zero, -0.18, "fr_des")
-des_pos_hl, des_vel_hl = circular_trajectory_generator(stride, amplitude, omega , phase_pi, -0.18, "hl_des")
-des_pos_hr, des_vel_hr = circular_trajectory_generator(stride, amplitude, omega, phase_pi, -0.18, "hr_des")
+des_pos_fl, des_vel_fl = circular_trajectory_generator(stride, amplitude, omega , phase_zero, -0.22, "fl_des")
+des_pos_fr, des_vel_fr = circular_trajectory_generator(stride, amplitude, omega, phase_zero, -0.22, "fr_des")
+des_pos_hl, des_vel_hl = circular_trajectory_generator(stride, amplitude, omega , phase_pi, -0.22, "hl_des")
+des_pos_hr, des_vel_hr = circular_trajectory_generator(stride, amplitude, omega, phase_pi, -0.22, "hr_des")
 
 des_pos_fl_fr = stack_two_vectors(des_pos_fl, des_pos_fr, 6 , 6)
 des_pos_hl_hr = stack_two_vectors(des_pos_hl, des_pos_hr, 6 , 6)
@@ -116,7 +116,7 @@ p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
 
 p_gain_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
 
-kd_split = constVector([2.0, 0.0, 2.0, 0.0, 0.0, 0.0], "kd_split")
+kd_split = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
 
 #######################################################################################
 
