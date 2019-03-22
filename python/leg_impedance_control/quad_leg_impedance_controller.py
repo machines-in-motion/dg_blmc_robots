@@ -16,10 +16,10 @@ class quad_leg_impedance_controller():
     def __init__(self, robot):
         self.robot = robot
 
-        self.imp_ctrl_leg_fl = leg_impedance_controller("_fl")
-        self.imp_ctrl_leg_fr = leg_impedance_controller("_fr")
-        self.imp_ctrl_leg_hl = leg_impedance_controller("_hl")
-        self.imp_ctrl_leg_hr = leg_impedance_controller("_hr")
+        self.imp_ctrl_leg_fl = leg_impedance_controller("fl")
+        self.imp_ctrl_leg_fr = leg_impedance_controller("fr")
+        self.imp_ctrl_leg_hl = leg_impedance_controller("hl")
+        self.imp_ctrl_leg_hr = leg_impedance_controller("hr")
 
     def return_control_torques(self, kp, des_pos, kd=None, des_vel=None, kf = None, fff=None):
         """
@@ -133,7 +133,7 @@ class quad_leg_impedance_controller():
 
 
 class quad_com_control():
-    def __init__(self, robot, client_name = "vicon_client" , vicon_ip = '10.32.24.190:801'):
+    def __init__(self, robot, client_name = "vicon_client" , vicon_ip = '10.32.3.16:801'):
 
         self.robot = robot
         self.client_name = client_name

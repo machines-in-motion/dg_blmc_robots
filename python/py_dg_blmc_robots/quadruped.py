@@ -21,7 +21,7 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
-    def __init__(self, use_fixed_base = False):
+    def __init__(self, use_fixed_base = False, record_video = False):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
@@ -40,6 +40,9 @@ class QuadrupedBulletRobot(Robot):
             robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE,
             useFixedBase=use_fixed_base)
         p.getBasePositionAndOrientation(self.robotId)
+
+        if record_video:
+            p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, "./video/0.mp4")
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) +
@@ -66,8 +69,8 @@ class QuadrupedBulletRobot(Robot):
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
             controlled_joints,
             ## for new urdf
-            #['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']
-            ['HL_END', 'HR_END', 'FL_END', 'FR_END']
+            ['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']
+            # ['HL_END', 'HR_END', 'FL_END', 'FR_END']
         )
 
         # Initialize the device.
@@ -186,5 +189,5 @@ class QuadrupedBulletRobot(Robot):
               print ("    - contact_damping : " , contact_damping)
               print ("    - contact_stiffness : " , contact_stiffness)
 
-def get_quadruped_robot(use_fixed_base=False):
-    return QuadrupedBulletRobot(use_fixed_base)
+def get_quadruped_robot(use_fixed_base=False, record_video = False):
+    return QuadrupedBulletRobot(use_fixed_base, record_video)

@@ -177,3 +177,13 @@ def hom2pos(robot_joint_signal, entityName):
     conv_pos = MatrixHomoToPose(entityName)
     plug(robot_joint_signal, conv_pos.signal('sin'))
     return conv_pos.signal('sout')
+
+    ######################### Standard vectors ####################################
+
+def zero_vec(vec_size, entityName):
+    """
+    ## This function creates a zero constvector of vec_size
+    ## Input : size of zero vector (int)
+    """
+    zero_vec = np.zeros(vec_size)
+    return constVector(zero_vec, entityName)

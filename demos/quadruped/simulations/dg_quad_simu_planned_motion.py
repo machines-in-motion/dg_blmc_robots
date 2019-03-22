@@ -18,7 +18,7 @@ from py_dg_blmc_robots.quadruped import get_quadruped_robot
 import pinocchio as se3
 from pinocchio.utils import zero
 
-robot = get_quadruped_robot()
+robot = get_quadruped_robot(record_video = True)
 
 # Define the desired position.
 q = zero(robot.pin_robot.nq)
@@ -28,9 +28,14 @@ q[0] = 0.2
 q[1] = 0.0
 q[2] = 0.4
 q[6] = 1.
-for i in range(4):
-    q[7 + 2 * i] = 0.8
-    q[8 + 2 * i] = -1.6
+q[7] = 0.8
+q[8] = -1.6
+q[9] = 0.8
+q[10] = -1.6
+q[11] = -0.8
+q[12] = +1.6
+q[13] = -0.8
+q[14] = +1.6
 
 # Update the initial state of the robot.
 robot.reset_state(q, dq)
@@ -47,11 +52,11 @@ def file_exists(filename):
 reader_pos = Reader('PositionReader')
 reader_vel = Reader('VelocityReader')
 
-#filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-#filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
 
-filename_pos = "../trajectories/quadruped_positions_eff_rearing.dat"
-filename_vel = "../trajectories/quadruped_velocities_eff_rearing.dat"
+# filename_pos = "../trajectories/quadruped_positions_eff_rearing.dat"
+# filename_vel = "../trajectories/quadruped_velocities_eff_rearing.dat"
 
 
 file_exists(filename_pos)
@@ -73,19 +78,9 @@ des_vel = reader_vel.vector
 
 ###############################################################################
 
-##For maki0ng gain input dynamic through terminal
-add_kp = Add_of_double('kp')
-add_kp.sin1.value = 0
-### Change this value for different gains
-add_kp.sin2.value = 300.0
-kp = add_kp.sout
+kp = constVector([180.0, 0.0, 180.0, 0.0, 0.0, 0.0], "kp_split")
 
-##For making gain input dynamic through terminal
-add_kd = Add_of_double('kd')
-add_kd.sin1.value = 0
-### Change this value for different gains
-add_kd.sin2.value = .5
-kd = add_kd.sout
+kd = constVector([2.5, 0.0,2.5, 0.0, 0.0, 0.0], "kd_split")
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)
@@ -95,4 +90,4 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 ##############################################################################
 
-robot.run(10000, 1./60.)
+robot.run(5000, 1./20.)
