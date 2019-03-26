@@ -137,7 +137,9 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 #################################################################################
 
-quad_imp_ctrl.record_data(record_vicon=False)
+quad_imp_ctrl.record_data()
+
+quad_com_ctrl = quad_com_control(robot)
 
 robot.add_trace("pos_des", "sout")
 robot.add_ros_and_trace("pos_des", "sout")
