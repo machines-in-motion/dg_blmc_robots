@@ -8,7 +8,7 @@ from py_dg_blmc_robots.stuggihop import get_stuggihop_robot
 
 from dynamic_graph import plug
 # from dynamic_graph.sot.core.control_pd import ControlPD
-from dynamic_graph_manager.dg_tools import PDController
+from dynamic_graph_manager.dg_tools import ControlPD
 from dynamic_graph.sot.core.operator import Stack_of_vector
 
 
@@ -28,7 +28,7 @@ q[3] = -1.6
 robot.reset_state(q, dq)
 
 # Setup the control graph to track the desired joint positions.
-pd = PDController("controller_1")
+pd = ControlPD("controller_1")
 # setup the gains
 pd.Kp.value = 2 * (5.,)
 pd.Kd.value = 2 * (0.1,)

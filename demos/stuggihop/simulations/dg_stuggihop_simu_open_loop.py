@@ -52,7 +52,7 @@ add_amp = Add_of_double('amp_oper')
 add_amp.sin1.value = 0.1
 add_amp.sin2.value = 0.0
 add_omega = Add_of_double('freq_oper')
-add_omega.sin1.value = 5.0
+add_omega.sin1.value = 1.0
 add_omega.sin2.value = 0.0
 add_phase_zero = Add_of_double('phase_oper')
 add_phase_zero.sin1.value = 0.0
@@ -79,4 +79,4 @@ control_torques = leg_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)
 plug(control_torques, robot.device.ctrl_joint_torques)
 ################################################################################
 
-robot.run(10000, 1./60.)
+robot.run(10000, 1./10000.)
