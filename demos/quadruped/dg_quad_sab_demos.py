@@ -16,6 +16,12 @@ def file_exists(filename):
     else:
         print("The file %s does not exist" % filename)
 
+def gen_planned_traj(path, EntityName):
+    reader_pos = Reader('PositionReader_' + EntityName )
+    reader_vel = 
+
+
+
 #############################################################################
 ### reading createData
 reader_pos = Reader('PositionReader')

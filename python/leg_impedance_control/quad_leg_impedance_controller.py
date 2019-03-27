@@ -7,6 +7,7 @@
 from leg_impedance_control.utils import *
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+from dynamic_graph_manager.dg_tools import ComImpedanceControl
 
 
 ###############################################################################
@@ -133,7 +134,7 @@ class quad_leg_impedance_controller():
 
 
 class quad_com_control():
-    def __init__(self, robot, client_name = "vicon_client" , vicon_ip = '10.32.3.16:801'):
+    def __init__(self, robot, client_name = "vicon_client" , vicon_ip = '10.32.3.16:801', EntityName = "quad_com_ctrl"):
 
         self.robot = robot
         self.client_name = client_name
@@ -151,65 +152,22 @@ class quad_com_control():
         self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_velocity_world")
 
 
-        self.vicon_client.signal(self.robot_vicon_name + "_position").recompute(0)
-        self.com_pos_bias = self.vicon_client.signal(self.robot_vicon_name + "_position")
-        self.vicon_client.signal(self.robot_vicon_name + "_velocity_body").recompute(0)
-        self.com_vel_bias = self.vicon_client.signal(self.robot_vicon_name + "_velocity_body")
+        base_pos_xyz = selec_vector(self.vicon_client.signal(self.robot_vicon_name + "_position"), 0, 3, "selec_xyz")
+        base_vel_xyz = selec_vector(self.vicon_client.signal(self.robot_vicon_name + "_velocity_body"), 0, 3, "selec_dxyz")
+        self.com_imp_ctrl = ComImpedanceControl(EntityName)
+        plug(base_pos_xyz, self.com_imp_ctrl.position)
+        plug(base_vel_xyz, self.com_imp_ctrl.velocity)
 
 
-        ### To bring all COM values to a relative co-ordinate frame
-        for t in range(1, 1000):
-            self.vicon_client.signal(self.robot_vicon_name + "_position").recompute(t)
-            self.com_pos_bias = add_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"),
-                                            self.com_pos_bias, "pos_bias_" + str(t))
 
-            self.vicon_client.signal(self.robot_vicon_name + "_velocity_body").recompute(t)
-            self.com_vel_bias = add_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_velocity_body"),
-                                            self.com_vel_bias, "vel_bias_" + str(t))
 
-        self.com_pos_bias = mul_double_vec(0.001, self.com_pos_bias, "com_pos_bias")
-        self.com_vel_bias = mul_double_vec(0.001, self.com_vel_bias, "com_vel_bias")
+    def compute_torques(self, Kp, des_pos, Kd, des_vel, des_fff):
+        plug(Kp, self.com_imp_ctrl.Kp)
+        plug(Kd, self.com_imp_ctrl.Kd)
+        plug(des_pos, self.com_imp_ctrl.des_pos)
+        plug(des_vel, self.com_imp_ctrl.des_vel)
+        plug(des_fff, self.com_imp_ctrl.des_fff)
+        return self.com_imp_ctrl.tau
 
-    def return_com_control_torques(self, kp, des_pos, kd = None, des_vel = None):
-
-        # self.com_pos = subtract_vec_vec(self.vicon_client.signal(self.robot_vicon_name + "_position"), self.com_pos_bias, "com_position")
-        # self.com_vel = subtract_vec_vec(self.vicon_client.signal(sel1f.robot_vicon_name + "_velocity_body"), self.com_vel_bias, "com_velocity")
-        self.com_pos = self.vicon_client.signal(self.robot_vicon_name + "_position")
-        self.com_vel = self.vicon_client.signal(self.robot_vicon_name + "_velocity_body")
-
-        self.pos_error = subtract_vec_vec(self.com_pos, des_pos, "com_pos_error")
-        mul_kp_gains = Multiply_double_vector("Kp_com")
-        plug(kp, mul_kp_gains.sin1)
-        plug(self.pos_error, mul_kp_gains.sin2)
-        self.pos_error_with_gains = mul_kp_gains.sout
-
-        if des_vel is not None:
-            self.vel_error = subtract_vec_vec(self.com_vel, des_vel, "com_vel_error")
-            print("Kd !!!!!")
-            mul_kd_gains = Multiply_double_vector("Kd_com")
-            plug(kd, mul_kd_gains.sin1)
-            plug(self.vel_error, mul_kd_gains.sin2)
-            self.vel_error_with_gains = mul_kd_gains.sout
-
-            self.total_error = add_vec_vec(self.pos_error_with_gains, self.vel_error_with_gains, "total_error")
-
-        else:
-            self.total_error = self.pos_error_with_gains
-
-        return self.total_error
-
-    def compute_com_angle(self):
-        ## Computes the des_position of leg so that the legs are always perpendicular to the ground
-        self.com_pos = self.vicon_client.signal(self.robot_vicon_name + "_position")
-
-        self.ry = selec_vector(self.com_pos, 4, 5, "ry")
-
-        return self.ry
-
-    def record_data(self):
-
-        self.robot.add_trace("com_pos_error", "sout")
-        self.robot.add_ros_and_trace("com_pos_error", "sout")
-
-        # self.robot.add_trace("com_velocity", "sout")
-        # self.robot.add_ros_and_trace("com_velocity", "sout")
+    def set_bias(self):
+        self.com_imp_ctrl.setbias

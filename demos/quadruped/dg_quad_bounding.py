@@ -69,7 +69,7 @@ phase_pi = add_phase_2.sout
 add_omega = Add_of_double('omega_op')
 add_omega.sin1.value = 0.0
 ### Change this value for different gains
-add_omega.sin2.value = 6.0*np.pi
+add_omega.sin2.value = 4.0*np.pi
 omega = add_omega.sout
 
 
@@ -81,8 +81,8 @@ stride = scale_values(slider_4, 0.1, "stride_value")
 
 des_pos_fl, des_vel_fl = circular_trajectory_generator(stride, amplitude, omega , phase_zero, -0.22, "fl_des")
 des_pos_fr, des_vel_fr = circular_trajectory_generator(stride, amplitude, omega, phase_zero, -0.22, "fr_des")
-des_pos_hl, des_vel_hl = circular_trajectory_generator(stride, amplitude, omega , phase_pi, -0.22, "hl_des")
-des_pos_hr, des_vel_hr = circular_trajectory_generator(stride, amplitude, omega, phase_pi, -0.22, "hr_des")
+des_pos_hl, des_vel_hl = circular_trajectory_generator(stride, amplitude, omega , phase_zero, -0.22, "hl_des")
+des_pos_hr, des_vel_hr = circular_trajectory_generator(stride, amplitude, omega, phase_zero, -0.22, "hr_des")
 
 des_pos_fl_fr = stack_two_vectors(des_pos_fl, des_pos_fr, 6 , 6)
 des_pos_hl_hr = stack_two_vectors(des_pos_hl, des_pos_hr, 6 , 6)
@@ -139,7 +139,7 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 quad_imp_ctrl.record_data()
 
-quad_com_ctrl = quad_com_control(robot)
+# quad_com_ctrl = quad_com_control(robot)
 
 robot.add_trace("pos_des", "sout")
 robot.add_ros_and_trace("pos_des", "sout")

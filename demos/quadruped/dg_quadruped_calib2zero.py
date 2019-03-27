@@ -5,17 +5,17 @@
 # Starts calibration by driving joints with constant torque into the hardstops
 # (or your hands). It will then save the offsets and switch off the motors.
 # You can then set the `control_switch.selection.value` to `1`, in order to turn
-# on a PD control to hold a 0 position. Replace control_switch.sin1 with your 
+# on a PD control to hold a 0 position. Replace control_switch.sin1 with your
 # own controller.
 #
 # How does the calibrator work? the calibrator will subtract/add 2 values to
-# each position: 
+# each position:
 # start2hardstop: ths value is calibrated each time
 # hardstop2zero: this is a fixed value, which you need to assign to the SIN
 #
 # You also need to specify reasonable constant-torques to drive each joint. They
 # should be low enough to drive the joints softly into their hardstops.
-# The calibrator will ramp from 0 to the torque you specify in 
+# The calibrator will ramp from 0 to the torque you specify in
 # 1 second (1000 timesteps). After 1 second, it will check if the velocity is
 # below a small threshold to determine if the hardstop has been reached.
 # Each joint is turned off right after.
@@ -50,10 +50,11 @@ plug(robot.device.joint_velocities, calib_vel_filtered.sin)
 plug(robot.device.joint_positions, leg_calibrator.raw_position)
 plug(calib_vel_filtered.sout, leg_calibrator.velocity)
 
-# leg_calibrator.calibration_torque.value = 4*(-0.1, 0.1) # 8*[0.0,]
-leg_calibrator.calibration_torque.value = (0.0,0.1, 0.0,0.0, 0.0,0.0, 0.0,0.0)
+# leg_calibrator.calibration_torque.value = 4*(-0.2, 0.1) # 8*[0.0,]
+leg_calibrator.calibration_torque.value = (0.3, -0.2, 0.3,-0.2, -0.3,0.2, -0.3,0.2)
 
-leg_calibrator.hardstop2zero.value = 8*(0.0,)
+leg_calibrator.hardstop2zero.value = (1.568, -3.198, 1.615, -3.228, -1.596,3.208,-1.578,3.2368)
+
 
 ######################################## Set up PD controller
 
