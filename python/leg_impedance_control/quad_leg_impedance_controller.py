@@ -74,6 +74,7 @@ class quad_leg_impedance_controller():
             fff_fr = None
 
         control_torques_fr = self.imp_ctrl_leg_fr.return_control_torques(kp, des_pos_fr, kd, des_vel_fr, kf, fff_fr)
+        # control_torques_fr = zero_vec(2, "zero_torque_fr")
 
         ### For HL #############################################################
 
@@ -116,6 +117,7 @@ class quad_leg_impedance_controller():
             fff_hr = None
 
         control_torques_hr = self.imp_ctrl_leg_hr.return_control_torques(kp, des_pos_hr, kd, des_vel_hr, kf, fff_hr)
+        # control_torques_hr = zero_vec(2, "zero_torque_hr")
 
         ####################### Stacking torques of each leg into one vector #####
 
