@@ -8,6 +8,18 @@ from leg_impedance_control.quad_leg_impedance_controller import quad_com_control
 from dynamic_graph_manager.vicon_sdk import ViconClientEntity
 from dynamic_graph_manager.dg_tools import ComImpedanceControl
 from dynamic_graph.sot.core.switch import SwitchVector
+
+from dynamic_graph_manager.device import Device
+from dynamic_graph_manager.device.robot import Robot
+
+###### robot init #######################################################
+
+local_device = Device("hopper_robot")
+yaml_path = "/home/ameduri/devel/workspace/src/catkin/robots/robot_properties/robot_properties_teststand/config/teststand.yaml"
+local_device.initialize(yaml_path)
+robot = Robot(name=local_device.name, device=local_device)
+
+
 ################################################################################
 
 kp = constVector([1.0, 1.0, 1.0], "kp")
@@ -36,8 +48,7 @@ base_pos_xyz = selec_vector(vicon_client.signal(robot_vicon_name + "_position"),
                                 0, 3, "selec_xyz")
 base_vel_xyz = selec_vector(vicon_client.signal(robot_vicon_name + "_velocity_body"),
                                 0, 3, "selec_dxyz")
-base_ang_vel_xyz =  selec_vector(vicon_client.signal(robot_vicon_name + "_velocity_body"),
-                                3, 6, "selec_ang_dxyz")
+
 
 ################################################################################
 
@@ -75,3 +86,70 @@ robot.add_ros_and_trace("control_switch_pos", "sout")
 #
 # robot.add_trace("quad_com_ctrl", "setbias")
 # robot.add_ros_and_trace("quad_com_ctrl", "setbias")
+
+
+######## robot simulation ################################################
+
+from pinocchio.utils import zero
+
+q = zero(2)
+dq = zero(2)
+q_out = q.T.tolist()[0]
+dq_out = dq.T.tolist()[0]
+ddq = zero(2)
+joint_torques = zero(2)
+
+q = zero(2)
+dq = zero(2)
+q_out = q.T.tolist()[0]
+dq_out = dq.T.tolist()[0]
+ddq = zero(2)
+joint_torques = zero(2)
+
+q[:] = np.asmatrix(robot.device.joint_positions.value).T
+dq[:] = np.asmatrix(robot.device.joint_velocities.value).T
+
+print(q, dq)
+
+dt = 0.001#config.dt
+motor_inertia = 0.045
+
+for i in range(40000):
+    # fill the sensors
+    robot.device.joint_positions.value = q.T.tolist()[0][:]
+    robot.device.joint_velocities.value = dq.T.tolist()[0][:]
+
+    # "Execute the dynamic graph"
+    robot.device.execute_graph()
+
+
+    joint_torques[:] = np.asmatrix(robot.device.ctrl_joint_torques.value).T
+    #joint_torques[:] = control_torques.value
+
+    if i == 10000:
+        control_switch_pos.selection.value = 1
+        print("completed switch")
+
+    if i > 10000:
+        print(i, control_switch_pos.sout.value)
+
+
+    # integrate the configuration from the computed torques
+    #q = (q + dt * dq + dt * dt * 0.5 * joint_torques / motor_inertia)
+    #dq = (dq + dt * joint_torques / motor_inertia)
+    q = (q + dt * dq + dt * dt * 0.5 * 0.01 / motor_inertia)
+    dq = (dq + dt * 0.01 / motor_inertia)
+
+
+    if (i % 1000) == 0:
+        # print "qref =     ", robot.pid_control.pose_controller.qRef.value
+        # print ("q =        ",
+        #        robot.pid_control.pose_controller.base6d_encoders.value[6:])
+        # print "err_pid =  ", robot.pid_control.pose_controller.qError.value
+        # print "currents = ", robot.device.ctrl_joint_torques.value
+        pass
+
+
+print
+print "End of simulation"
+print "control_torques = ", robot.device.ctrl_joint_torques.value

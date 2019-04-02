@@ -154,22 +154,56 @@ class quad_com_control():
         self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_velocity_world")
 
 
-        base_pos_xyz = selec_vector(self.vicon_client.signal(self.robot_vicon_name + "_position"), 0, 3, "selec_xyz")
-        base_vel_xyz = selec_vector(self.vicon_client.signal(self.robot_vicon_name + "_velocity_body"), 0, 3, "selec_dxyz")
+        self.biasset = 0
+
         self.com_imp_ctrl = ComImpedanceControl(EntityName)
-        plug(base_pos_xyz, self.com_imp_ctrl.position)
-        plug(base_vel_xyz, self.com_imp_ctrl.velocity)
 
 
 
+    def compute_torques(self, Kp, des_pos, Kd, des_vel, des_fff, des_angvel, des_fft):
 
-    def compute_torques(self, Kp, des_pos, Kd, des_vel, des_fff):
+        from dynamic_graph.sot.core.switch import SwitchVector
+
+        self.control_switch_pos = SwitchVector("control_switch_pos")
+        self.control_switch_pos.setSignalNumber(2) # we want to switch between 2 signals
+        plug(zero_vec(3,"zero"), self.control_switch_pos.sin0)
+        plug(self.com_imp_ctrl.set_pos_bias, self.control_switch_pos.sin1)
+        self.control_switch_pos.selection.value = 0
+
+        self.control_switch_vel = SwitchVector("control_switch_vel")
+        self.control_switch_vel.setSignalNumber(2) # we want to switch between 2 signals
+        plug(zero_vec(3,"zero"), self.control_switch_vel.sin0)
+        plug(self.com_imp_ctrl.set_vel_bias, self.control_switch_vel.sin1)
+        self.control_switch_vel.selection.value = 0
+
+
+        base_pos_xyz = selec_vector(self.vicon_client.signal
+                                (self.robot_vicon_name + "_position"), 0, 3, "selec_xyz")
+        base_vel_xyz = selec_vector(self.vicon_client.signal
+                                (self.robot_vicon_name + "_velocity_body"), 0, 3, "selec_dxyz")
+        base_ang_vel_xyz =  selec_vector(self.vicon_client.signal
+                                (self.robot_vicon_name + "_ang_vel_body"), 3, 6, "selec_ang_dxyz")
+
+        biased_base_pos_xyz = subtract_vec_vec(base_pos_xyz, self.control_switch_pos.sout,
+                                                                        "bias_pos")
+        biased_base_vel_xyz = subtract_vec_vec(base_vel_xyz, self.control_switch_vel.sout,
+                                                                        "bias_vel")
+
+
+        plug(biased_base_pos_xyz, self.com_imp_ctrl.position)
+        plug(biased_base_vel_xyz, self.com_imp_ctrl.velocity)
+        plug(biased_base_vel_xyz, self.com_imp_ctrl.angvel)
+
         plug(Kp, self.com_imp_ctrl.Kp)
         plug(Kd, self.com_imp_ctrl.Kd)
         plug(des_pos, self.com_imp_ctrl.des_pos)
         plug(des_vel, self.com_imp_ctrl.des_vel)
         plug(des_fff, self.com_imp_ctrl.des_fff)
+        plug(des_fft, self.com_imp_ctrl.des_fft)
         return self.com_imp_ctrl.tau
+        # return 0
+
 
     def set_bias(self):
-        self.com_imp_ctrl.setbias
+
+        self.control_switch_pos.selection.value = 1

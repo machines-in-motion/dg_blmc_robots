@@ -99,8 +99,8 @@ slider_4 = slider_4_op.sout
 p_gain_x = scale_values(slider_1, 300.0, "scale_kp_x")
 p_gain_z = scale_values(slider_2, 300.0, "scale_kp_z")
 
-d_gain_x = scale_values(slider_3, 0.8, "scale_kd_x")
-d_gain_z = scale_values(slider_4, 0.8, "scale_kd_z")
+d_gain_x = scale_values(slider_3, 1.5, "scale_kd_x")
+d_gain_z = scale_values(slider_4, 1.5, "scale_kd_z")
 
 
 unit_vector_x = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "unit_kp_x")

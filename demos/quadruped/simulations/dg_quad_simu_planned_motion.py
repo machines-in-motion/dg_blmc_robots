@@ -32,10 +32,10 @@ q[7] = 0.8
 q[8] = -1.6
 q[9] = 0.8
 q[10] = -1.6
-q[11] = -0.8
-q[12] = +1.6
-q[13] = -0.8
-q[14] = +1.6
+q[11] = 0.8
+q[12] = -1.6
+q[13] = 0.8
+q[14] = -1.6
 
 # Update the initial state of the robot.
 robot.reset_state(q, dq)

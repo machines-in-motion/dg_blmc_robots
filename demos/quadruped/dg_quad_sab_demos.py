@@ -7,63 +7,7 @@ from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedan
 from leg_impedance_control.traj_generators import *
 
 from dynamic_graph.sot.core.reader import Reader
-
-#############################################################################
-
-def file_exists(filename):
-    if os.path.isfile(filename):
-        print("The file %s exists" % filename)
-    else:
-        print("The file %s does not exist" % filename)
-        assert False
-
-def gen_planned_traj(path, EntityName):
-    reader_pos = Reader('PositionReader_' + EntityName )
-    reader_vel = Reader('VelocityReader_' + EntityName)
-    reader_com = Reader('ComReader_' + EntityName)
-
-    filename_pos = path + "quadruped_positions_eff.dat"
-    filename_vel = path + "quadruped_velocities_eff.dat"
-    filename_com = path + "quadruped_com.dat"
-
-    file_exists(filename_pos)
-    file_exists(filename_vel)
-    file_exists(filename_com)
-
-    print("Loading data files:")
-    reader_pos.load(filename_pos)
-    reader_vel.load(filename_vel)
-    reader_com.load(filename_com)
-
-    # Specify which of the columns to select.
-    # NOTE: This is selecting the columns in reverse order - the last number is the first column in the file
-
-
-    reader_pos.selec.value = '111111111111111111111111'
-    reader_vel.selec.value = '111111111111111111111111'
-    reader_com.selec.value = '1111'
-
-    return reader_pos, reader_vel, reader_com
-
-#############################################################################
-### reading createData
-# reader_pos = Reader('PositionReader')
-# reader_vel = Reader('VelocityReader')
-# reader_com = Reader('ComReader')
-
-# filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-# filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
-# filename_com = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_com.dat"
-#filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-
-# filename_pos = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/quadruped_positions_eff_rearing.dat"
-# filename_vel = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/quadruped_velocities_eff_rearing.dat"
-
-
-
-
-des_pos = reader_pos.vector
-des_vel = reader_vel.vector
+from dynamic_graph.sot.core.switch import SwitchVector
 
 
 ################################################################################
@@ -136,36 +80,131 @@ d_gain_z_6d = mul_double_vec_2(d_gain_z, unit_vector_zd, "d_gain_z_to_6d")
 
 kd_split = add_vec_vec(d_gain_x_6d, d_gain_z_6d, "d_gain_split")
 
+
+#############################################################################
+
+def file_exists(filename):
+    if os.path.isfile(filename):
+        print("The file %s exists" % filename)
+    else:
+        print("The file %s does not exist" % filename)
+        assert False
+
+def read_planned_traj(path, EntityName):
+    reader_pos = Reader('PositionReader_' + EntityName )
+    reader_vel = Reader('VelocityReader_' + EntityName)
+    reader_com = Reader('ComReader_' + EntityName)
+
+    filename_pos = path + "quadruped_positions_eff.dat"
+    filename_vel = path + "quadruped_velocities_eff.dat"
+    filename_com = path + "quadruped_com.dat"
+
+    file_exists(filename_pos)
+    file_exists(filename_vel)
+    file_exists(filename_com)
+
+    print("Loading data files:")
+    reader_pos.load(filename_pos)
+    reader_vel.load(filename_vel)
+    reader_com.load(filename_com)
+
+    # Specify which of the columns to select.
+    # NOTE: This is selecting the columns in reverse order - the last number is the first column in the file
+
+    reader_pos.selec.value = '111111111111111111111111'
+    reader_vel.selec.value = '111111111111111111111111'
+    reader_com.selec.value = '1111'
+
+    return reader_pos, reader_vel, reader_com
+
+#############################################################################
+
+fpath_jump = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/SAB/jump/"
+fpath_trot = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/SAB/trot/"
+fpath_fjump = "/home/ameduri/devel/workspace/src/catkin/robots/dg_blmc_robots/demos/quadruped/trajectories/SAB/forward_jump/"
+
+
+rpos_jump, rvel_jump, rcom_jump = read_planned_traj(fpath_jump , "jump")
+rpos_trot, rvel_trot, rcom_trot = read_planned_traj(fpath_trot, "trot")
+rpos_fjump, rvel_fjump, rcom_fjump = read_planned_traj(fpath_fjump, "fjump")
+
+
+control_switch_pos = SwitchVector("control_switch_pos")
+control_switch_pos.setSignalNumber(3) # we want to switch between 2 signals
+plug(rpos_jump.vector, control_switch_pos.sin0)
+plug(rpos_trot.vector, control_switch_pos.sin1)
+plug(rpos_fjump.vector, control_switch_pos.sin2)
+control_switch_pos.selection.value = 0 # pick and switch manually
+
+control_switch_vel = SwitchVector("control_switch_vel")
+control_switch_vel.setSignalNumber(3) # we want to switch between 2 signals
+plug(rvel_jump.vector, control_switch_vel.sin0)
+plug(rvel_trot.vector, control_switch_vel.sin1)
+plug(rvel_fjump.vector, control_switch_vel.sin2)
+
+control_switch_vel.selection.value = 0 # pick and switch manually
+
+#############################################################################
+
+def start_jump():
+    rpos_jump.rewind()
+    rpos_jump.vector.recompute(0)
+    rvel_jump.rewind()
+    rvel_jump.vector.recompute(0)
+    rcom_jump.rewind()
+    rcom_jump.vector.recompute(0)
+
+    control_switch_pos.selection.value = 0
+    control_switch_vel.selection.value = 0
+
+def start_trot():
+    rpos_trot.rewind()
+    rpos_trot.vector.recompute(0)
+    rvel_trot.rewind()
+    rvel_trot.vector.recompute(0)
+    rcom_trot.rewind()
+    rcom_trot.vector.recompute(0)
+
+    control_switch_pos.selection.value = 1
+    control_switch_vel.selection.value = 1
+
+def start_fjump():
+    rpos_fjump.rewind()
+    rpos_fjump.vector.recompute(0)
+    rvel_fjump.rewind()
+    rvel_fjump.vector.recompute(0)
+    rcom_fjump.rewind()
+    rcom_fjump.vector.recompute(0)
+
+    control_switch_pos.selection.value = 2
+    control_switch_vel.selection.value = 2
+
+
+
+
 ###############################################################################
 
-def start_traj():
-    reader_pos.rewind()
-    reader_pos.vector.recompute(0)
-    reader_vel.rewind()
-    reader_vel.vector.recompute(0)
-    reader_com.rewind()
-    reader_com.vector.recompute(0)
-
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
-control_torques = quad_imp_ctrl.return_control_torques(kp_split, des_pos, kd_split, des_vel, kf, des_fff)
+control_torques = quad_imp_ctrl.return_control_torques(kp_split, control_switch_pos.sout,
+                                            kd_split, control_switch_vel.sout, kf, des_fff)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 
 
 ####################################### data logging ########################################
-
-# quad_com_ctrl = quad_com_control(robot)
-
-quad_imp_ctrl.record_data()
-
-robot.add_trace("PositionReader", "vector")
-robot.add_ros_and_trace("PositionReader", "vector")
-
-robot.add_trace("VelocityReader", "vector")
-robot.add_ros_and_trace("VelocityReader", "vector")
-
-robot.add_trace("ComReader", "vector")
-robot.add_ros_and_trace("ComReader", "vector")
-
-robot.add_trace("d_gain_split", "sout")
-robot.add_ros_and_trace("d_gain_split", "sout")
+#
+# # quad_com_ctrl = quad_com_control(robot)
+#
+# quad_imp_ctrl.record_data()
+#
+# robot.add_trace("PositionReader", "vector")
+# robot.add_ros_and_trace("PositionReader", "vector")
+#
+# robot.add_trace("VelocityReader", "vector")
+# robot.add_ros_and_trace("VelocityReader", "vector")
+#
+# robot.add_trace("ComReader", "vector")
+# robot.add_ros_and_trace("ComReader", "vector")
+#
+# robot.add_trace("d_gain_split", "sout")
+# robot.add_ros_and_trace("d_gain_split", "sout")
