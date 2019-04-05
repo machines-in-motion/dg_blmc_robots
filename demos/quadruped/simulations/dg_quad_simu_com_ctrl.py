@@ -51,8 +51,31 @@ base_vel_xyz = selec_vector(vicon_client.signal(robot_vicon_name + "_velocity_bo
 
 
 ################################################################################
+# from py_robot_properties_quadruped.config import QuadrupedConfig
+# import dynamic_graph.sot.dynamics_pinocchio as dp
+#
+#
+# robot_pin = QuadrupedConfig.buildRobotWrapper()
+# robot_dg = dp.DynamicPinocchio(robot_vicon_name)
+# robot_dg.setModel(robot_pin.model)
+# robot_dg.setData(robot_pin.data)
+
+
+###############################################################################
 
 com_imp_ctrl = ComImpedanceControl(EntityName)
+
+plug(base_pos_xyz, com_imp_ctrl.position)
+plug(base_vel_xyz, com_imp_ctrl.velocity)
+# plug(base_ang_vel_xyz, com_imp_ctrl.angvel)
+
+plug(kp, com_imp_ctrl.Kp)
+plug(kd, com_imp_ctrl.Kd)
+plug(des_pos, com_imp_ctrl.des_pos)
+plug(des_vel, com_imp_ctrl.des_vel)
+plug(des_fff, com_imp_ctrl.des_fff)
+com_imp_ctrl.mass.value = [2.3, 2.3, 2.3]
+# plug(kp, com_imp_ctrl.inertia)
 
 control_switch_pos = SwitchVector("control_switch_pos")
 control_switch_pos.setSignalNumber(2) # we want to switch between 2 signals
@@ -60,18 +83,20 @@ plug(zero_vec(3,"zero"), control_switch_pos.sin0)
 plug(com_imp_ctrl.set_pos_bias, control_switch_pos.sin1)
 control_switch_pos.selection.value = 0
 
-# biased_base_pos_xyz = subtract_vec_vec(base_pos_xyz, control_switch_pos.sout, "bias_pos")
-
-plug(base_pos_xyz, com_imp_ctrl.position)
-plug(base_vel_xyz, com_imp_ctrl.velocity)
-
-plug(kp, com_imp_ctrl.Kp)
-plug(kd, com_imp_ctrl.Kd)
-plug(des_pos, com_imp_ctrl.des_pos)
-plug(des_vel, com_imp_ctrl.des_vel)
-plug(des_fff, com_imp_ctrl.des_fff)
+control_switch_vel = SwitchVector("control_switch_vel")
+control_switch_vel.setSignalNumber(2) # we want to switch between 2 signals
+plug(zero_vec(3,"zero"), control_switch_vel.sin0)
+plug(com_imp_ctrl.set_vel_bias, control_switch_vel.sin1)
+plug(control_switch_pos.selection, control_switch_vel.selection )
 
 
+biased_base_pos_xyz = subtract_vec_vec(base_pos_xyz, control_switch_pos.sout, "bias_pos")
+biased_base_vel_xyz = subtract_vec_vec(base_vel_xyz, control_switch_vel.sout, "bias_vel")
+
+plug(biased_base_pos_xyz, com_imp_ctrl.biased_pos)
+plug(biased_base_vel_xyz, com_imp_ctrl.biased_vel)
+
+# torques = com_imp_ctrl.tau
 
 
 ###############################################################################
@@ -122,16 +147,16 @@ for i in range(40000):
     # "Execute the dynamic graph"
     robot.device.execute_graph()
 
-
     joint_torques[:] = np.asmatrix(robot.device.ctrl_joint_torques.value).T
     #joint_torques[:] = control_torques.value
 
     if i == 10000:
         control_switch_pos.selection.value = 1
+        # print(com_imp_ctrl.displaySignals())
         print("completed switch")
 
     if i > 10000:
-        print(i, control_switch_pos.sout.value)
+        print(i, control_switch_vel.sout.value)
 
 
     # integrate the configuration from the computed torques

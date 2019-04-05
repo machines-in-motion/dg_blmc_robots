@@ -167,6 +167,17 @@ def mul_double_vec(doub, vec, entityName):
     plug(vec, mul.signal('sin2'))
     return mul.sout
 
+def mul_vec_vec(vec1, vec2, entityName):
+    """
+    ## This function multiplies two Vectors element wise
+    ## Input : Constant vectors (not numpy arrays)
+    """
+    vec_mul = Multiply_of_vector(entityName)
+    plug(vec1, vec_mul.sin0)
+    plug(vec2, vec_mul.sin1)
+    return vec_mul.sout
+
+
     ######################### Robotics operators ##################################
 
 def hom2pos(robot_joint_signal, entityName):

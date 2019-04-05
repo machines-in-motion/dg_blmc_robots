@@ -69,7 +69,7 @@ phase_pi = add_phase_2.sout
 add_omega = Add_of_double('omega_op')
 add_omega.sin1.value = 0.0
 ### Change this value for different gains
-add_omega.sin2.value = 4.0*np.pi
+add_omega.sin2.value = 3.0*np.pi
 omega = add_omega.sout
 
 
@@ -116,7 +116,7 @@ p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
 
 p_gain_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
 
-kd_split = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
+kd_split = constVector([1.5, 0.0, 1.5, 0.0, 0.0, 0.0], "kd_split")
 
 #######################################################################################
 
