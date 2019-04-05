@@ -41,55 +41,51 @@ namespace dg_blmc_robots
 
   void DGMQuadruped::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
-    try{
-      quadruped_.acquire_sensors();
+    quadruped_.acquire_sensors();
 
-      /**
-        * Motor data
-        */
-      map.at("motor_target_currents") = quadruped_.get_motor_target_currents();
-      map.at("motor_torques") = quadruped_.get_motor_torques();
-      map.at("motor_target_torques") = quadruped_.get_target_motor_torques();
-      map.at("motor_encoder_indexes") = quadruped_.get_motor_encoder_indexes();
+    /**
+      * Motor data
+      */
+    map.at("motor_target_currents") = quadruped_.get_motor_target_currents();
+    map.at("motor_torques") = quadruped_.get_motor_torques();
+    map.at("motor_target_torques") = quadruped_.get_target_motor_torques();
+    map.at("motor_encoder_indexes") = quadruped_.get_motor_encoder_indexes();
 
-      /**
-        * Joint data
-        */
-      map.at("joint_positions") = quadruped_.get_joint_positions();
-      map.at("joint_velocities") = quadruped_.get_joint_velocities();
-      map.at("joint_torques") = quadruped_.get_joint_torques();
-      map.at("joint_target_torques") = quadruped_.get_joint_target_torques();
+    /**
+      * Joint data
+      */
+    map.at("joint_positions") = quadruped_.get_joint_positions();
+    map.at("joint_velocities") = quadruped_.get_joint_velocities();
+    map.at("joint_torques") = quadruped_.get_joint_torques();
+    map.at("joint_target_torques") = quadruped_.get_joint_target_torques();
 
-      /**
-        * Additional data
-        */
-      map.at("contact_sensors") = quadruped_.get_contact_sensors_states();
-      map.at("slider_positions") = quadruped_.get_slider_positions();
+    /**
+      * Additional data
+      */
+    map.at("contact_sensors") = quadruped_.get_contact_sensors_states();
+    map.at("slider_positions") = quadruped_.get_slider_positions();
 
-    }catch(...){
-      printf("Error in acquiring the sensors data\n");
-      printf("Setting all of them 0.0\n");
-      /**
-        * Motor data
-        */
-      map.at("motor_target_currents").fill(0.0);
-      map.at("motor_torques").fill(0.0);
-      map.at("motor_target_torques").fill(0.0);
-      map.at("motor_encoder_indexes").fill(0.0);
+    /**
+     * Robot status
+     */
+    dynamicgraph::Vector& map_motor_enabled = map.at("motor_enabled");
+    dynamicgraph::Vector& map_motor_ready = map.at("motor_ready");
+    dynamicgraph::Vector& map_motor_board_enabled = map.at("motor_board_enabled");
+    dynamicgraph::Vector& map_motor_board_errors = map.at("motor_board_errors");
+    const std::array<bool, 8>& motor_enabled = quadruped_.get_motor_enabled();
+    const std::array<bool, 8>& motor_ready = quadruped_.get_motor_ready();
+    const std::array<bool, 4>& motor_board_enabled = quadruped_.get_motor_board_enabled();
+    const std::array<int, 4>& motor_board_errors = quadruped_.get_motor_board_errors();
 
-      /**
-        * Joint data
-        */
-      map.at("joint_positions").fill(0.0);
-      map.at("joint_velocities").fill(0.0);
-      map.at("joint_torques").fill(0.0);
-      map.at("joint_target_torques").fill(0.0);
-
-      /**
-        * Additional data
-        */
-      map.at("contact_sensors").fill(0.0);
-      map.at("slider_positions").fill(0.0);
+    for(unsigned i=0 ; i<8 ; ++i)
+    {
+      map_motor_enabled[i] = motor_enabled[i];
+      map_motor_ready[i] = motor_ready[i];
+    }
+    for(unsigned i=0 ; i<4 ; ++i)
+    {
+      map_motor_board_enabled[i] = motor_board_enabled[i];
+      map_motor_board_errors[i] = motor_board_errors[i];
     }
   }
 
@@ -97,7 +93,10 @@ namespace dg_blmc_robots
       const dynamic_graph::VectorDGMap& map)
   {
     try{
+      // here we need to perform and internal copy. Otherwize the compilator
+      // complains
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");
+      // Actually send the control to the robot
       quadruped_.send_target_joint_torque(ctrl_joint_torques_);
     }catch(...){
       printf("Error sending controls\n");
