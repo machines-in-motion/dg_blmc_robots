@@ -11,9 +11,12 @@ from leg_impedance_control.traj_generators import *
 
 kp_com = constVector([50.0, 0.0, 50.0], "kp_com")
 kd_com = constVector([0.5, 0.0, 0.5], "kd_com")
+kp_ang_com = constVector([1.0, 1.0, 1.0], "kp_ang_com")
 des_pos_com = constVector([0.0, 0.0, 0.0], "des_pos_com")
 des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
 des_fff_com = constVector([0.0, 0.0, 2.2*9.81], "des_fff_com")
+des_omega = constVector([0.0, 0.0, 0.0], "des_com_omega")
+des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
 
 pos_des = constVector([0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
                        0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
@@ -84,7 +87,10 @@ kd_split = add_vec_vec(d_gain_x_6d, d_gain_z_6d, "d_gain_split")
 quad_com_ctrl = quad_com_control(robot)
 com_tau = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
                                                                     des_fff_com)
+
 tau_per_leg = quad_com_ctrl.return_com_torques(com_tau)
+
+ang_tau = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_omega_com, des_fft_com)
 
 #################################################################################
 ##For making gain input dynamic through terminal
@@ -97,7 +103,7 @@ kf = add_kf.sout
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp_split, pos_des,
                                                 kd_split, vel_des, kf, tau_per_leg)
-plug(control_torques, robot.device.ctrl_joint_torques)
+# plug(control_torques, robot.device.ctrl_joint_torques)
 
 
 

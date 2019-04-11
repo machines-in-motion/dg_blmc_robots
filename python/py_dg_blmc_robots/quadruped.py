@@ -32,7 +32,7 @@ class QuadrupedBulletRobot(Robot):
         print("Loaded plain.")
 
         # Load the robot
-        robotStartPos = [0.,0,0.40]
+        robotStartPos = [0.,0,.22]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = QuadrupedConfig.urdf_path

@@ -26,16 +26,16 @@ dq = zero(robot.pin_robot.nv)
 
 q[0] = 0.2
 q[1] = 0.0
-q[2] = 0.4
+q[2] = 0.22
 q[6] = 1.
 q[7] = 0.8
 q[8] = -1.6
 q[9] = 0.8
 q[10] = -1.6
-q[11] = 0.8
-q[12] = -1.6
-q[13] = 0.8
-q[14] = -1.6
+q[11] = -0.8
+q[12] = 1.6
+q[13] = -0.8
+q[14] = 1.6
 
 # Update the initial state of the robot.
 robot.reset_state(q, dq)
@@ -78,9 +78,9 @@ des_vel = reader_vel.vector
 
 ###############################################################################
 
-kp = constVector([180.0, 0.0, 180.0, 0.0, 0.0, 0.0], "kp_split")
+kp = constVector([230.0, 0.0, 230.0, 0.0, 0.0, 0.0], "kp_split")
 
-kd = constVector([2.5, 0.0,2.5, 0.0, 0.0, 0.0], "kd_split")
+kd = constVector([3.2, 0.0,3.2, 0.0, 0.0, 0.0], "kd_split")
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)

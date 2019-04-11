@@ -8,7 +8,21 @@ from leg_impedance_control.traj_generators import *
 
 from dynamic_graph.sot.core.reader import Reader
 
-#############################################################################
+
+
+from dynamic_graph_manager.device import Device
+from dynamic_graph_manager.device.robot import Robot
+
+
+###### robot init #######################################################
+
+local_device = Device("hopper_robot")
+yaml_path = "/home/ameduri/devel/workspace/src/catkin/robots/robot_properties/robot_properties_teststand/config/teststand.yaml"
+local_device.initialize(yaml_path)
+robot = Robot(name=local_device.name, device=local_device)
+
+
+
 
 def file_exists(filename):
     if os.path.isfile(filename):
@@ -98,114 +112,72 @@ des_lqr = stack_two_vectors(des_lqr, des_lqr3, 72, 36)
 
 quad_com_ctrl = quad_com_control(robot)
 f_lqr = quad_com_ctrl.return_lqr_tau(des_com, des_lmom, des_amom, des_forces, des_lqr)
+quad_com_ctrl.record_data()
 
-# ################################################################################
-des_fff = f_lqr
+######## robot simulation ################################################
 
-##For making gain input dynamic through terminal
-add_kf = Add_of_double('kf')
-add_kf.sin1.value = 0
-### Change this value for different gains
-add_kf.sin2.value = 0.0
-kf = add_kf.sout
+from pinocchio.utils import zero
 
-###############################################################################
+q = zero(2)
+dq = zero(2)
+q_out = q.T.tolist()[0]
+dq_out = dq.T.tolist()[0]
+ddq = zero(2)
+joint_torques = zero(2)
 
-## filter slider_value
-from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
-slider_filtered = FIRFilter_Vector_double("slider_fir_filter")
-filter_size = 400
-slider_filtered.setSize(filter_size)
-for i in range(filter_size):
-    slider_filtered.setElement(i, 1.0/float(filter_size))
-# we plug the centered sliders output to the input of the filter.
-plug(robot.device.slider_positions, slider_filtered.sin)
+q = zero(2)
+dq = zero(2)
+q_out = q.T.tolist()[0]
+dq_out = dq.T.tolist()[0]
+ddq = zero(2)
+joint_torques = zero(2)
 
-slider_1_op = Component_of_vector("slider_1")
-slider_1_op.setIndex(0)
-plug(slider_filtered.sout, slider_1_op.sin)
-slider_1 = slider_1_op.sout
+q[:] = np.asmatrix(robot.device.joint_positions.value).T
+dq[:] = np.asmatrix(robot.device.joint_velocities.value).T
 
-slider_2_op = Component_of_vector("slider_2")
-slider_2_op.setIndex(1)
-plug(slider_filtered.sout, slider_2_op.sin)
-slider_2 = slider_2_op.sout
+print(q, dq)
 
-slider_3_op = Component_of_vector("slider_3")
-slider_3_op.setIndex(2)
-plug(slider_filtered.sout, slider_3_op.sin)
-slider_3 = slider_3_op.sout
+dt = 0.001#config.dt
+motor_inertia = 0.045
 
-slider_4_op = Component_of_vector("slider_4")
-slider_4_op.setIndex(3)
-plug(slider_filtered.sout, slider_4_op.sin)
-slider_4 = slider_4_op.sout
+for i in range(400):
+    # fill the sensors
+    robot.device.joint_positions.value = q.T.tolist()[0][:]
+    robot.device.joint_velocities.value = dq.T.tolist()[0][:]
+
+    # "Execute the dynamic graph"
+    robot.device.execute_graph()
 
 
-p_gain_x = scale_values(slider_1, 300.0, "scale_kp_x")
-p_gain_z = scale_values(slider_2, 300.0, "scale_kp_z")
+    joint_torques[:] = np.asmatrix(robot.device.ctrl_joint_torques.value).T
+    #joint_torques[:] = control_torques.value
 
-d_gain_x = scale_values(slider_3, 1.5, "scale_kd_x")
-d_gain_z = scale_values(slider_4, 1.5, "scale_kd_z")
+    # quad_com_ctrl.delta_f.recompute(i)
+    # print(quad_com_ctrl.delta_f.value)
+    #print(q, dq)
 
+    f_lqr.recompute(i)
+    print(f_lqr.value)
 
-unit_vector_x = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "unit_kp_x")
-unit_vector_z = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_kp_z")
+    # quad_com_ctrl.f_thr.recompute(i)
+    # print(quad_com_ctrl.f_thr.value)
 
-p_gain_x_6d = mul_double_vec_2(p_gain_x, unit_vector_x, "p_gain_x_to_6d")
-p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
+    # des_lqr.recompute(i)
+    # print(np.shape(des_lqr.value))
+    # # print(des_lqr.value)
+    # assert False
 
-kp_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
-
-unit_vector_xd = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "unit_kd_x")
-unit_vector_zd = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_kd_z")
-
-d_gain_x_6d = mul_double_vec_2(d_gain_x, unit_vector_xd, "d_gain_x_to_6d")
-d_gain_z_6d = mul_double_vec_2(d_gain_z, unit_vector_zd, "d_gain_z_to_6d")
-
-kd_split = add_vec_vec(d_gain_x_6d, d_gain_z_6d, "d_gain_split")
-
-# ###############################################################################
-#
-def start_traj():
-    reader_pos.rewind()
-    reader_pos.vector.recompute(0)
-    reader_vel.rewind()
-    reader_vel.vector.recompute(0)
-    reader_com.rewind()
-    reader_com.vector.recompute(0)
-    reader_lmom.rewind()
-    reader_lmom.vector.recompute(0)
-    reader_amom.rewind()
-    reader_amom.vector.recompute(0)
-    reader_forces.rewind()
-    reader_forces.vector.recompute(0)
-    reader_lqr1.rewind()
-    reader_lqr1.vector.recompute(0)
-    reader_lqr2.rewind()
-    reader_lqr2.vector.recompute(0)
-    reader_lqr2.rewind()
-    reader_lqr2.vector.recompute(0)
-
-quad_imp_ctrl = quad_leg_impedance_controller(robot)
-control_torques = quad_imp_ctrl.return_control_torques(kp_split, des_pos, kd_split, des_vel, kf, des_fff)
-
-plug(control_torques, robot.device.ctrl_joint_torques)
+    # integrate the configuration from the computed torques
+    #q = (q + dt * dq + dt * dt * 0.5 * joint_torques / motor_inertia)
+    #dq = (dq + dt * joint_torques / motor_inertia)
+    q = (q + dt * dq + dt * dt * 0.5 * 0.01 / motor_inertia)
+    dq = (dq + dt * 0.01 / motor_inertia)
 
 
-####################################### data logging ########################################
-quad_imp_ctrl.record_data()
-
-# quad_com_ctrl.record_data()
-
-robot.add_trace("PositionReader", "vector")
-robot.add_ros_and_trace("PositionReader", "vector")
-
-robot.add_trace("VelocityReader", "vector")
-robot.add_ros_and_trace("VelocityReader", "vector")
-
-robot.add_trace("ComReader", "vector")
-robot.add_ros_and_trace("ComReader", "vector")
-
-robot.add_trace("d_gain_split", "sout")
-robot.add_ros_and_trace("d_gain_split", "sout")
+    if (i % 1000) == 0:
+        # print "qref =     ", robot.pid_control.pose_controller.qRef.value
+        # print ("q =        ",
+        #        robot.pid_control.pose_controller.base6d_encoders.value[6:])
+        # print "err_pid =  ", robot.pid_control.pose_controller.qError.value
+        # print "currents = ", robot.device.ctrl_joint_torques.value
+        pass

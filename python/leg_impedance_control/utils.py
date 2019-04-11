@@ -15,6 +15,7 @@ from dynamic_graph import plug
 from dynamic_graph.sot.core import Selec_of_vector
 from dynamic_graph.sot.core.operator import *
 from dynamic_graph.sot.core.vector_constant import VectorConstant
+from dynamic_graph.sot.core.matrix_constant import MatrixConstant
 from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
@@ -31,12 +32,12 @@ def constVector(val, entityName):
     op.value = list(val)
     return op
 
-def matrixConstant(val):
+def constMatrix(val, entityName):
     """
     ## This function initialises an constant matrix
     ## Input : matrix (python array)
     """
-    op = MatrixConstant("").sout
+    op = MatrixConstant(entityName).sout
     op.value = val
     return op
 
