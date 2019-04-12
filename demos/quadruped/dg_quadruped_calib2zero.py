@@ -74,7 +74,9 @@ control_switch = SwitchVector("control_switch")
 control_switch.setSignalNumber(2) # we want to switch between 2 signals
 plug(leg_calibrator.control, control_switch.sin0)
 plug(pd.control, control_switch.sin1)
-control_switch.selection.value = 0 # pick and switch manually
+
+plug(leg_calibrator.calibrated_flag, control_switch.selection) # auto switch
+# control_switch.selection.value = 0 # pick and switch manually
 
 plug(control_switch.sout, robot.device.ctrl_joint_torques)
 
