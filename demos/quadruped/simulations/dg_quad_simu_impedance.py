@@ -23,18 +23,26 @@ dq = zero(robot.pin_robot.nv)
 
 q[0] = 0.2
 q[1] = 0.0
-q[2] = 0.4
+q[2] = 0.22
 q[6] = 1.
-for i in range(4):
-    q[7 + 2 * i] = 0.8
-    q[8 + 2 * i] = -1.6
-
+q[7] = 0.8
+q[8] = -1.6
+q[9] = 0.8
+q[10] = -1.6
+q[11] = -0.8
+q[12] = 1.6
+q[13] = -0.8
+q[14] = 1.6
 # Update the initial state of the robot.
 robot.reset_state(q, dq)
 
+#from leg_impedance_control.utils import *
+from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller
+from leg_impedance_control.traj_generators import mul_double_vec_2
+
 #########################################################################################
 
-# ## setting desired position
+## setting desired position
 des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
@@ -47,12 +55,13 @@ des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                         "vel_des")
 
-des_fff = constVector([0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
-                       0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
-                       0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
-                       0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0],
+des_fff = constVector([0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0],
                         "fff")
 
+#######################################################################################
 
 # ##For making gain input dynamic through terminal
 # add_kp = Add_of_double('kp')
@@ -60,18 +69,16 @@ des_fff = constVector([0.0, 0.0, (2.2*9.8)/4, 0.0, 0.0, 0.0,
 # ### Change this value for different gains
 # add_kp.sin2.value = 100.0
 # kp = add_kp.sout
+#
+# ##For making gain input dynamic through terminal
+# add_kd = Add_of_double('kd')
+# add_kd.sin1.value = 0
+# ### Change this value for different gains
+# add_kd.sin2.value = 0.01
+# kd = add_kd.sout
 
-##For making gain input dynamic through terminal
-add_kd = Add_of_double('kd')
-add_kd.sin1.value = 0
-### Change this value for different gains
-add_kd.sin2.value = 0.0
-kd = add_kd.sout
-
-kp = constVector([50.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
-
-#kd = constVector([0.01, 0.0, 0.01, 0.0, 0.0, 0.0], "kd_split")
-
+kp = constVector([100.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
+kd = constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "kd_split")
 
 ##For making gain input dynamic through terminal
 add_kf = Add_of_double('kf')
