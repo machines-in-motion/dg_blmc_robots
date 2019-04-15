@@ -406,3 +406,6 @@ class quad_com_control():
 
         self.robot.add_trace("lqr_com_force", "sout")
         self.robot.add_ros_and_trace("lqr_com_force", "sout")
+
+        self.robot.add_trace("des_fff", "sout")
+        self.robot.add_ros_and_trace("des_fff", "sout")

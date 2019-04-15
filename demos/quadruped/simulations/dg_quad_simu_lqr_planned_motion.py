@@ -85,14 +85,14 @@ des_fff = des_forces
 
 ###############################################################################
 
-kp = constVector([150.0, 0.0, 150.0, 0.0, 0.0, 0.0], "kp_split")
+kp = constVector([50.0, 0.0, 50.0, 0.0, 0.0, 0.0], "kp_split")
 
-kd = constVector([2.0, 0.0,2.0, 0.0, 0.0, 0.0], "kd_split")
+kd = constVector([.0, 0.0,.0, 0.0, 0.0, 0.0], "kd_split")
 
 add_kf = Add_of_double('kf')
 add_kf.sin1.value = 0
 ### Change this value for different gains
-add_kf.sin2.value = 0.0
+add_kf.sin2.value = 1.0
 kf = add_kf.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
