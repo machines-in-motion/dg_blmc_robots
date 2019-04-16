@@ -55,7 +55,7 @@ reader_forces = Reader('forces')
 
 filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
 filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_forces = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_forces.dat"
+# filename_forces = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_forces.dat"
 
 # filename_pos = "../trajectories/quadruped_positions_eff_rearing.dat"
 # filename_vel = "../trajectories/quadruped_velocities_eff_rearing.dat"
@@ -63,25 +63,20 @@ filename_forces = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planni
 
 file_exists(filename_pos)
 file_exists(filename_vel)
-file_exists(filename_forces)
 
 
 print("Loading data files:")
 reader_pos.load(filename_pos)
 reader_vel.load(filename_vel)
-reader_forces.load(filename_forces)
 
 # Specify which of the columns to select.
 # NOTE: This is selecting the columns in reverse order - the last number is the first column in the file
 reader_pos.selec.value = '111111111111111111111111'
 reader_vel.selec.value = '111111111111111111111111'
-reader_forces.selec.value = '1111111111110'
 
 des_pos = reader_pos.vector
 des_vel = reader_vel.vector
-des_forces = reader_forces.vector
 
-des_fff = des_forces
 
 ###############################################################################
 
@@ -92,11 +87,11 @@ kd = constVector([2.0, 0.0,2.0, 0.0, 0.0, 0.0], "kd_split")
 add_kf = Add_of_double('kf')
 add_kf.sin1.value = 0
 ### Change this value for different gains
-add_kf.sin2.value = 0.0
+add_kf.sin2.value = 1.0
 kf = add_kf.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
-control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel, kf, des_fff)
+control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 

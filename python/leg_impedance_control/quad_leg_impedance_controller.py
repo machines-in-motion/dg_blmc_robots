@@ -299,7 +299,7 @@ class quad_com_control():
         ### mass in all direction (double to vec returns zero)
         ## TODO : Check if there is dynamicgraph::double
         self.com_imp_ctrl.mass.value = [2.2, 2.2, 2.2]
-        self.com_imp_ctrl.inertia.value = [1.0, 1.0, 1.0]
+        self.com_imp_ctrl.inertia.value = [0.037, .035, 0.0]
 
         self.control_switch_pos = SwitchVector("control_switch_pos")
         self.control_switch_pos.setSignalNumber(2) # we want to switch between 2 signals
@@ -333,6 +333,9 @@ class quad_com_control():
         lqr_error3d = stack_two_vectors(lqr_pos_error, lqr_lmom_error, 3, 3)
         self.lqr_error = stack_two_vectors(lqr_error3d, lqr_amom_error, 6, 3)
         self.lqr_error = add_vec_vec(self.lqr_error, zero_vec(9, "lqr_track"), "lqr_error")
+
+        ## multiplying by -1 to match the co-ordinate axis
+        self.lqr_error = mul_double_vec(-1.0, self.lqr_error, "neg_lqr_error")
 
         plug(self.lqr_error, self.com_imp_ctrl.lqr_error)
         plug(des_lqr, self.com_imp_ctrl.lqr_gain)

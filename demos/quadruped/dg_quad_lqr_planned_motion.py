@@ -109,7 +109,7 @@ com_lmom_gain_vec_z = mul_double_vec_2(com_lmom_gain, constVector([0.0, 0.0, 1.0
 com_amom_gain = scale_values(slider_4, 30.0, "scale_amom_gain")
 com_amom_gain_vec_x = mul_double_vec_2(com_amom_gain, constVector([1.0, 0.0, 0.0], "unit_vec_amom_kp_x"), "com_amom_kp_x")
 com_amom_gain_vec_y = mul_double_vec_2(com_amom_gain, constVector([0.0, 1.0, 0.0], "unit_vec_amom_kp_y"), "com_amom_kp_y")
-com_amom_gain_vec_z = mul_double_vec_2(com_amom_gain, constVector([0.0, 0.0, 1.0], "unit_vec_amom_kp_z"), "com_amom_kp_z")
+com_amom_gain_vec_z = mul_double_vec_2(com_amom_gain, constVector([0.0, 0.0, 0.0], "unit_vec_amom_kp_z"), "com_amom_kp_z")
 
 gains_leg_x_tmp = stack_two_vectors(com_kp_vec_x, com_lmom_gain_vec_x, 3, 3)
 gains_leg_x = stack_two_vectors(gains_leg_x_tmp, com_amom_gain_vec_x, 6, 3)
@@ -171,10 +171,7 @@ p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
 
 kp_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
 
-
-# kp_split = constVector([80.0, 0.0, 80.0, 0.0, 0.0, 0.0], "kp_split")
-
-kd_split = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "kd_split")
+kd_split = constVector([0.8, 0.0, 0.8, 0.0, 0.0, 0.0], "kd_split")
 
 # ###############################################################################
 #

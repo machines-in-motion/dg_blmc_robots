@@ -28,7 +28,6 @@ class leg_impedance_controller():
 
         print("Warning: Robot acceleration has been set to zero")
         self.robot_dg.acceleration.value = 3 * (0.0, )
-        self.pos_error_old = None
 
     def compute_control_torques(self, start_index = 1, end_index = 3):
         '''
@@ -47,6 +46,19 @@ class leg_impedance_controller():
         plug(control_torques, sel.signal('sin'))
         return sel.signal('sout')
 
+    def return_leg_length(self):
+        '''
+        ### Computes current leg length
+        '''
+
+        self.xyzpos_hip = hom2pos(self.robot_dg.signal("pos_hip_" + self.leg_name), "xyzpos_hip_" + self.leg_name)
+        self.xyzpos_foot = hom2pos(self.robot_dg.signal("pos_foot_" + self.leg_name), "xyzpos_foot_" + self.leg_name)
+
+        ## Relative position of foot with respect to the base of the foot
+        self.rel_pos_foot = subtract_vec_vec(self.xyzpos_foot, self.xyzpos_hip, "rel_pos_foot_" + self.leg_name)
+        self.rel_pos_foot = stack_two_vectors(self.rel_pos_foot, constVector([0.0, 0.0, 0.0], 'stack_to_wrench_' + self.leg_name), 3, 3)
+        return self.rel_pos_foot
+
     def return_control_torques(self, kp, des_pos, kd = None, des_vel = None, kf = None, fff = None):
         '''
         ## Impedance controller implementation. Creates a virtual spring
@@ -61,12 +73,7 @@ class leg_impedance_controller():
 
         self.jac = self.robot_dg.signal("jac_cnt_" + self.leg_name)
 
-        self.xyzpos_hip = hom2pos(self.robot_dg.signal("pos_hip_" + self.leg_name), "xyzpos_hip_" + self.leg_name)
-        self.xyzpos_foot = hom2pos(self.robot_dg.signal("pos_foot_" + self.leg_name), "xyzpos_foot_" + self.leg_name)
-
-        ## Relative position of foot with respect to the base of the foot
-        self.rel_pos_foot = subtract_vec_vec(self.xyzpos_foot, self.xyzpos_hip, "rel_pos_foot_" + self.leg_name)
-        self.rel_pos_foot = stack_two_vectors(self.rel_pos_foot, constVector([0.0, 0.0, 0.0], 'stack_to_wrench_' + self.leg_name), 3, 3)
+        self.return_leg_length()
         self.pos_error = subtract_vec_vec(self.rel_pos_foot, des_pos, "pos_error_" + self.leg_name)
         mul_kp_gains_split = Multiply_of_vector("kp_split_" + self.leg_name)
         plug(kp, mul_kp_gains_split.sin0)
@@ -107,6 +114,7 @@ class leg_impedance_controller():
         control_torques = self.compute_control_torques()
 
         return control_torques
+
 
     def record_data(self, robot):
 
