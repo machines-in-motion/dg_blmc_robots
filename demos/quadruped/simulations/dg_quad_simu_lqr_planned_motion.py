@@ -156,4 +156,4 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 ##############################################################################
 
-robot.run(5000, 1./60.)
+robot.run(5000, 1./60., plot = True)

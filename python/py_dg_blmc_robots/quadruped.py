@@ -16,6 +16,8 @@ import pybullet as p
 import pinocchio as se3
 from pinocchio.utils import zero
 
+from matplotlib import pyplot as plt
+
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
@@ -122,13 +124,16 @@ class QuadrupedBulletRobot(Robot):
         self.signal_base_vel_.sout.value = dq[0:6]
 
 
-    def run(self, steps=1, delay=0.):
+    def run(self, steps=1, delay=0., plot = False):
         """
         Executes the simulation for n `steps`. To slow down the simulation
         steps for visualization, applies `delay` ms of waiting after performing
         17 (~= 1000/60) simulation steps. This allows to adjust the timing for
         visualization at 60 Hz.
         """
+
+        tracked_base_pos = np.zeros((steps, 7))
+        tracked_base_vel = np.zeros((steps, 6))
 
         for i in range(steps):
             self.device.execute_graph()
@@ -138,8 +143,68 @@ class QuadrupedBulletRobot(Robot):
             self.sim2signal_()
             self.steps_ += 1
 
+            if plot:
+                tracked_base_pos[i] = self.signal_base_pos_.sout.value
+                tracked_base_vel[i] = self.signal_base_vel_.sout.value
+
             if delay != 0. and self.steps_ % 17 == 0:
                 time.sleep(delay)
+
+
+        if plot:
+            tracked_base_pos = np.asarray(tracked_base_pos)
+            tracked_base_vel = np.asarray(tracked_base_vel)
+            print(np.shape(tracked_base_pos))
+
+            fig1, ax1 = plt.subplots(3,1,sharex = True)
+
+            ax1[0].plot(tracked_base_pos[: ,0], color = "red", label = "base_pos_x")
+            #ax1[0].plot(des_pos_fl[:, 0], color = "black", label = "des_pos_fl_x")
+            ax1[0].legend()
+            ax1[0].set_xlabel("millisec")
+            ax1[0].set_ylabel("m")
+            ax1[0].grid()
+
+            ax1[1].plot(tracked_base_pos[: ,1], color = "red", label = "base_pos_y")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax1[1].legend()
+            ax1[1].set_xlabel("millisec")
+            ax1[1].set_ylabel("m")
+            ax1[1].grid()
+
+            ax1[2].plot(tracked_base_pos[: ,2], color = "red", label = "base_pos_z")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax1[2].legend()
+            ax1[2].set_xlabel("millisec")
+            ax1[2].set_ylabel("m")
+            ax1[2].grid()
+
+            fig2, ax2 = plt.subplots(3,1,sharex = True)
+
+            ax2[0].plot(tracked_base_vel[: ,0], color = "red", label = "base_vel_x")
+            #ax1[0].plot(des_pos_fl[:, 0], color = "black", label = "des_pos_fl_x")
+            ax2[0].legend()
+            ax2[0].set_xlabel("millisec")
+            ax2[0].set_ylabel("m/s")
+            ax2[0].grid()
+
+            ax2[1].plot(tracked_base_vel[: ,1], color = "red", label = "base_vel_y")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax2[1].legend()
+            ax2[1].set_xlabel("millisec")
+            ax2[1].set_ylabel("m/s")
+            ax2[1].grid()
+
+            ax2[2].plot(tracked_base_vel[: ,2], color = "red", label = "base_vel_z")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax2[2].legend()
+            ax2[2].set_xlabel("millisec")
+            ax2[2].set_ylabel("m/s")
+            ax2[2].grid()
+
+
+            plt.show()
+
 
     def reset_state(self, q, dq):
         """ Sets the bullet simulator and the signals to
