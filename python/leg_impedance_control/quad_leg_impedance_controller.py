@@ -7,7 +7,7 @@
 from leg_impedance_control.utils import *
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 # from leg_impedance_control.traj_generators import mul_double_vec_2
-from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+# from dynamic_graph_manager.vicon_sdk import ViconClientEntity
 from dynamic_graph_manager.dg_tools import ComImpedanceControl
 from dynamic_graph.sot.core.switch import SwitchVector
 
@@ -141,7 +141,7 @@ class quad_leg_impedance_controller():
 
 
 class quad_com_control():
-    def __init__(self, robot, client_name = "vicon_client" , vicon_ip = '10.32.3.16:801', EntityName = "quad_com_ctrl"):
+    def __init__(self, robot, ViconClientEntity, client_name = "vicon_client" , vicon_ip = '10.32.3.16:801', EntityName = "quad_com_ctrl"):
 
         self.robot = robot
         self.EntityName = EntityName
