@@ -8,6 +8,9 @@ from leg_impedance_control.traj_generators import *
 
 from dynamic_graph.sot.core.reader import Reader
 
+from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+
+
 #############################################################################
 
 def file_exists(filename):
@@ -100,7 +103,7 @@ des_lqr3_tmp = add_vec_vec(des_lqr3, zero_vec(36,"tmp2"), "des_lqr3")
 
 ###############################################################################
 
-quad_com_ctrl = quad_com_control(robot)
+quad_com_ctrl = quad_com_control(robot, ViconClientEntity)
 f_lqr = quad_com_ctrl.return_lqr_tau(des_com, des_lmom, des_amom, des_forces, des_lqr)
 
 # ################################################################################

@@ -155,6 +155,13 @@ class quad_com_control():
 
         self.vicon_client.add_object_to_track("{}/{}".format(self.robot_vicon_name, self.robot_vicon_name))
 
+        try:
+            ## comment out if running on real robot
+            self.vicon_client.robot_wrapper(robot)
+        except:
+            print("not in simulation")    
+
+
         self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_position")
         self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_velocity_body")
         self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_velocity_world")
