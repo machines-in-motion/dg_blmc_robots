@@ -31,15 +31,15 @@ reader_lqr3 = Reader('lqr3')
 
 
 
-filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_com = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_com.dat"
-filename_lmom = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_lmom.dat"
-filename_amom = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_amom.dat"
-filename_forces = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_forces.dat"
-filename_lqr1 = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_lqr1.dat"
-filename_lqr2 = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_lqr2.dat"
-filename_lqr3 = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_lqr3.dat"
+filename_pos = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_com = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_lmom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
+filename_amom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
+filename_forces = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
+filename_lqr1 = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr1.dat"
+filename_lqr2 = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr2.dat"
+filename_lqr3 = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr3.dat"
 
 tmp = np.loadtxt(filename_lqr1)
 
@@ -93,6 +93,10 @@ des_lqr3 = reader_lqr3.vector
 
 des_lqr = stack_two_vectors(des_lqr1, des_lqr2, 36, 36)
 des_lqr = stack_two_vectors(des_lqr, des_lqr3, 72, 36)
+
+des_lqr_tmp = add_vec_vec(des_lqr, zero_vec(108, "tmp"), "des_lqr")
+des_lqr3_tmp = add_vec_vec(des_lqr3, zero_vec(36,"tmp2"), "des_lqr3")
+
 
 ###############################################################################
 
@@ -186,6 +190,8 @@ def start_traj():
     reader_lqr2.vector.recompute(0)
     reader_lqr2.rewind()
     reader_lqr2.vector.recompute(0)
+    reader_lqr3.rewind()
+    reader_lqr3.vector.recompute(0)
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp_split, des_pos, kd_split, des_vel, kf, des_fff)
@@ -209,3 +215,9 @@ robot.add_ros_and_trace("ComReader", "vector")
 
 robot.add_trace("d_gain_split", "sout")
 robot.add_ros_and_trace("d_gain_split", "sout")
+
+robot.add_trace("des_lqr", "sout")
+robot.add_ros_and_trace("des_lqr", "sout")
+
+robot.add_trace("des_lqr3", "sout")
+robot.add_ros_and_trace("des_lqr3", "sout")

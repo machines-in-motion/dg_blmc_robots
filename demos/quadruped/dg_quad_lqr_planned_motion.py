@@ -28,12 +28,12 @@ reader_amom = Reader('Amom')
 reader_forces = Reader('forces')
 
 
-filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_com = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_com.dat"
-filename_lmom = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_lmom.dat"
-filename_amom = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_amom.dat"
-filename_forces = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_forces.dat"
+filename_pos = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_com = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_lmom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
+filename_amom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
+filename_forces = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
 
 file_exists(filename_pos)
 file_exists(filename_vel)
@@ -131,13 +131,6 @@ des_lqr_hl_hr = stack_two_vectors(gains_lqr_leg, gains_lqr_leg, 27, 27)
 
 des_lqr = stack_two_vectors(des_lqr_fl_fr, des_lqr_hl_hr, 54, 54)
 
-
-des_force = constVector([0.0, 0.0, (1.0)/4.0,
-                       0.0, 0.0, (1.0)/4.0,
-                       0.0, 0.0, (1.0)/4.0,
-                       0.0, 0.0, (1.0)/4.0],
-                        "fff")
-
 ###############################################################################
 
 quad_com_ctrl = quad_com_control(robot)
@@ -186,14 +179,9 @@ def start_traj():
     reader_lmom.vector.recompute(0)
     reader_amom.rewind()
     reader_amom.vector.recompute(0)
-    # reader_forces.rewind()
-    # reader_forces.vector.recompute(0)
-    # reader_lqr1.rewind()
-    # reader_lqr1.vector.recompute(0)
-    # reader_lqr2.rewind()
-    # reader_lqr2.vector.recompute(0)
-    # reader_lqr2.rewind()
-    # reader_lqr2.vector.recompute(0)
+    reader_forces.rewind()
+    reader_forces.vector.recompute(0)
+
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp_split, des_pos, kd_split, des_vel, kf, des_fff)

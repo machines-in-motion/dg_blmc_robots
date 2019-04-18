@@ -14,14 +14,14 @@ from dynamic_graph_manager.dg_tools import power_jump_control
 
 ###############################################################################
 
-des_weight_fff = constVector([0.0, 0.0, 3.0*9.81, 0.0, 0.0, 0.0], "des_weight_fff")
-des_fff = constVector([0.0, 0.0, 12.0*9.81, 0.0, 0.0, 0.0], "des_fff")
-des_pos_trigger = constVector([0.0, 0.0, -0.14, 0.0, 0.0, 0.0],"pos_des_trigger")
+des_weight_fff = constVector([0.0, 0.0, 1.8*9.81, 0.0, 0.0, 0.0], "des_weight_fff")
+des_fff = constVector([0.0, 0.0, 3.0*9.81, 0.0, 0.0, 0.0], "des_fff")
+des_pos_trigger = constVector([0.0, 0.0, -0.12, 0.0, 0.0, 0.0],"pos_des_trigger")
 des_pos_air = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0],"pos_des_air")
 des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
 
-des_kp_ground = constVector([100.0, 0.0, 280.0, 0.0, 0.0, 0.0],"des_kp_ground")
-des_kp_air = constVector([50.0, 0.0, 100.0, 0.0, 0.0, 0.0],"des_kp_air")
+des_kp_ground = constVector([100.0, 0.0, 250.0, 0.0, 0.0, 0.0],"des_kp_ground")
+des_kp_air = constVector([50.0, 0.0, 150.0, 0.0, 0.0, 0.0],"des_kp_air")
 des_kd = constVector([1.0, 0.0, 2.5, 0.0, 0.0, 0.0],"des_kd_air")
 
 

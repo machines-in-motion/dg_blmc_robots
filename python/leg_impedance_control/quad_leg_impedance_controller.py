@@ -299,7 +299,7 @@ class quad_com_control():
         ### mass in all direction (double to vec returns zero)
         ## TODO : Check if there is dynamicgraph::double
         self.com_imp_ctrl.mass.value = [2.2, 2.2, 2.2]
-        self.com_imp_ctrl.inertia.value = [0.037, .035, 0.0]
+        self.com_imp_ctrl.inertia.value = [0.00578574, 0.01938108, 0.02476124]
 
         self.control_switch_pos = SwitchVector("control_switch_pos")
         self.control_switch_pos.setSignalNumber(2) # we want to switch between 2 signals
@@ -342,19 +342,19 @@ class quad_com_control():
         self.delta_f = self.com_imp_ctrl.lqrtau
         #  multiplying with mass from the planner
 
-        des_fff = mul_double_vec(2.3*9.8, des_fff, "des_fff")
+        des_fff = mul_double_vec(2.3*9.8, des_fff, "des_fff_lqr")
         f = add_vec_vec(des_fff, self.delta_f, "lqr_com_force_12d")
 
         ### Thresholding with contact sensor to make forces event based
-        thr_cnt_sensor = self.threshold_cnt_sensor()
-        fl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 0, 1, "fl_cnt_3d")
-        fr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 1, 2, "fr_cnt_3d")
-        hl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 2, 3, "hl_cnt_3d")
-        hr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 3, 4, "hr_cnt_3d")
+        # thr_cnt_sensor = self.threshold_cnt_sensor()
+        # fl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 0, 1, "fl_cnt_3d")
+        # fr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 1, 2, "fr_cnt_3d")
+        # hl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 2, 3, "hl_cnt_3d")
+        # hr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 3, 4, "hr_cnt_3d")
         #
-        cnt_value_6d = stack_two_vectors(fl_cnt_value, fr_cnt_value, 3, 3)
-        cnt_value_9d = stack_two_vectors(cnt_value_6d, hl_cnt_value, 6, 3)
-        cnt_value_12d = stack_two_vectors(cnt_value_9d, hr_cnt_value, 9, 3)
+        # cnt_value_6d = stack_two_vectors(fl_cnt_value, fr_cnt_value, 3, 3)
+        # cnt_value_9d = stack_two_vectors(cnt_value_6d, hl_cnt_value, 6, 3)
+        # cnt_value_12d = stack_two_vectors(cnt_value_9d, hr_cnt_value, 9, 3)
         #
         # ## delta_f from lqr fused with contact sensors
         # f_thr = mul_vec_vec(cnt_value_12d, f, "delta_f_thresholded")
@@ -410,5 +410,9 @@ class quad_com_control():
         self.robot.add_trace("lqr_com_force", "sout")
         self.robot.add_ros_and_trace("lqr_com_force", "sout")
 
-        self.robot.add_trace("des_fff", "sout")
-        self.robot.add_ros_and_trace("des_fff", "sout")
+        self.robot.add_trace("f_hr_3d", "sout")
+        self.robot.add_ros_and_trace("f_hr_3d", "sout")
+
+
+        self.robot.add_trace("des_fff_lqr", "sout")
+        self.robot.add_ros_and_trace("des_fff_lqr", "sout")

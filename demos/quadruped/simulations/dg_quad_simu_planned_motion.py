@@ -53,8 +53,8 @@ reader_pos = Reader('PositionReader')
 reader_vel = Reader('VelocityReader')
 reader_forces = Reader('forces')
 
-filename_pos = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_pos = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos//quadruped_positions_eff.dat"
+filename_vel = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos//quadruped_velocities_eff.dat"
 # filename_forces = "/home/ameduri/devel/kino-dynamic-opt/src/catkin/motion_planning/momentumopt/demos/quadruped_forces.dat"
 
 # filename_pos = "../trajectories/quadruped_positions_eff_rearing.dat"

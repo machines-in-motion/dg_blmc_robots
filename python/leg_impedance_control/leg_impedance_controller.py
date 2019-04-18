@@ -132,3 +132,6 @@ class leg_impedance_controller():
 
         robot.add_trace("est_f_" + self.leg_name, "sout")
         robot.add_ros_and_trace("est_f_" + self.leg_name, "sout")
+
+        robot.add_trace("total_error_" + self.leg_name, "sout")
+        robot.add_ros_and_trace("total_error_" + self.leg_name, "sout")
