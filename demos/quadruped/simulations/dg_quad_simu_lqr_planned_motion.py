@@ -37,6 +37,9 @@ q[12] = 1.6
 q[13] = -0.8
 q[14] = 1.6
 
+# Update the initial state of the robot.
+robot.reset_state(q, dq)
+
 #############################################################################
 
 def file_exists(filename):
@@ -58,17 +61,15 @@ reader_lqr1 = Reader('lqr1')
 reader_lqr2 = Reader('lqr2')
 reader_lqr3 = Reader('lqr3')
 
-
-
-filename_pos = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_com = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
-filename_lmom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
-filename_amom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
-filename_forces = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
-filename_lqr1 = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr1.dat"
-filename_lqr2 = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr2.dat"
-filename_lqr3 = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr3.dat"
+filename_pos = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_lmom = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
+filename_amom = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
+filename_forces = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
+filename_lqr1 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr1.dat"
+filename_lqr2 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr2.dat"
+filename_lqr3 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr3.dat"
 
 tmp = np.loadtxt(filename_lqr1)
 
@@ -137,14 +138,14 @@ des_fff = f_lqr
 
 ###############################################################################
 
-kp = constVector([50.0, 0.0, 50.0, 0.0, 0.0, 0.0], "kp_split")
+kp = constVector([250.0, 0.0, 250.0, 0.0, 0.0, 0.0], "kp_split")
 
-kd = constVector([.0, 0.0,.0, 0.0, 0.0, 0.0], "kd_split")
+kd = constVector([2.0, 0.0,2.0, 0.0, 0.0, 0.0], "kd_split")
 
 add_kf = Add_of_double('kf')
 add_kf.sin1.value = 0
 ### Change this value for different gains
-add_kf.sin2.value = 0.0
+add_kf.sin2.value = 1.0
 kf = add_kf.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
