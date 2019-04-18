@@ -140,7 +140,9 @@ print(q, dq)
 dt = 0.001#config.dt
 motor_inertia = 0.045
 
-for i in range(400):
+tmp = []
+
+for i in range(0, 3000):
     # fill the sensors
     robot.device.joint_positions.value = q.T.tolist()[0][:]
     robot.device.joint_velocities.value = dq.T.tolist()[0][:]
@@ -156,16 +158,17 @@ for i in range(400):
     # print(quad_com_ctrl.delta_f.value)
     #print(q, dq)
 
-    f_lqr.recompute(i)
-    print(f_lqr.value)
+    # f_lqr.recompute(i)
+    # print(f_lqr.value)
 
     # quad_com_ctrl.f_thr.recompute(i)
     # print(quad_com_ctrl.f_thr.value)
 
-    # des_lqr.recompute(i)
+    des_lqr.recompute(i)
     # print(np.shape(des_lqr.value))
-    # # print(des_lqr.value)
+    # print(des_lqr.value[0:9])
     # assert False
+    tmp.append(des_lqr.value)
 
     # integrate the configuration from the computed torques
     #q = (q + dt * dq + dt * dt * 0.5 * joint_torques / motor_inertia)
@@ -181,3 +184,28 @@ for i in range(400):
         # print "err_pid =  ", robot.pid_control.pose_controller.qError.value
         # print "currents = ", robot.device.ctrl_joint_torques.value
         pass
+
+
+from matplotlib import pyplot as plt
+lqr = np.array(tmp)
+
+n = 9*0
+fig1, ax1 = plt.subplots(2,1)
+ax1[0].plot(lqr[:, 0+n], label = "lqr_x_traj")
+ax1[0].plot(lqr[:, 1+n], label = "lqr_y_traj")
+ax1[0].plot(lqr[:, 2+n], label = "lqr_z_traj")
+ax1[0].set_xlabel("millisec")
+ax1[0].set_ylabel("m")
+ax1[0].legend()
+ax1[0].grid()
+
+
+ax1[1].plot(lqr[:, 3+n], label = "lqr_xd_traj")
+ax1[1].plot(lqr[:, 4+n], label = "lqr_yd_traj")
+ax1[1].plot(lqr[:, 5+n], label = "lqr_zd_traj")
+ax1[1].set_xlabel("millisec")
+ax1[1].set_ylabel("m")
+ax1[1].legend()
+ax1[1].grid()
+
+plt.show()

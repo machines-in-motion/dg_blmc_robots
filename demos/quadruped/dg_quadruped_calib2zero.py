@@ -58,25 +58,26 @@ leg_calibrator.hardstop2zero.value = (1.568, -3.198, 1.615, -3.228, -1.596,3.208
 
 ######################################## Set up PD controller
 
-pd = ControlPD("pd_ctrl")
-pd.Kp.value = 4*(1.0, 1.0)
-pd.Kd.value = 4*(0.02, 0.02)
-
-pd.desiredposition.value = 8*(0.0,)
-pd.desiredvelocity.value = 8*(0.0,)
-
-plug(leg_calibrator.calibrated_position, pd.position)
-plug(calib_vel_filtered.sout, pd.velocity)
+# pd = ControlPD("pd_ctrl")
+# pd.Kp.value = 4*(1.0, 1.0)
+# pd.Kd.value = 4*(0.02, 0.02)
+#
+# pd.desiredposition.value = 8*(0.0,)
+# pd.desiredvelocity.value = 8*(0.0,)
+#
+# plug(leg_calibrator.calibrated_position, pd.position)
+# plug(calib_vel_filtered.sout, pd.velocity)
 
 ##################### SWITCH between controllers
 
 control_switch = SwitchVector("control_switch")
 control_switch.setSignalNumber(2) # we want to switch between 2 signals
 plug(leg_calibrator.control, control_switch.sin0)
-plug(pd.control, control_switch.sin1)
+# plug(pd.control, control_switch.sin1)
+control_switch.sin1.value = 8*(0.0,)
 
-plug(leg_calibrator.calibrated_flag, control_switch.selection) # auto switch
-# control_switch.selection.value = 0 # pick and switch manually
+# plug(leg_calibrator.calibrated_flag, control_switch.selection) # auto switch
+control_switch.selection.value = 0 # pick and switch manually
 
 plug(control_switch.sout, robot.device.ctrl_joint_torques)
 
@@ -91,5 +92,5 @@ robot.add_ros_and_trace("leg_calibrator", "control")
 robot.add_trace("calib_vel_filtered", "sout")
 robot.add_ros_and_trace("calib_vel_filtered", "sout")
 
-robot.add_trace("pd_ctrl", "control")
-robot.add_ros_and_trace("pd_ctrl", "control")
+# robot.add_trace("pd_ctrl", "control")
+# robot.add_ros_and_trace("pd_ctrl", "control")
