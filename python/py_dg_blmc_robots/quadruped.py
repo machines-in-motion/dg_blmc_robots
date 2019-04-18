@@ -189,5 +189,42 @@ class QuadrupedBulletRobot(Robot):
               print ("    - contact_damping : " , contact_damping)
               print ("    - contact_stiffness : " , contact_stiffness)
 
+    def add_ros_and_trace(self, client_name, signal_name):
+
+        ## for vicon entity
+        self.signal_name = signal_name
+
+
 def get_quadruped_robot(use_fixed_base=False, record_video = False):
     return QuadrupedBulletRobot(use_fixed_base, record_video)
+
+
+#### Viconclient object for center of mass control
+
+class ViconClientEntity:
+    def __init__(self, clientName):
+        self.clientName = entityName
+
+    def connect_to_vicon(self, host_name):
+        self.host_name = host_name
+
+    def displaySignals(self):
+        print("signals are :")
+
+    def add_object_to_track(self,name):
+	self.robot_vicon_name = name		
+
+    def robot_wrapper(self, robot_wrapper):
+        self.robot = robot_wrapper
+
+    def signal(self, signal_name):
+
+        if signal_name == self.robot_vicon_name + "_position":
+		value = self.robot.signal_base_pos
+		
+	elif signal_name == self.robot_vicon_name + "_velocity_body":
+		value = self.robot.signal_base_vel
+
+	return value
+
+ 
