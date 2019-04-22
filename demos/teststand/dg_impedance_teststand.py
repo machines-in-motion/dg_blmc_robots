@@ -20,6 +20,9 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
+from py_robot_properties_teststand.config import TeststandConfig
+from leg_impedance_control import utils as dg_utils
+
 ############################################################################
 
 from leg_impedance_control.utils import *
@@ -125,7 +128,8 @@ def remove_base_pos(vec1, vec2):
     plug(vec2, op.signal('sin2'))
     return op.signal('sout')
 
-def impedance_controller(robot_dg, gain_value,des_pos):
+
+def impedance_controller(robot_dg, des_pos):
     ## Impdance control implementation
     xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip")
     xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot")
@@ -138,27 +142,20 @@ def impedance_controller(robot_dg, gain_value,des_pos):
     pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error")
     ## adding force in fz and also rotation forces for proper jacobian multiplication
     pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0, 0.0],'stack_to_wrench'), 3, 3)
-    pos_error_with_gains = mul_double_vec(100.0, pos_error, "gain_multiplication")
 
-    #mul_double_vec_op = Multiply_double_vector("gain_multiplication")
-    #plug(gain_value, mul_double_vec_op.sin1)
-    #plug(pos_error, mul_double_vec_op.sin2)
-    #pos_error_with_gains = mul_double_vec_op.sout
-    control_torques = compute_control_torques(jac, pos_error_with_gains)
+    pos_error_with_gains = Multiply_double_vector("gain_force")
+    f_gain = pos_error_with_gains.sin1
+    f_gain.value = 100.
+    plug(pos_error, pos_error_with_gains.sin2)
 
-    return control_torques
+    control_torques = compute_control_torques(jac, pos_error_with_gains.sout)
+
+    return control_torques, f_gain, pos_error_with_gains
 
 
 #from dynamic_graph.sot.core.control_pd import ControlPD
 ## Uncomment the code to run on the teststand
 
-from dynamic_graph.sot.core.control_pd import ControlPD
-
-# pd = ControlPD("PDController")
-# pd.Kp.value = [0., 0.]
-# pd.Kd.value = [0.1,0.1]
-# pd.desiredposition.value = (0., 0.)
-# pd.desiredvelocity.value = (0., 0.)
 robot_dg.acceleration.value = 3 * (0.0, )
 
 #plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), robot_dg.position)
@@ -167,35 +164,35 @@ robot_dg.acceleration.value = 3 * (0.0, )
 plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), robot_dg.position)
 plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), robot_dg.velocity)
 
-# For making gain input dynamic through terminal
-add = Add_of_double('mult')
-add.sin1.value = 0
-### Change this value for different gains
-add.sin2.value = 100.0
-gain_value = add.sout
-
 des_pos = constVector([0.0, 0.0, -0.2],"pos_des")
 
+# ## Impdance control implementation
+control_torques, f_gain, f_vec = impedance_controller(robot_dg, des_pos)
+
+# # Adding extra D controller to damp the motion
+from dynamic_graph.sot.core.control_pd import ControlPD
+pd = ControlPD("PDController")
+pd.Kp.value = [0., 0.]
+pd.Kd.value = [0.1,0.1]
+plug(robot.device.joint_positions, pd.position)
+plug(robot.device.joint_velocities, pd.velocity)
+pd.desired_position.value = (0., 0.)
+pd.desired_velocity.value = (0., 0.)
+
+d_gain = pd.Kd
 
 
-## Impdance control implementation
-
-
-control_torques = impedance_controller(robot_dg, gain_value, des_pos)
-
-
-plug(control_torques, robot.device.ctrl_joint_torques)
-
-#plug(control_torques, robot.device.signal("ctrl_joint_torques"))
+plug(dg_utils.add_vec_vec(control_torques, pd.control), robot.device.ctrl_joint_torques)
 
 
 
-
-############ Plotting #############################################
-
+# ############ Plotting #############################################
 
 robot.add_trace("pos_error", "sout")
 robot.add_ros_and_trace("pos_error", "sout")
+
+robot.add_trace("gain_force", "sout")
+robot.add_ros_and_trace("gain_force", "sout")
 
 robot.add_trace("rel_pos_foot", "sout")
 robot.add_ros_and_trace("rel_pos_foot", "sout")
