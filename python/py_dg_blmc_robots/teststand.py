@@ -21,7 +21,7 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class TeststandBulletRobot(Robot):
-    def __init__(self):
+    def __init__(self, fixed_slider=False):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
@@ -36,13 +36,13 @@ class TeststandBulletRobot(Robot):
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = TeststandConfig.urdf_path
-        self.robotId = p.loadURDF(self.urdf_path, robotStartPos, 
-            robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE, 
+        self.robotId = p.loadURDF(self.urdf_path, robotStartPos,
+            robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE,
             useFixedBase=True)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
-        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) 
+        package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path))
         + '/urdf']
         self.pin_robot = TeststandConfig.buildRobotWrapper()
 
@@ -50,7 +50,7 @@ class TeststandBulletRobot(Robot):
         num_joints = p.getNumJoints(self.robotId)
 
         for ji in range(num_joints):
-            p.changeDynamics(self.robotId, ji, linearDamping=.04, 
+            p.changeDynamics(self.robotId, ji, linearDamping=.04,
                 angularDamping=0.04, restitution=0.0, lateralFriction=0.5)
 
         p.setGravity(0,0, -9.81)
@@ -58,8 +58,13 @@ class TeststandBulletRobot(Robot):
 
         self.joint_names = ['joint_z', 'HFE', 'KFE']
 
-        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot, 
+        self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
             self.joint_names, ['END'], useFixedBase=True)
+
+        # Constrain the slider to a fixed position.
+        if fixed_slider:
+            p.createConstraint(self.robotId, 0, -1, -1, p.JOINT_FIXED,
+                [0,0,0],[0,0,0.0],[0,0,0.45])
 
         # Initialize the device.
         self.device = Device('bullet_teststand')
@@ -77,21 +82,21 @@ class TeststandBulletRobot(Robot):
 
         self.steps_ = 0
 
-        super(TeststandBulletRobot, self).__init__('bullet_teststand', 
+        super(TeststandBulletRobot, self).__init__('bullet_teststand',
             self.device)
 
     def pinocchio_robot_wrapper(self):
         return self.pin_robot
 
     def sim2signal_(self):
-        """ Reads the state from the simulator and fills 
+        """ Reads the state from the simulator and fills
         the corresponding signals. """
 
         # TODO: Handle the following signals:
         # - joint_target_torques
         # - joint_torques
 
-        q, dq = [np.array(t).reshape(-1).tolist() for t in 
+        q, dq = [np.array(t).reshape(-1).tolist() for t in
         self.wrapper.get_state()]
 
         device = self.device
@@ -108,10 +113,10 @@ class TeststandBulletRobot(Robot):
         #     device.ati_force.value = 3 * [0.]
 
     def set_gravity(self, vec):
-        """ Sets gravity in the simulator to (x,y,z), where z is 
+        """ Sets gravity in the simulator to (x,y,z), where z is
         the vertical axis. """
         p.setGravity(vec[0],vec[1], vec[2])
-        
+
     def run(self, steps=1, delay=0.):
         tau = zero(self.wrapper.nv)
         for i in range(steps):
@@ -127,11 +132,11 @@ class TeststandBulletRobot(Robot):
                 time.sleep(delay)
 
     def reset_state(self, q, dq):
-        """ Sets the bullet simulator and the signals to 
+        """ Sets the bullet simulator and the signals to
         the provided state values. """
         self.wrapper.reset_state(q, dq)
         self.sim2signal_()
 
 
-def get_teststand_robot():
-    return TeststandBulletRobot()
+def get_teststand_robot(fixed_slider=False):
+    return TeststandBulletRobot(fixed_slider)
