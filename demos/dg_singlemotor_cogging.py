@@ -10,9 +10,6 @@ from leg_impedance_control import control_manager_single_motor_conf as control_m
 from leg_impedance_control import joint_pos_ctrl_gains
 from leg_impedance_control.utils import stack_two_vectors
 
-
-
-
 NJ = control_manager_conf.nbJoints
 dt = 0.001
 

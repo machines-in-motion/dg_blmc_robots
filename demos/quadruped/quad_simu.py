@@ -12,7 +12,7 @@ from dynamic_graph_manager.device.robot import Robot
 ###### robot init #######################################################
 
 local_device = Device("hopper_robot")
-yaml_path = os.path.join(rospkg.RosPack().get_path("dg_blmc_robots"),'demos/config/teststand.yaml')
+yaml_path = "/home/ameduri/devel/workspace/src/catkin/robots/robot_properties/robot_properties_teststand/config/teststand.yaml"
 local_device.initialize(yaml_path)
 robot = Robot(name=local_device.name, device=local_device)
 

@@ -5,12 +5,23 @@
 
 from leg_impedance_control.utils import *
 from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller, quad_com_control
-from leg_impedance_control.traj_generators import *
+from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values, sine_generator
 
 
-
+quad_imp_ctrl = quad_leg_impedance_controller(robot)
 
 #########################################################################################
+
+# ## setting desired position
+pos_bias = constVector([0.0, 0.0, -0.3, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.3, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.3, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.3, 0.0, 0.0, 0.0],
+                        "pos_bias")
+
+unit_vector_pos_12d = constVector([0.0, 0.0, .16, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.16, 0.0, 0.0, 0.0,],
+                       "unit_vector_pos_12d")
 
 zero_vec_24d = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -43,12 +54,6 @@ slider_3_op.setIndex(2)
 plug(slider_filtered.sout, slider_3_op.sin)
 slider_3 = slider_3_op.sout
 
-slider_4_op = Component_of_vector("slider_4")
-slider_4_op.setIndex(3)
-plug(slider_filtered.sout, slider_4_op.sin)
-slider_4 = slider_4_op.sout
-
-
 ######################################################################################
 
 ##For making gain input dynamic through terminal
@@ -58,31 +63,21 @@ add_phase.sin1.value = 0.0
 add_phase.sin2.value = 0.0
 phase_zero = add_phase.sout
 
-##For making gain input dynamic through terminal
-add_phase_2 = Add_of_double('phase_op_2')
-add_phase_2.sin1.value = 0.0
-### Change this value for different gains
-add_phase_2.sin2.value = np.pi
-phase_pi = add_phase_2.sout
-
-
 add_omega = Add_of_double('omega_op')
 add_omega.sin1.value = 0.0
 ### Change this value for different gains
-add_omega.sin2.value = 3.0*np.pi
+add_omega.sin2.value = 4.0*np.pi
 omega = add_omega.sout
 
 
-p_gain_x = scale_values(slider_1, 300.0, "scale_kp_x")
-p_gain_z = scale_values(slider_2, 300.0, "scale_kp_z")
-amplitude = scale_values(slider_3, 0.04, "amplitdue_scale")
-stride = scale_values(slider_4, 0.1, "stride_value")
+#omega = scale_values(slider_1, 1.5, "omega_scale")
+amplitude = scale_values(slider_2, 0.04, "amplitdue_scale")
+phase = scale_values(slider_3, 2.0*np.pi, "phase_scale")
 
-
-des_pos_fl, des_vel_fl = circular_trajectory_generator(stride, amplitude, omega , phase_zero, -0.22, "fl_des")
-des_pos_fr, des_vel_fr = circular_trajectory_generator(stride, amplitude, omega, phase_zero, -0.22, "fr_des")
-des_pos_hl, des_vel_hl = circular_trajectory_generator(stride, amplitude, omega , phase_zero, -0.22, "hl_des")
-des_pos_hr, des_vel_hr = circular_trajectory_generator(stride, amplitude, omega, phase_zero, -0.22, "hr_des")
+des_pos_fl, des_vel_fl = sine_generator(amplitude, omega , phase_zero, -0.22, "fl_des")
+des_pos_fr, des_vel_fr = sine_generator(amplitude, omega, phase_zero, -0.22, "fr_des")
+des_pos_hl, des_vel_hl = sine_generator(amplitude, omega , phase, -0.22, "hl_des")
+des_pos_hr, des_vel_hr = sine_generator(amplitude, omega, phase, -0.22, "hr_des")
 
 des_pos_fl_fr = stack_two_vectors(des_pos_fl, des_pos_fr, 6 , 6)
 des_pos_hl_hr = stack_two_vectors(des_pos_hl, des_pos_hr, 6 , 6)
@@ -105,22 +100,32 @@ des_fff = constVector([0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
 
 #######################################################################################
 
-# quad_com_ctrl = quad_com_control(robot)
-
-## P_gain
-unit_vector_x = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "unit_kp_x")
-unit_vector_z = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_kp_z")
-
-p_gain_x_6d = mul_double_vec_2(p_gain_x, unit_vector_x, "p_gain_x_to_6d")
-p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
-
-p_gain_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
-
-kd_split = constVector([1.5, 0.0, 1.5, 0.0, 0.0, 0.0], "kd_split")
+# ##For making gain input dynamic through terminal
+# add_kp = Add_of_double('kp')
+# add_kp.sin1.value = 0
+# ### Change this value for different gains
+# add_kp.sin2.value = 50.0
+# kp = add_kp.sout
+#
+#
+# com_des_pos = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+#                        "com_des_pos")
+#
+#
+quad_com_ctrl = quad_com_control(robot)
+# quad_com_ctrl.return_com_control_torques(kp, com_des_pos)
+# quad_com_ctrl.record_data()
 
 #######################################################################################
 
-# kd = constVector([0.02, 0.0, 0.02, 0.0, 0.0, 0.0], "kd_split")
+p_gain = scale_values(slider_1, 160.0, "scale_kp")
+
+##For making gain input dynamic through terminal
+add_kd = Add_of_double('kd')
+add_kd.sin1.value = 0
+### Change this value for different gains
+add_kd.sin2.value = 0.02
+kd = add_kd.sout
 
 ##For making gain input dynamic through terminal
 add_kf = Add_of_double('kf')
@@ -129,17 +134,14 @@ add_kf.sin1.value = 0
 add_kf.sin2.value = 0.0
 kf = add_kf.sout
 
-quad_imp_ctrl = quad_leg_impedance_controller(robot)
 
-control_torques = quad_imp_ctrl.return_control_torques(p_gain_split, pos_des, kd_split, vel_des, kf, des_fff)
+control_torques = quad_imp_ctrl.return_control_torques(p_gain, pos_des, kd, vel_des, kf, des_fff)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 
 #################################################################################
 
-quad_imp_ctrl.record_data()
-
-# quad_com_ctrl = quad_com_control(robot)
+quad_imp_ctrl.record_data(record_vicon=True)
 
 robot.add_trace("pos_des", "sout")
 robot.add_ros_and_trace("pos_des", "sout")

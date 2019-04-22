@@ -1,31 +1,67 @@
-# Impedance controller for quadruped taking independent jacobians for each leg for standing
-# Author : Avadesh Meduri
-# Date : 29 Jan 2019
+## This code is a simulation for the impedance controller
 
+## Author: Avadesh Meduri
+## Date: 1/03/2019
 
 from leg_impedance_control.utils import *
-from leg_impedance_control.controller import *
-##########################################################################################
+from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller
+from leg_impedance_control.traj_generators import mul_double_vec_2
 
+#########################################################################################
 
+## setting desired position
+des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0],
+                        "pos_des")
 
+des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                        "vel_des")
 
+des_fff = constVector([0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0],
+                        "fff")
 
-# ## setting desired position
-pos_des = constVector([0.0, 0.0, -0.25], "pos_des")
+#######################################################################################
+
 ##For making gain input dynamic through terminal
-add = Add_of_double('gain')
-add.sin1.value = 0
+add_kp = Add_of_double('kp')
+add_kp.sin1.value = 0
 ### Change this value for different gains
-add.sin2.value = 100.0
-gain_value = add.sout
+add_kp.sin2.value = 100.0
+kp = add_kp.sout
 
-control_torques = quad_impedance_controller(robot, pos_des, pos_des, pos_des, pos_des, gain_value)
+##For making gain input dynamic through terminal
+add_kd = Add_of_double('kd')
+add_kd.sin1.value = 0
+### Change this value for different gains
+add_kd.sin2.value = 0.01
+kd = add_kd.sout
+
+##For making gain input dynamic through terminal
+add_kf = Add_of_double('kf')
+add_kf.sin1.value = 0
+### Change this value for different gains
+add_kf.sin2.value = 0.0
+kf = add_kf.sout
+
+quad_imp_ctrl = quad_leg_impedance_controller(robot)
+control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel, kf, des_fff)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 
+#################################################################################
 
+quad_imp_ctrl.record_data(record_vicon=False)
 
+robot.add_trace("pos_des", "sout")
+robot.add_ros_and_trace("pos_des", "sout")
 
-
-############################################################
+robot.add_trace("vel_des", "sout")
+robot.add_ros_and_trace("vel_des", "sout")

@@ -13,23 +13,31 @@
 #define DGM_QUADRUPED_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/quadruped.hpp>
 
 namespace dg_blmc_robots
 {
+  /**
+   * @brief Vector8d shortcut for the eigen vector of size 8.
+   */
+  typedef Eigen::Matrix<double, 8, 1> Vector8d;
 
-  class DGMQuadruped : public dynamic_graph::DynamicGraphManager
+  /**
+   * @brief Vector8d shortcut for the eigen vector of size 4.
+   */
+  typedef Eigen::Matrix<double, 8, 1> Vector4d;
+
+  class DGMQuadrupedSimu : public dynamic_graph::DynamicGraphManager
   {
   public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
-    DGMQuadruped();
+    DGMQuadrupedSimu();
 
     /**
      * @brief ~DemoSingleMotor is the destructor.
      */
-    ~DGMQuadruped();
+    ~DGMQuadrupedSimu();
 
     /**
      * @brief This function make also sure that the joint velocity do not exceed
@@ -60,25 +68,32 @@ namespace dg_blmc_robots
   private:
 
     /**
-     * Entries for the real hardware.
+     * Entries for the simulated hardware.
      */
-
-    /**
-     * @brief test_bench_ the real test bench hardware drivers.
-     */
-    blmc_robots::Quadruped quadruped_;
+    Vector8d motor_target_currents_;
+    Vector8d motor_torques_;
+    Vector8d motor_target_torques_;
+    Vector8d motor_encoder_indexes_;
     
-    /**
-     * @brief ctrl_joint_torques_ the joint torques to be sent. Used in this
-     * class to perform a local copy of the control. This is need in order
-     * to send this copy to the quadruped class
-     */
-    blmc_robots::Vector8d ctrl_joint_torques_;
+    Vector8d joint_positions_;
+    Vector8d joint_velocities_;
+    Vector8d joint_torques_;
+    Vector8d joint_target_torques_;
 
-    /**
-     * @brief Check if we entered once in the safety mode and stay there if so
-     */
-    bool was_in_safety_mode_;
+    Vector4d contact_sensors_;
+    Vector4d slider_positions_;
+
+    Vector8d motor_enabled_;
+    Vector8d motor_ready_;
+
+    Vector4d motor_board_enabled_;
+    Vector4d motor_board_errors_;
+  
+    Vector8d ctrl_joint_torques_;
+
+    double motors_inertia_;
+    double motors_torque_constant_;
+    double motors_gear_ratio_;
   };
 
 

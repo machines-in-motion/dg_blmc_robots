@@ -15,6 +15,7 @@ from dynamic_graph import plug
 from dynamic_graph.sot.core import Selec_of_vector
 from dynamic_graph.sot.core.operator import *
 from dynamic_graph.sot.core.vector_constant import VectorConstant
+from dynamic_graph.sot.core.matrix_constant import MatrixConstant
 from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
@@ -31,12 +32,12 @@ def constVector(val, entityName=''):
     op.value = list(val)
     return op
 
-def matrixConstant(val):
+def constMatrix(val, entityName):
     """
     ## This function initialises an constant matrix
     ## Input : matrix (python array)
     """
-    op = MatrixConstant("").sout
+    op = MatrixConstant(entityName).sout
     op.value = val
     return op
 
@@ -90,8 +91,31 @@ def selec_vector(vec, start_index, end_index, entityName=''):
     plug(vec, op.signal('sin'))
     return op.sout
 
+def component_of_vector(vector, index, entityName):
+    """
+    ## This function selects a compnent of the input vector
+    ## Input : Constant vector (not numpy array)
+         : index (int)
+    """
+    comp_of_vect = Component_of_vector(entityName)
+    comp_of_vect.setIndex(index)
+    plug(vector, comp_of_vect.sin)
+    return comp_of_vect.sout
+
 
     ###################  Math Operators ##########################################
+
+def add_doub_doub(db1, db2, entityName):
+    """
+    ## This function adds two doubles
+    ## Input : db1 - double (number)
+             : db2 - double (value)
+    """
+    add = Add_of_double(entityName)
+    add.sin1.value = db1
+    add.sin2.value = db2
+    return add
+
 
 def add_vec_vec(vec1, vec2, entityName=''):
     """
@@ -144,6 +168,17 @@ def mul_double_vec(doub, vec, entityName=''):
     plug(vec, mul.signal('sin2'))
     return mul.sout
 
+def mul_vec_vec(vec1, vec2, entityName):
+    """
+    ## This function multiplies two Vectors element wise
+    ## Input : Constant vectors (not numpy arrays)
+    """
+    vec_mul = Multiply_of_vector(entityName)
+    plug(vec1, vec_mul.sin0)
+    plug(vec2, vec_mul.sin1)
+    return vec_mul.sout
+
+
     ######################### Robotics operators ##################################
 
 def hom2pos(robot_joint_signal, entityName=''):
@@ -154,3 +189,13 @@ def hom2pos(robot_joint_signal, entityName=''):
     conv_pos = MatrixHomoToPose(entityName)
     plug(robot_joint_signal, conv_pos.signal('sin'))
     return conv_pos.signal('sout')
+
+    ######################### Standard vectors ####################################
+
+def zero_vec(vec_size, entityName):
+    """
+    ## This function creates a zero constvector of vec_size
+    ## Input : size of zero vector (int)
+    """
+    zero_vec = np.zeros(vec_size)
+    return constVector(zero_vec, entityName)

@@ -16,12 +16,14 @@ import pybullet as p
 import pinocchio as se3
 from pinocchio.utils import zero
 
+from matplotlib import pyplot as plt
+
 from dynamic_graph.sot.core.vector_constant import VectorConstant
 
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
-    def __init__(self, use_fixed_base = False):
+    def __init__(self, use_fixed_base = False, record_video = False):
         self.physicsClient = p.connect(p.GUI)
 
         # Load the plain.
@@ -32,7 +34,7 @@ class QuadrupedBulletRobot(Robot):
         print("Loaded plain.")
 
         # Load the robot
-        robotStartPos = [0.,0,0.40]
+        robotStartPos = [0.,0,.22]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = QuadrupedConfig.urdf_path
@@ -40,6 +42,9 @@ class QuadrupedBulletRobot(Robot):
             robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE,
             useFixedBase=use_fixed_base)
         p.getBasePositionAndOrientation(self.robotId)
+
+        if record_video:
+            p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, "./video/0.mp4")
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) +
@@ -65,7 +70,9 @@ class QuadrupedBulletRobot(Robot):
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
             controlled_joints,
-            ['HL_END', 'HR_END', 'FL_END', 'FR_END']
+            ## for new urdf
+            ['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']
+            # ['HL_END', 'HR_END', 'FL_END', 'FR_END']
         )
 
         # Initialize the device.
@@ -88,8 +95,6 @@ class QuadrupedBulletRobot(Robot):
 
         self.steps_ = 0
 
-        self.print_physics_engine_params()
-        #self.print_physics_params()
         super(QuadrupedBulletRobot, self).__init__('bullet_quadruped',
             self.device)
 
@@ -119,13 +124,16 @@ class QuadrupedBulletRobot(Robot):
         self.signal_base_vel_.sout.value = dq[0:6]
 
 
-    def run(self, steps=1, delay=0.):
+    def run(self, steps=1, delay=0., plot = False):
         """
         Executes the simulation for n `steps`. To slow down the simulation
         steps for visualization, applies `delay` ms of waiting after performing
         17 (~= 1000/60) simulation steps. This allows to adjust the timing for
         visualization at 60 Hz.
         """
+
+        tracked_base_pos = np.zeros((steps, 7))
+        tracked_base_vel = np.zeros((steps, 6))
 
         for i in range(steps):
             self.device.execute_graph()
@@ -135,8 +143,68 @@ class QuadrupedBulletRobot(Robot):
             self.sim2signal_()
             self.steps_ += 1
 
+            if plot:
+                tracked_base_pos[i] = self.signal_base_pos_.sout.value
+                tracked_base_vel[i] = self.signal_base_vel_.sout.value
+
             if delay != 0. and self.steps_ % 17 == 0:
                 time.sleep(delay)
+
+
+        if plot:
+            tracked_base_pos = np.asarray(tracked_base_pos)
+            tracked_base_vel = np.asarray(tracked_base_vel)
+            print(np.shape(tracked_base_pos))
+
+            fig1, ax1 = plt.subplots(3,1,sharex = True)
+
+            ax1[0].plot(tracked_base_pos[: ,0], color = "red", label = "base_pos_x")
+            #ax1[0].plot(des_pos_fl[:, 0], color = "black", label = "des_pos_fl_x")
+            ax1[0].legend()
+            ax1[0].set_xlabel("millisec")
+            ax1[0].set_ylabel("m")
+            ax1[0].grid()
+
+            ax1[1].plot(tracked_base_pos[: ,1], color = "red", label = "base_pos_y")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax1[1].legend()
+            ax1[1].set_xlabel("millisec")
+            ax1[1].set_ylabel("m")
+            ax1[1].grid()
+
+            ax1[2].plot(tracked_base_pos[: ,2], color = "red", label = "base_pos_z")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax1[2].legend()
+            ax1[2].set_xlabel("millisec")
+            ax1[2].set_ylabel("m")
+            ax1[2].grid()
+
+            fig2, ax2 = plt.subplots(3,1,sharex = True)
+
+            ax2[0].plot(tracked_base_vel[: ,0], color = "red", label = "base_vel_x")
+            #ax1[0].plot(des_pos_fl[:, 0], color = "black", label = "des_pos_fl_x")
+            ax2[0].legend()
+            ax2[0].set_xlabel("millisec")
+            ax2[0].set_ylabel("m/s")
+            ax2[0].grid()
+
+            ax2[1].plot(tracked_base_vel[: ,1], color = "red", label = "base_vel_y")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax2[1].legend()
+            ax2[1].set_xlabel("millisec")
+            ax2[1].set_ylabel("m/s")
+            ax2[1].grid()
+
+            ax2[2].plot(tracked_base_vel[: ,2], color = "red", label = "base_vel_z")
+            # ax1[1].plot(des_pos_fl[: ,1], color = "black", label = "des_pos_fl_z")
+            ax2[2].legend()
+            ax2[2].set_xlabel("millisec")
+            ax2[2].set_ylabel("m/s")
+            ax2[2].grid()
+
+
+            plt.show()
+
 
     def reset_state(self, q, dq):
         """ Sets the bullet simulator and the signals to
@@ -151,11 +219,6 @@ class QuadrupedBulletRobot(Robot):
 
     def print_physics_engine_params(self):
         params = p.getPhysicsEngineParameters(self.physicsClient)
-        print ("physics_engine_params:")
-        for key in params:
-            print("    - ", key, ": ", params[key])
-
-        params = p.getPhysicsEngineParameters()
         print ("physics_engine_params:")
         for key in params:
             print("    - ", key, ": ", params[key])
@@ -191,5 +254,41 @@ class QuadrupedBulletRobot(Robot):
               print ("    - contact_damping : " , contact_damping)
               print ("    - contact_stiffness : " , contact_stiffness)
 
-def get_quadruped_robot(use_fixed_base=False):
-    return QuadrupedBulletRobot(use_fixed_base)
+    def add_ros_and_trace(self, client_name, signal_name):
+
+        ## for vicon entity
+        self.signal_name = signal_name
+
+
+def get_quadruped_robot(use_fixed_base=False, record_video = False):
+    return QuadrupedBulletRobot(use_fixed_base, record_video)
+
+
+#### Viconclient object for center of mass control
+
+class ViconClientEntity:
+    def __init__(self, clientName):
+        self.clientName = clientName
+
+    def connect_to_vicon(self, host_name):
+        self.host_name = host_name
+
+    def displaySignals(self):
+        print("signals are :")
+
+    def add_object_to_track(self,name):
+        self.robot_vicon_name = "quadruped"
+
+    def robot_wrapper(self, robot_wrapper):
+        self.robot = robot_wrapper
+
+    def signal(self, signal_name):
+
+        if signal_name == self.robot_vicon_name + "_position":
+            value = self.robot.signal_base_pos_.sout
+            print(value)
+
+        elif signal_name == self.robot_vicon_name + "_velocity_body":
+		    value = self.robot.signal_base_vel_.sout
+
+	return value

@@ -1,198 +1,32 @@
 ## simple impedance controller implementation on impact test stand
 ## Author : Avadesh Meduri
-## Date : 23 January 2019
-
-import os, os.path
-
-import numpy as np
-import rospkg
-
-import pinocchio as se3
-from pinocchio.utils import zero
-from pinocchio.robot_wrapper import RobotWrapper
-
-from dynamic_graph import plug
-from dynamic_graph.sot.core import *
-import dynamic_graph.sot.dynamics_pinocchio as dp
-from dynamic_graph.sot.core.operator import MatrixTranspose
-from dynamic_graph.sot.core.operator import *
-from dynamic_graph.sot.core.vector_constant import VectorConstant
-from dynamic_graph.sot.core.op_point_modifier import OpPointModifier
-from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
-
-from py_robot_properties_teststand.config import TeststandConfig
-from leg_impedance_control import utils as dg_utils
-
-############################################################################
+## Date : 1/03/19
 
 from leg_impedance_control.utils import *
+from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
+
+#######################################################################################
 
 
-##########################################################################################
+#######################################################################################
 
+kp_split = constVector([100.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
 
-###################################################################################
-robot_py = TeststandConfig.buildRobotWrapper()
+kd_split = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
 
-robot_dg = dp.DynamicPinocchio('hopper')
-robot_dg.setData(robot_py.data)
-robot_dg.setModel(robot_py.model)
+des_pos = constVector([0.0, 0.0, -0.2, 0.0, 0.0, 0.0],"pos_des")
+des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
 
-robot_dg.createJacobianEndEffWorld('jac_contact', 'contact')
-robot_dg.createPosition('pos_hip', 'HFE')
-robot_dg.createPosition('pos_foot', 'END')
+#######################################################################################
 
-def compute_pos_diff(pos1, pos2, entityName):
-    sub_op = Substract_of_vector(entityName)
-    plug(pos1, sub_op.signal('sin1'))
-    plug(pos2, sub_op.signal('sin2'))
-    return sub_op.sout
+leg_imp_ctrl = leg_impedance_controller("hopper")
 
-def Mat_transpose(mat, entityName):
-    op = MatrixTranspose(entityName)
-    plug(mat, op.sin)
-    return op.sout
+plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
+plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
 
-def mul_mat_vec(mat,vec, entityName):
-    mat_mul = Multiply_matrix_vector(entityName)
-    plug(mat, mat_mul.signal('sin1'))
-    plug(vec, mat_mul.signal('sin2'))
-    return mat_mul.sout
+control_torques = leg_imp_ctrl.return_control_torques(kp_split, des_pos, kd_split, des_vel)
 
-def mul_double_vec(doub, vec, entityName):
-    mul = Multiply_double_vector(entityName)
-    mul.sin1.value = doub
-    plug(vec, mul.signal('sin2'))
-    return mul.sout
+plug(control_torques, robot.device.ctrl_joint_torques)
 
-def stack_two_vectors(vec1, vec2, vec1_size, vec2_size):
-    op = Stack_of_vector("")
-    op.selec1(0, vec1_size)
-    op.selec2(0, vec2_size)
-    plug(vec1, op.signal('sin1'))
-    plug(vec2, op.signal('sin2'))
-    return op.signal('sout')
-
-def stack_zero(sig, entityName):
-    zero = VectorConstant(entityName)
-    zero.sout.value = (0.,)
-
-    op = Stack_of_vector("")
-    op.selec1(0, 1)
-    op.selec2(0, 2)
-    plug(zero.sout, op.sin1)
-    plug(sig, op.sin2)
-    return op.sout
-
-def compute_control_torques(jac,errors):
-    ##Transpose [tau1, tau2] = JacT*(errors)
-    ## errors = [x - xdes, y-ydes]T
-    jacT = Mat_transpose(jac, "jacTranspose")
-    ## multiplying negative
-    errors = mul_double_vec(-1.0, errors, "neg_op")
-    control_torques = mul_mat_vec(jacT,errors, "compute_control_torques")
-
-    ## selecting only 2nd and 3rd element in torques as element one represent base acceleration
-    sel = Selec_of_vector("impedance_torques")
-    sel.selec(1,3)
-    plug(control_torques, sel.signal('sin'))
-    return sel.signal('sout')
-
-def ele_mat_mul(mat1, mat2, entityName):
-    ## elements wise multiplication
-    op = Multiply_double_vector(entityName)
-    plug(mat1, op.sin1)
-    plug(mat2, op.sin2)
-    return op.sout
-
-def constVector(val, entityName):
-    op = VectorConstant(entityName).sout
-    op.value = list(val)
-    return op
-
-def matrixConstant(val):
-    op = MatrixConstant("").sout
-    op.value = val
-    return op
-
-def hom2pos(sig, entityName):
-    conv_pos = MatrixHomoToPose(entityName)
-    plug(sig, conv_pos.signal('sin'))
-    return conv_pos.signal('sout')
-
-def remove_base_pos(vec1, vec2):
-    op = Stack_of_vector("clean")
-    op.selec1(0, 1)
-    op.selec2(2, 3)
-    plug(vec1, op.signal('sin1'))
-    plug(vec2, op.signal('sin2'))
-    return op.signal('sout')
-
-
-def impedance_controller(robot_dg, des_pos):
-    ## Impdance control implementation
-    xyzpos_hip = hom2pos(robot_dg.pos_hip, "xyzpos_hip")
-    xyzpos_foot = hom2pos(robot_dg.pos_foot, "xyzpos_foot")
-    # relative foot position to hip
-    rel_pos_foot = compute_pos_diff(xyzpos_foot, xyzpos_hip, "rel_pos_foot")
-    ## removing the values of the base
-    ##rel_pos_foot = remove_base_pos(rel_pos_foot,rel_pos_foot)
-
-    jac = robot_dg.jac_contact
-    pos_error = compute_pos_diff(rel_pos_foot, des_pos, "pos_error")
-    ## adding force in fz and also rotation forces for proper jacobian multiplication
-    pos_error = stack_two_vectors(pos_error, constVector([0.0, 0.0, 0.0],'stack_to_wrench'), 3, 3)
-
-    pos_error_with_gains = Multiply_double_vector("gain_force")
-    f_gain = pos_error_with_gains.sin1
-    f_gain.value = 100.
-    plug(pos_error, pos_error_with_gains.sin2)
-
-    control_torques = compute_control_torques(jac, pos_error_with_gains.sout)
-
-    return control_torques, f_gain, pos_error_with_gains
-
-
-#from dynamic_graph.sot.core.control_pd import ControlPD
-## Uncomment the code to run on the teststand
-
-robot_dg.acceleration.value = 3 * (0.0, )
-
-#plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), robot_dg.position)
-#plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), robot_dg.velocity)
-
-plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), robot_dg.position)
-plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), robot_dg.velocity)
-
-des_pos = constVector([0.0, 0.0, -0.2],"pos_des")
-
-# ## Impdance control implementation
-control_torques, f_gain, f_vec = impedance_controller(robot_dg, des_pos)
-
-# # Adding extra D controller to damp the motion
-from dynamic_graph.sot.core.control_pd import ControlPD
-pd = ControlPD("PDController")
-pd.Kp.value = [0., 0.]
-pd.Kd.value = [0.1,0.1]
-plug(robot.device.joint_positions, pd.position)
-plug(robot.device.joint_velocities, pd.velocity)
-pd.desired_position.value = (0., 0.)
-pd.desired_velocity.value = (0., 0.)
-
-d_gain = pd.Kd
-
-
-plug(dg_utils.add_vec_vec(control_torques, pd.control), robot.device.ctrl_joint_torques)
-
-
-
-# ############ Plotting #############################################
-
-robot.add_trace("pos_error", "sout")
-robot.add_ros_and_trace("pos_error", "sout")
-
-robot.add_trace("gain_force", "sout")
-robot.add_ros_and_trace("gain_force", "sout")
-
-robot.add_trace("rel_pos_foot", "sout")
-robot.add_ros_and_trace("rel_pos_foot", "sout")
+###################### Record Data ##########################################################
+leg_imp_ctrl.record_data(robot)
