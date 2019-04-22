@@ -22,7 +22,7 @@ from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 
 ################### Initialisers #############################################
 
-def constVector(val, entityName):
+def constVector(val, entityName=''):
     """
     ## This function initialises an constant vector
     ## Input : array (python list)
@@ -59,7 +59,7 @@ def stack_two_vectors(vec1, vec2, vec1_size, vec2_size):
     plug(vec2, op.signal('sin2'))
     return op.signal('sout')
 
-def stack_zero(vec, entityName):
+def stack_zero(vec, entityName=''):
     """
     ## This function stacks a zeros before the vector
     ## Input : Constant vector (not numpy arrays)
@@ -77,7 +77,7 @@ def stack_zero(vec, entityName):
     plug(vec, op.sin2)
     return op.sout
 
-def selec_vector(vec, start_index, end_index, entityName):
+def selec_vector(vec, start_index, end_index, entityName=''):
     """
     ## This function selects a part of the input vector (slices vector)
     ## Input : Constant vector (not numpy array)
@@ -93,7 +93,7 @@ def selec_vector(vec, start_index, end_index, entityName):
 
     ###################  Math Operators ##########################################
 
-def add_vec_vec(vec1, vec2, entityName):
+def add_vec_vec(vec1, vec2, entityName=''):
     """
     ## This function adds two Vectors
     ## Input : Constant vectors (not numpy arrays)
@@ -103,7 +103,7 @@ def add_vec_vec(vec1, vec2, entityName):
     plug(vec2, add.signal('sin2'))
     return add.sout
 
-def subtract_vec_vec(pos1, pos2, entityName):
+def subtract_vec_vec(pos1, pos2, entityName=''):
     """
     ## This function subtracts two Vectors
     ## Input : Constant vectors (not numpy arrays)
@@ -113,7 +113,7 @@ def subtract_vec_vec(pos1, pos2, entityName):
     plug(pos2, sub_op.signal('sin2'))
     return sub_op.sout
 
-def transpose_mat(mat, entityName):
+def transpose_mat(mat, entityName=''):
     """
     ## This function transposes a matrix
     ## Input : Constant matrix (not numpy arrays)
@@ -122,7 +122,7 @@ def transpose_mat(mat, entityName):
     plug(mat, op.sin)
     return op.sout
 
-def multiply_mat_vec(mat,vec, entityName):
+def multiply_mat_vec(mat,vec, entityName=''):
     """
     ## This function multiplies a matrix and vector
     ## Input : Constant matrix (not numpy arrays)
@@ -133,7 +133,7 @@ def multiply_mat_vec(mat,vec, entityName):
     plug(vec, mat_mul.signal('sin2'))
     return mat_mul.sout
 
-def mul_double_vec(doub, vec, entityName):
+def mul_double_vec(doub, vec, entityName=''):
     """
     ## This function multiplies a double and vector
     ## Input : Constant double
@@ -146,7 +146,7 @@ def mul_double_vec(doub, vec, entityName):
 
     ######################### Robotics operators ##################################
 
-def hom2pos(robot_joint_signal, entityName):
+def hom2pos(robot_joint_signal, entityName=''):
     """
     ## This function transforms a homogenous matrix to xyz cordinate
     ## Input : robot (DynamicPinocchio model) joint signal
