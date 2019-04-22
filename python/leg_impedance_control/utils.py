@@ -190,6 +190,18 @@ def hom2pos(robot_joint_signal, entityName):
     plug(robot_joint_signal, conv_pos.signal('sin'))
     return conv_pos.signal('sout')
 
+def convert_quat_se3(quat, entityName):
+    """
+    ## This function transforms a quaternion(4d) to se3
+    ## Input : quaternion signal
+    """
+
+    quat_to_se3 = QuaternionToMatrix(entityName)
+    plug(quat, quat_to_se3.signal('sin'))
+    return quat_to_se3.signal('sout')
+
+
+
     ######################### Standard vectors ####################################
 
 def zero_vec(vec_size, entityName):

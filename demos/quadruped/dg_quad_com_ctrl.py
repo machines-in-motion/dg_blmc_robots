@@ -5,28 +5,48 @@
 
 from leg_impedance_control.utils import *
 from leg_impedance_control.quad_leg_impedance_controller import quad_com_control, quad_leg_impedance_controller
-from leg_impedance_control.traj_generators import *
+from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values
+from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+###############################################################################
 
-################################################################################
+def gen_r_matrix(rx, ry, rz):
+    R = np.matrix([[0, -rz, ry],
+                   [rz, 0, -rx],
+                   [-ry, rx, 0]])
+    return R
 
-kp_com = constVector([50.0, 0.0, 50.0], "kp_com")
-kd_com = constVector([0.5, 0.0, 0.5], "kd_com")
-kp_ang_com = constVector([1.0, 1.0, 1.0], "kp_ang_com")
-des_pos_com = constVector([0.0, 0.0, 0.0], "des_pos_com")
-des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
-des_fff_com = constVector([0.0, 0.0, 2.2*9.81], "des_fff_com")
-des_omega = constVector([0.0, 0.0, 0.0], "des_com_omega")
-des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
-
-pos_des = constVector([0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.22, 0.0, 0.0, 0.0],
-                        "des_pos")
-
-vel_des = zero_vec(24, "des_vel")
 
 ###############################################################################
+
+I = np.matrix([[1.0 , 0.0 , 0.0],
+               [0.0 , 1.0 , 0.0],
+               [0.0 , 0.0 , 1.0]])
+
+r_fl = gen_r_matrix(0.2, 0.15, 0.0)
+r_fr = gen_r_matrix(0.2, -0.15, 0.0)
+r_hl = gen_r_matrix(-0.2, 0.15, 0.0)
+r_hr = gen_r_matrix(-0.2, -0.15, 0.0)
+
+zero_matrix = np.zeros((3,3))
+
+py_ce = np.block([[I, I, I, I, -I, zero_matrix],
+                  [r_fl, r_fr, r_hl, r_hr, zero_matrix, -I]])
+
+py_ce = np.asarray(py_ce)
+
+w1 = 1.0
+w2 = 1.0
+py_hess = np.zeros((18,18))
+np.fill_diagonal(py_hess, w1)
+
+hess = constMatrix(py_hess, "hess")
+g0 = zero_vec(18, "g0")
+ce = constMatrix(py_ce, "ce")
+ce0 = zero_vec(6, "ce0")
+ci = constMatrix(np.zeros((6,18)), "ci")
+ci0 = zero_vec(6, "ci0")
+
+#############################################################################
 
 ## filter slider_value
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
@@ -59,41 +79,70 @@ plug(slider_filtered.sout, slider_4_op.sin)
 slider_4 = slider_4_op.sout
 
 
-p_gain_x = scale_values(slider_1, 250.0, "scale_kp_x")
-p_gain_z = scale_values(slider_2, 250.0, "scale_kp_z")
+kp_com = scale_values(slider_1, 100.0, "scale_kp_com")
+kd_com = scale_values(slider_2, 10.0, "scale_kd_com")
 
-d_gain_x = scale_values(slider_3, 0.8, "scale_kd_x")
-d_gain_z = scale_values(slider_4, 0.8, "scale_kd_z")
+kp_ang_com = scale_values(slider_3, 0.8, "scale_kp_ang_com")
+kp_leg = scale_values(slider_4, 100.0, "scale_kp_leg")
 
 
-unit_vector_x = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "unit_kp_x")
-unit_vector_z = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_kp_z")
+unit_vec_101 = constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_vec_101")
+unit_vec_110 = constVector([1.0, 1.0, 0.0, 0.0, 0.0, 0.0], "unit_vec_110")
 
-p_gain_x_6d = mul_double_vec_2(p_gain_x, unit_vector_x, "p_gain_x_to_6d")
-p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
 
-kp_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
+kp_com = mul_double_vec_2(kp_com, unit_vec_101, "kp_com")
+kd_com = mul_double_vec_2(kd_com, unit_vec_101, "kd_com")
+kp_ang_com = mul_double_vec_2(kp_ang_com, unit_vec_110, "kp_ang_com")
 
-unit_vector_xd = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "unit_kd_x")
-unit_vector_zd = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_kd_z")
+unit_vector_6d = constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit_kp")
 
-d_gain_x_6d = mul_double_vec_2(d_gain_x, unit_vector_xd, "d_gain_x_to_6d")
-d_gain_z_6d = mul_double_vec_2(d_gain_z, unit_vector_zd, "d_gain_z_to_6d")
+kp_split = mul_double_vec_2(kp_leg, unit_vector_6d, "kp_split")
 
-kd_split = add_vec_vec(d_gain_x_6d, d_gain_z_6d, "d_gain_split")
+
+################################################################################
+
+# kp_com = constVector([100.0, 0.0, 100.0], "kp_com")
+# kd_com = constVector([5.5, 0.0, 5.5], "kd_com")
+# kp_ang_com = constVector([100.0, 100.0, 100.0], "kp_ang_com")
+des_pos_com = constVector([0.0, 0.0, 0.25], "des_pos_com")
+des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
+des_fff_com = constVector([0.0, 0.0, 2.2*9.8], "des_fff_com")
+des_omega_com = constVector([0.0, 0.0, 0.0], "des_com_omega")
+des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
 
 #################################################################################
-
-quad_com_ctrl = quad_com_control(robot)
-com_tau = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
+quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
+lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
                                                                     des_fff_com)
+actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_omega_com, des_fft_com)
+# actrl = zero_vec(3, "angtau")
 
-tau_per_leg = quad_com_ctrl.return_com_torques(com_tau)
 
-ang_tau = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_omega_com, des_fft_com)
+com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, ci0)
 
-#################################################################################
-##For making gain input dynamic through terminal
+###########################################################################
+
+
+##############################################################################
+kp = constVector([100.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
+
+kd = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
+
+## setting desired position
+des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0],
+                        "pos_des")
+
+des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                        "vel_des")
+
+des_fff = com_torques
+
 add_kf = Add_of_double('kf')
 add_kf.sin1.value = 0
 ### Change this value for different gains
@@ -101,11 +150,11 @@ add_kf.sin2.value = 0.0
 kf = add_kf.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
-control_torques = quad_imp_ctrl.return_control_torques(kp_split, pos_des,
-                                                kd_split, vel_des, kf, tau_per_leg)
-# plug(control_torques, robot.device.ctrl_joint_torques)
+control_torques = quad_imp_ctrl.return_control_torques(kp_split, des_pos, kd, des_vel, kf, des_fff)
+
+plug(control_torques, robot.device.ctrl_joint_torques)
 
 
 
-################################################################################
+###############################################################################
 quad_com_ctrl.record_data()

@@ -11,6 +11,7 @@ from leg_impedance_control.leg_impedance_controller import leg_impedance_control
 from dynamic_graph_manager.dg_tools import ComImpedanceControl
 from dynamic_graph.sot.core.switch import SwitchVector
 
+import dynamic_graph.sot.dynamics_pinocchio as dp
 
 from py_robot_properties_quadruped.config import QuadrupedConfig
 
@@ -144,6 +145,7 @@ class quad_com_control():
     def __init__(self, robot, ViconClientEntity, client_name = "vicon_client" , vicon_ip = '10.32.3.16:801', EntityName = "quad_com_ctrl"):
 
         self.robot = robot
+
         self.EntityName = EntityName
         self.client_name = client_name
         self.host_name_quadruped = vicon_ip
@@ -159,7 +161,7 @@ class quad_com_control():
             ## comment out if running on real robot
             self.vicon_client.robot_wrapper(robot)
         except:
-            print("not in simulation")    
+            print("not in simulation")
 
 
         self.robot.add_ros_and_trace(self.client_name, self.robot_vicon_name + "_position")
@@ -189,7 +191,6 @@ class quad_com_control():
         ### mass in all direction (double to vec returns zero)
         ## TODO : Check if there is dynamicgraph::double
         self.com_imp_ctrl.mass.value = [2.2, 2.2, 2.2]
-        # plug(inertia, self.com_imp_ctrl.inertia)
 
         self.control_switch_pos = SwitchVector("control_switch_pos")
         self.control_switch_pos.setSignalNumber(2) # we want to switch between 2 signals
@@ -216,21 +217,68 @@ class quad_com_control():
 
         return self.torques
 
-    def compute_ang_control_torques(self, Kp_ang, des_omega, des_fft):
+    def compute_ang_control_torques(self, Kp_ang, des_ori, Kd_ang, des_omega, des_fft):
 
         """
         ### Computes torques required to control the orientation of base
         """
+
+        self.base_orientation = selec_vector(self.vicon_client.signal(self.robot_vicon_name
+                                             + "_position"), 3,7, "base_orientation")
         self.base_ang_vel_xyz =  selec_vector(self.vicon_client.signal(self.robot_vicon_name
                                         + "_velocity_body"),3, 6, "selec_ang_dxyz")
 
         plug(Kp_ang, self.com_imp_ctrl.Kp_ang)
-        self.com_imp_ctrl.inertia.value = [1.0, 1.0, 1.0]
+        plug(Kd_ang, self.com_imp_ctrl.Kd_ang)
+        self.com_imp_ctrl.inertia.value = [0.00578574, 0.01938108, 0.02476124]
+        plug(self.base_orientation, self.com_imp_ctrl.ori)
         plug(self.base_ang_vel_xyz, self.com_imp_ctrl.angvel)
+        plug(des_ori, self.com_imp_ctrl.des_ori)
         plug(des_omega, self.com_imp_ctrl.des_angvel)
         plug(des_fft, self.com_imp_ctrl.des_fft)
 
         return self.com_imp_ctrl.angtau
+
+    def return_com_torques(self, com_tau, ang_tau, hess, g0, ce, ci, ci0):
+        ### This divides forces by four to get force per leg and fuses with contact sensor
+
+        plug(com_tau, self.com_imp_ctrl.lctrl)
+        plug(ang_tau, self.com_imp_ctrl.actrl)
+        plug(hess, self.com_imp_ctrl.hess)
+        plug(g0, self.com_imp_ctrl.g0)
+        plug(ce, self.com_imp_ctrl.ce)
+        # plug(ce0, self.com_imp_ctrl.ce0)
+        plug(ci, self.com_imp_ctrl.ci)
+        plug(ci0, self.com_imp_ctrl.ci0)
+
+        self.wb_ctrl = self.com_imp_ctrl.wbctrl
+
+
+        torques_fl = selec_vector(self.wb_ctrl, 0, 3, self.EntityName + "torques_fl")
+
+        torques_fr = selec_vector(self.wb_ctrl, 3, 6, self.EntityName + "torques_fr")
+
+        torques_hl = selec_vector(self.wb_ctrl, 6, 9, self.EntityName + "torques_hl")
+
+        torques_hr = selec_vector(self.wb_ctrl, 9, 12, self.EntityName + "torques_hr")
+
+        torques_fl_6d = stack_two_vectors(torques_fl,
+                                            zero_vec(3, "stack_fl_tau"), 3, 3)
+        torques_fr_6d = stack_two_vectors(torques_fr,
+                                            zero_vec(3, "stack_fr_tau"), 3, 3)
+        torques_hl_6d = stack_two_vectors(torques_hl,
+                                            zero_vec(3, "stack_hl_tau"), 3, 3)
+        torques_hr_6d = stack_two_vectors(torques_hr,
+                                            zero_vec(3, "stack_hr_tau"), 3, 3)
+
+        torques_fl_fr = stack_two_vectors(torques_fl_6d,torques_fr_6d, 6, 6)
+        torques_hl_hr = stack_two_vectors(torques_hl_6d,torques_hr_6d, 6, 6)
+
+        com_torques = stack_two_vectors(torques_fl_fr, torques_hl_hr, 12, 12)
+        ## hack to allow tracking of torques
+        com_torques = mul_double_vec(-1.0, com_torques,"com_torques")
+
+        return com_torques
 
     def set_bias(self):
         self.control_switch_pos.selection.value = 1
@@ -246,48 +294,6 @@ class quad_com_control():
         cnt_value_3d = stack_two_vectors(cnt_value_2d, selec_cnt_value, 2, 1)
 
         return cnt_value_3d
-
-    def return_com_torques(self, torques):
-        ### This divides forces by four to get force per leg and fuses with contact sensor
-
-        thr_cnt_sensor = self.threshold_cnt_sensor()
-
-        torques_fl = mul_double_vec(0.25, torques, self.EntityName + "torques_fl")
-        fl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 0, 1, "fl_cnt_3d")
-        fused_torques_fl = mul_vec_vec(fl_cnt_value, torques_fl, "fused_fl")
-
-        torques_fr = mul_double_vec(0.25, torques, self.EntityName + "torques_fr")
-        fr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 1, 2, "fr_cnt_3d")
-        fused_torques_fr = mul_vec_vec(fr_cnt_value, torques_fr, "fused_fr")
-
-        torques_hl = mul_double_vec(0.25, torques, self.EntityName + "torques_hl")
-        hl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 2, 3, "hl_cnt_3d")
-        fused_torques_hl = mul_vec_vec(hl_cnt_value, torques_hl, "fused_hl")
-
-        torques_hr = mul_double_vec(0.25, torques, self.EntityName + "torques_hr")
-        hr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 3, 4, "hr_cnt_3d")
-        fused_torques_hr = mul_vec_vec(hr_cnt_value, torques_hr, "fused_hr")
-
-        fused_torques_fl_6d = stack_two_vectors(fused_torques_fl,
-                                            zero_vec(3, "stack_fl_tau"), 3, 3)
-        fused_torques_fr_6d = stack_two_vectors(fused_torques_fr,
-                                            zero_vec(3, "stack_fr_tau"), 3, 3)
-        fused_torques_hl_6d = stack_two_vectors(fused_torques_hl,
-                                            zero_vec(3, "stack_hl_tau"), 3, 3)
-        fused_torques_hr_6d = stack_two_vectors(fused_torques_hr,
-                                            zero_vec(3, "stack_hr_tau"), 3, 3)
-
-        fused_torques_fl_fr = stack_two_vectors(fused_torques_fl_6d,
-                                                    fused_torques_fr_6d, 6, 6)
-        fused_torques_hl_hr = stack_two_vectors(fused_torques_hl_6d,
-                                                    fused_torques_hr_6d, 6, 6)
-
-        com_torques = stack_two_vectors(fused_torques_fl_fr, fused_torques_hl_hr
-                                                                    , 12, 12)
-        ## hack to allow tracking of torques
-        com_torques = add_vec_vec(com_torques, zero_vec(24, "add_com_tau"), "com_torques")
-
-        return com_torques
 
     def return_lqr_tau(self,des_pos, des_lmom, des_amom, des_fff, des_lqr):
         """
@@ -387,39 +393,43 @@ class quad_com_control():
         return lqr_com_force
 
     def record_data(self):
-        # self.robot.add_trace(self.EntityName, "tau")
-        # self.robot.add_ros_and_trace(self.EntityName, "tau")
-        #
-        # self.robot.add_trace(self.EntityName, "thr_cnt_sensor")
-        # self.robot.add_ros_and_trace(self.EntityName, "thr_cnt_sensor")
-        #
-        # self.robot.add_trace(self.EntityName + "torques_fl", "sout")
-        # self.robot.add_ros_and_trace(self.EntityName + "torques_fl", "sout")
-        #
-        # self.robot.add_trace("com_torques", "sout")
-        # self.robot.add_ros_and_trace("com_torques", "sout")
-        #
-        # self.robot.add_trace("control_switch_vel", "sout")
-        # self.robot.add_ros_and_trace("control_switch_vel", "sout")
-        #
-        self.robot.add_trace("biased_pos", "sout")
-        self.robot.add_ros_and_trace("biased_pos", "sout")
+        self.robot.add_trace(self.EntityName, "tau")
+        self.robot.add_ros_and_trace(self.EntityName, "tau")
 
-        self.robot.add_trace("biased_vel", "sout")
-        self.robot.add_ros_and_trace("biased_vel", "sout")
-        #
-        self.robot.add_trace("quad_com_ctrl", "lqrtau")
-        self.robot.add_ros_and_trace("quad_com_ctrl", "lqrtau")
-
-        self.robot.add_trace("lqr_error", "sout")
-        self.robot.add_ros_and_trace("lqr_error", "sout")
-
-        self.robot.add_trace("lqr_com_force", "sout")
-        self.robot.add_ros_and_trace("lqr_com_force", "sout")
-
-        self.robot.add_trace("f_hr_3d", "sout")
-        self.robot.add_ros_and_trace("f_hr_3d", "sout")
+        self.robot.add_trace(self.EntityName, "angtau")
+        self.robot.add_ros_and_trace(self.EntityName, "angtau")
 
 
-        self.robot.add_trace("des_fff_lqr", "sout")
-        self.robot.add_ros_and_trace("des_fff_lqr", "sout")
+        self.robot.add_trace(self.EntityName, "wbctrl")
+        self.robot.add_ros_and_trace(self.EntityName, "wbctrl")
+
+        self.robot.add_trace(self.EntityName, "thr_cnt_sensor")
+        self.robot.add_ros_and_trace(self.EntityName, "thr_cnt_sensor")
+
+        self.robot.add_trace("com_torques", "sout")
+        self.robot.add_ros_and_trace("com_torques", "sout")
+
+        self.robot.add_trace("control_switch_vel", "sout")
+        self.robot.add_ros_and_trace("control_switch_vel", "sout")
+
+        # self.robot.add_trace("biased_pos", "sout")
+        # self.robot.add_ros_and_trace("biased_pos", "sout")
+        #
+        # self.robot.add_trace("biased_vel", "sout")
+        # self.robot.add_ros_and_trace("biased_vel", "sout")
+        # #
+        # self.robot.add_trace("quad_com_ctrl", "lqrtau")
+        # self.robot.add_ros_and_trace("quad_com_ctrl", "lqrtau")
+        #
+        # self.robot.add_trace("lqr_error", "sout")
+        # self.robot.add_ros_and_trace("lqr_error", "sout")
+        #
+        # self.robot.add_trace("lqr_com_force", "sout")
+        # self.robot.add_ros_and_trace("lqr_com_force", "sout")
+        #
+        # self.robot.add_trace("f_hr_3d", "sout")
+        # self.robot.add_ros_and_trace("f_hr_3d", "sout")
+        #
+        #
+        # self.robot.add_trace("des_fff_lqr", "sout")
+        # self.robot.add_ros_and_trace("des_fff_lqr", "sout")
