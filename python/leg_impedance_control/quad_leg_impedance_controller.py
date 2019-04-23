@@ -251,6 +251,10 @@ class quad_com_control():
         plug(ci, self.com_imp_ctrl.ci)
         plug(ci0, self.com_imp_ctrl.ci0)
 
+        # plug(self.threshold_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
+        plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.thr_cnt_value)
+
+
         self.wb_ctrl = self.com_imp_ctrl.wbctrl
 
 

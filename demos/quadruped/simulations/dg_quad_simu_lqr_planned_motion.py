@@ -24,7 +24,7 @@ robot = get_quadruped_robot(record_video = False)
 q = zero(robot.pin_robot.nq)
 dq = zero(robot.pin_robot.nv)
 
-q[0] = 0.2
+q[0] = 0.0
 q[1] = 0.0
 q[2] = 0.22
 q[6] = 1.
@@ -62,7 +62,7 @@ reader_lqr2 = Reader('lqr2')
 reader_lqr3 = Reader('lqr3')
 
 filename_pos = "./../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "./../../../../..//control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_vel = "./../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
 filename_com = "./../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
 filename_lmom = "./../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
 filename_amom = "./../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
