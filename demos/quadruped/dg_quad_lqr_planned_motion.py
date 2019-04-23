@@ -28,12 +28,12 @@ reader_amom = Reader('Amom')
 reader_forces = Reader('forces')
 
 
-filename_pos = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_com = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
-filename_lmom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
-filename_amom = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
-filename_forces = "/home/ameduri/devel_blmc/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
+filename_pos = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_com = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_lmom = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_lmom.dat"
+filename_amom = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_amom.dat"
+filename_forces = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
 
 file_exists(filename_pos)
 file_exists(filename_vel)
