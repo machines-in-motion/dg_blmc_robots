@@ -239,50 +239,6 @@ class quad_com_control():
 
         return self.com_imp_ctrl.angtau
 
-    def return_com_torques(self, com_tau, ang_tau, hess, g0, ce, ci, ci0):
-        ### This divides forces by four to get force per leg and fuses with contact sensor
-
-        plug(com_tau, self.com_imp_ctrl.lctrl)
-        plug(ang_tau, self.com_imp_ctrl.actrl)
-        plug(hess, self.com_imp_ctrl.hess)
-        plug(g0, self.com_imp_ctrl.g0)
-        plug(ce, self.com_imp_ctrl.ce)
-        # plug(ce0, self.com_imp_ctrl.ce0)
-        plug(ci, self.com_imp_ctrl.ci)
-        plug(ci0, self.com_imp_ctrl.ci0)
-
-        # plug(self.threshold_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
-        plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.thr_cnt_value)
-
-
-        self.wb_ctrl = self.com_imp_ctrl.wbctrl
-
-
-        torques_fl = selec_vector(self.wb_ctrl, 0, 3, self.EntityName + "torques_fl")
-
-        torques_fr = selec_vector(self.wb_ctrl, 3, 6, self.EntityName + "torques_fr")
-
-        torques_hl = selec_vector(self.wb_ctrl, 6, 9, self.EntityName + "torques_hl")
-
-        torques_hr = selec_vector(self.wb_ctrl, 9, 12, self.EntityName + "torques_hr")
-
-        torques_fl_6d = stack_two_vectors(torques_fl,
-                                            zero_vec(3, "stack_fl_tau"), 3, 3)
-        torques_fr_6d = stack_two_vectors(torques_fr,
-                                            zero_vec(3, "stack_fr_tau"), 3, 3)
-        torques_hl_6d = stack_two_vectors(torques_hl,
-                                            zero_vec(3, "stack_hl_tau"), 3, 3)
-        torques_hr_6d = stack_two_vectors(torques_hr,
-                                            zero_vec(3, "stack_hr_tau"), 3, 3)
-
-        torques_fl_fr = stack_two_vectors(torques_fl_6d,torques_fr_6d, 6, 6)
-        torques_hl_hr = stack_two_vectors(torques_hl_6d,torques_hr_6d, 6, 6)
-
-        com_torques = stack_two_vectors(torques_fl_fr, torques_hl_hr, 12, 12)
-        ## hack to allow tracking of torques
-        com_torques = mul_double_vec(-1.0, com_torques,"com_torques")
-
-        return com_torques
 
     def set_bias(self):
         self.control_switch_pos.selection.value = 1
@@ -396,25 +352,74 @@ class quad_com_control():
 
         return lqr_com_force
 
+    def return_com_torques(self, com_tau, ang_tau, hess, g0, ce, ci, ci0):
+        ### This divides forces by four to get force per leg and fuses with contact sensor
+
+        plug(com_tau, self.com_imp_ctrl.lctrl)
+        plug(ang_tau, self.com_imp_ctrl.actrl)
+        plug(hess, self.com_imp_ctrl.hess)
+        plug(g0, self.com_imp_ctrl.g0)
+        plug(ce, self.com_imp_ctrl.ce)
+        # plug(ce0, self.com_imp_ctrl.ce0)
+        plug(ci, self.com_imp_ctrl.ci)
+        plug(ci0, self.com_imp_ctrl.ci0)
+
+        # self.threshold_cnt_sensor()
+        # plug(self.threshold_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
+        # plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.cnt_sensor)
+        # plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.thr_cnt_value)
+
+
+        self.wb_ctrl = self.com_imp_ctrl.wbctrl
+
+
+        torques_fl = selec_vector(self.wb_ctrl, 0, 3, self.EntityName + "torques_fl")
+
+        torques_fr = selec_vector(self.wb_ctrl, 3, 6, self.EntityName + "torques_fr")
+
+        torques_hl = selec_vector(self.wb_ctrl, 6, 9, self.EntityName + "torques_hl")
+
+        torques_hr = selec_vector(self.wb_ctrl, 9, 12, self.EntityName + "torques_hr")
+
+        torques_fl_6d = stack_two_vectors(torques_fl,
+                                            zero_vec(3, "stack_fl_tau"), 3, 3)
+        torques_fr_6d = stack_two_vectors(torques_fr,
+                                            zero_vec(3, "stack_fr_tau"), 3, 3)
+        torques_hl_6d = stack_two_vectors(torques_hl,
+                                            zero_vec(3, "stack_hl_tau"), 3, 3)
+        torques_hr_6d = stack_two_vectors(torques_hr,
+                                            zero_vec(3, "stack_hr_tau"), 3, 3)
+
+        torques_fl_fr = stack_two_vectors(torques_fl_6d,torques_fr_6d, 6, 6)
+        torques_hl_hr = stack_two_vectors(torques_hl_6d,torques_hr_6d, 6, 6)
+
+        wbc_torques = stack_two_vectors(torques_fl_fr, torques_hl_hr, 12, 12)
+        ## hack to allow tracking of torques
+        wbc_torques = mul_double_vec(1.0, wbc_torques,"com_torques")
+
+        return wbc_torques
+
+
+
     def record_data(self):
         self.robot.add_trace(self.EntityName, "tau")
         self.robot.add_ros_and_trace(self.EntityName, "tau")
-
+        #
         self.robot.add_trace(self.EntityName, "angtau")
         self.robot.add_ros_and_trace(self.EntityName, "angtau")
-
-
+        #
+        #
         self.robot.add_trace(self.EntityName, "wbctrl")
         self.robot.add_ros_and_trace(self.EntityName, "wbctrl")
 
-        self.robot.add_trace(self.EntityName, "thr_cnt_sensor")
-        self.robot.add_ros_and_trace(self.EntityName, "thr_cnt_sensor")
-
+        # self.robot.add_trace(self.EntityName, "thr_cnt_sensor")
+        # self.robot.add_ros_and_trace(self.EntityName, "thr_cnt_sensor")
+        #
         self.robot.add_trace("com_torques", "sout")
         self.robot.add_ros_and_trace("com_torques", "sout")
-
-        self.robot.add_trace("control_switch_vel", "sout")
-        self.robot.add_ros_and_trace("control_switch_vel", "sout")
+        #
+        # self.robot.add_trace("control_switch_vel", "sout")
+        # self.robot.add_ros_and_trace("control_switch_vel", "sout")
 
         # self.robot.add_trace("biased_pos", "sout")
         # self.robot.add_ros_and_trace("biased_pos", "sout")

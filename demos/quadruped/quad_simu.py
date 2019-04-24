@@ -12,7 +12,7 @@ from dynamic_graph_manager.device.robot import Robot
 ###### robot init #######################################################
 
 local_device = Device("hopper_robot")
-yaml_path = "./../../../../robots/robot_properties/robot_properties_teststand/config/teststand.yaml"
+yaml_path = "./../../../../robots/robot_properties/robot_properties_quadruped/config/quadruped.yaml"
 local_device.initialize(yaml_path)
 robot = Robot(name=local_device.name, device=local_device)
 
@@ -22,19 +22,19 @@ robot = Robot(name=local_device.name, device=local_device)
 
 from pinocchio.utils import zero
 
-q = zero(2)
-dq = zero(2)
+q = zero(8)
+dq = zero(8)
 q_out = q.T.tolist()[0]
 dq_out = dq.T.tolist()[0]
-ddq = zero(2)
-joint_torques = zero(2)
+ddq = zero(8)
+joint_torques = zero(8)
 
-q = zero(2)
-dq = zero(2)
+q = zero(8)
+dq = zero(8)
 q_out = q.T.tolist()[0]
 dq_out = dq.T.tolist()[0]
-ddq = zero(2)
-joint_torques = zero(2)
+ddq = zero(8)
+joint_torques = zero(8)
 
 q[:] = np.asmatrix(robot.device.joint_positions.value).T
 dq[:] = np.asmatrix(robot.device.joint_velocities.value).T

@@ -116,7 +116,7 @@ p_gain_z_6d = mul_double_vec_2(p_gain_z, unit_vector_z, "p_gain_z_to_6d")
 
 p_gain_split = add_vec_vec(p_gain_x_6d, p_gain_z_6d, "p_gain_split")
 
-kd_split = constVector([1.5, 0.0, 1.5, 0.0, 0.0, 0.0], "kd_split")
+kd_split = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
 
 #######################################################################################
 

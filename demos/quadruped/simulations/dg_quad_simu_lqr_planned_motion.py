@@ -121,12 +121,10 @@ des_lqr1 = reader_lqr1.vector
 des_lqr2 = reader_lqr2.vector
 des_lqr3 = reader_lqr3.vector
 
-des_lqr = stack_two_vectors(des_lqr1, des_lqr2, 36, 36)
-des_lqr = stack_two_vectors(des_lqr, des_lqr3, 72, 36)
+# des_lqr = stack_two_vectors(des_lqr1, des_lqr2, 36, 36)
+# des_lqr = stack_two_vectors(des_lqr, des_lqr3, 72, 36)
 
-des_lqr_tmp = add_vec_vec(des_lqr, zero_vec(108, "tmp"), "des_lqr")
-des_lqr3_tmp = add_vec_vec(des_lqr3, zero_vec(36,"tmp2"), "des_lqr3")
-
+des_lqr = zero_vec(108, "zero_lqr")
 
 ###############################################################################
 
