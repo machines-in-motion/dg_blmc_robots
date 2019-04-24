@@ -94,7 +94,11 @@ w2 = 1.0
 py_hess = np.zeros((18,18))
 np.fill_diagonal(py_hess, w1)
 
+py_reg = np.zeros((18,18))
+np.fill_diagonal(py_reg, 0.0001)
+
 hess = constMatrix(py_hess, "hess")
+reg = constMatrix(py_reg, "regularizer")
 g0 = zero_vec(18, "g0")
 ce = constMatrix(py_ce, "ce")
 ce0 = zero_vec(6, "ce0")
@@ -109,7 +113,7 @@ lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
 actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_omega_com, des_fft_com)
 # lctrl = zero_vec(3, "ltau")
 
-com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, ci0)
+com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, ci0, reg)
 
 ############################################################################
 

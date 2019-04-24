@@ -6,7 +6,7 @@
 
 from leg_impedance_control.utils import *
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
-# from leg_impedance_control.traj_generators import mul_double_vec_2
+from leg_impedance_control.traj_generators import mul_double_vec_2
 # from dynamic_graph_manager.vicon_sdk import ViconClientEntity
 from dynamic_graph_manager.dg_tools import ComImpedanceControl
 from dynamic_graph.sot.core.switch import SwitchVector
@@ -247,6 +247,7 @@ class quad_com_control():
         plug(self.robot.device.contact_sensors, self.com_imp_ctrl.cnt_sensor)
         return self.com_imp_ctrl.thr_cnt_sensor
 
+
     def convert_cnt_value_to_3d(self, cnt_sensor, start_index, end_index, entityName):
         ## Converts each element of contact sensor to 3d to allow vec_vec multiplication
         selec_cnt_value = selec_vector(cnt_sensor, start_index, end_index, entityName)
@@ -352,7 +353,7 @@ class quad_com_control():
 
         return lqr_com_force
 
-    def return_com_torques(self, com_tau, ang_tau, hess, g0, ce, ci, ci0):
+    def return_com_torques(self, com_tau, ang_tau, hess, g0, ce, ci, ci0, reg):
         ### This divides forces by four to get force per leg and fuses with contact sensor
 
         plug(com_tau, self.com_imp_ctrl.lctrl)
@@ -363,23 +364,34 @@ class quad_com_control():
         # plug(ce0, self.com_imp_ctrl.ce0)
         plug(ci, self.com_imp_ctrl.ci)
         plug(ci0, self.com_imp_ctrl.ci0)
+        plug(reg, self.com_imp_ctrl.reg)
+        thr_cnt_sensor = self.threshold_cnt_sensor()
+        plug(thr_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
 
         # self.threshold_cnt_sensor()
-        # plug(self.threshold_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
         # plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.cnt_sensor)
         # plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.thr_cnt_value)
 
 
         self.wb_ctrl = self.com_imp_ctrl.wbctrl
 
+        ## Thresholding with contact sensor to make forces event based
+        fl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 0, 1, "fl_cnt_3d")
+        fr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 1, 2, "fr_cnt_3d")
+        hl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 2, 3, "hl_cnt_3d")
+        hr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 3, 4, "hr_cnt_3d")
 
         torques_fl = selec_vector(self.wb_ctrl, 0, 3, self.EntityName + "torques_fl")
+        torques_fl = mul_vec_vec(fl_cnt_value, torques_fl, self.EntityName + "fused_torques_fl")
 
         torques_fr = selec_vector(self.wb_ctrl, 3, 6, self.EntityName + "torques_fr")
+        torques_fr = mul_vec_vec(fr_cnt_value, torques_fr, self.EntityName + "fused_torques_fr")
 
         torques_hl = selec_vector(self.wb_ctrl, 6, 9, self.EntityName + "torques_hl")
+        torques_hl = mul_vec_vec(hl_cnt_value, torques_hl, self.EntityName + "fused_torques_hl")
 
         torques_hr = selec_vector(self.wb_ctrl, 9, 12, self.EntityName + "torques_hr")
+        torques_hr = mul_vec_vec(hr_cnt_value, torques_hr, self.EntityName + "fused_torques_hr")
 
         torques_fl_6d = stack_two_vectors(torques_fl,
                                             zero_vec(3, "stack_fl_tau"), 3, 3)
