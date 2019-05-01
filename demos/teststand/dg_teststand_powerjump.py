@@ -73,14 +73,14 @@ control_torques = leg_imp_ctrl.return_control_torques(des_kp, des_pos,
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 ###############################################################################
-
-leg_imp_ctrl.record_data(robot)
-
-robot.add_trace("power_jump_ctrl", "des_pos")
-robot.add_ros_and_trace("power_jump_ctrl", "des_pos")
-
-robot.add_trace("power_jump_ctrl", "des_force")
-robot.add_ros_and_trace("power_jump_ctrl", "des_force")
-
-robot.add_trace("power_jump_ctrl", "des_kp")
-robot.add_ros_and_trace("power_jump_ctrl", "des_kp")
+#
+# leg_imp_ctrl.record_data(robot)
+#
+# robot.add_trace("power_jump_ctrl", "des_pos")
+# robot.add_ros_and_trace("power_jump_ctrl", "des_pos")
+#
+# robot.add_trace("power_jump_ctrl", "des_force")
+# robot.add_ros_and_trace("power_jump_ctrl", "des_force")
+#
+# robot.add_trace("power_jump_ctrl", "des_kp")
+# robot.add_ros_and_trace("power_jump_ctrl", "des_kp")

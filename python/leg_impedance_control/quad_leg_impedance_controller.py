@@ -170,7 +170,7 @@ class quad_com_control():
 
         self.com_imp_ctrl = ComImpedanceControl(EntityName)
 
-    def compute_torques(self, Kp, des_pos, Kd, des_vel, des_fff):
+    def compute_torques(self, Kp, des_pos, Kd, des_lmom, des_fff):
 
 
         self.base_pos_xyz = selec_vector(self.vicon_client.signal(self.robot_vicon_name + "_position"),
@@ -186,11 +186,11 @@ class quad_com_control():
         plug(Kp, self.com_imp_ctrl.Kp)
         plug(Kd, self.com_imp_ctrl.Kd)
         plug(des_pos, self.com_imp_ctrl.des_pos)
-        plug(des_vel, self.com_imp_ctrl.des_vel)
+        plug(des_lmom, self.com_imp_ctrl.des_lmom)
         plug(des_fff, self.com_imp_ctrl.des_fff)
         ### mass in all direction (double to vec returns zero)
         ## TODO : Check if there is dynamicgraph::double
-        self.com_imp_ctrl.mass.value = [2.2, 2.2, 2.2]
+        self.com_imp_ctrl.mass.value = [2.17784, 2.17784, 2.17784]
 
         self.control_switch_pos = SwitchVector("control_switch_pos")
         self.control_switch_pos.setSignalNumber(2) # we want to switch between 2 signals
@@ -217,7 +217,7 @@ class quad_com_control():
 
         return self.torques
 
-    def compute_ang_control_torques(self, Kp_ang, des_ori, Kd_ang, des_omega, des_fft):
+    def compute_ang_control_torques(self, Kp_ang, des_ori, Kd_ang, des_amom, des_fft):
 
         """
         ### Computes torques required to control the orientation of base
@@ -234,7 +234,7 @@ class quad_com_control():
         plug(self.base_orientation, self.com_imp_ctrl.ori)
         plug(self.base_ang_vel_xyz, self.com_imp_ctrl.angvel)
         plug(des_ori, self.com_imp_ctrl.des_ori)
-        plug(des_omega, self.com_imp_ctrl.des_angvel)
+        plug(des_amom, self.com_imp_ctrl.des_amom)
         plug(des_fft, self.com_imp_ctrl.des_fft)
 
         return self.com_imp_ctrl.angtau

@@ -29,4 +29,4 @@ control_torques = leg_imp_ctrl.return_control_torques(kp_split, des_pos, kd_spli
 plug(control_torques, robot.device.ctrl_joint_torques)
 
 ###################### Record Data ##########################################################
-leg_imp_ctrl.record_data(robot)
+# leg_imp_ctrl.record_data(robot)

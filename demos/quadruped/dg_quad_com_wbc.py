@@ -1,4 +1,4 @@
-#impedance controller implementation for COM (used for quadruped)
+#Whole body controller for solo using QP and set up for balancing task(used for quadruped)
 #Author : Avadesh Meduri
 #Date : 25/03/19
 
@@ -42,14 +42,14 @@ plug(slider_filtered.sout, slider_4_op.sin)
 slider_4 = slider_4_op.sout
 
 
-kp_com = scale_values(slider_1, 100.0, "scale_kp_com")
-kd_com = scale_values(slider_2, 10.0, "scale_kd_com")
+kp_com = scale_values(slider_1, 400.0, "scale_kp_com")
+kd_com = scale_values(slider_2, 100.0, "scale_kd_com")
 
-kp_ang_com = scale_values(slider_3, 100.0, "scale_kp_ang_com")
-kd_ang_com = scale_values(slider_4, 10.0, "scale_kd_ang_com")
+kp_ang_com = scale_values(slider_3, 400.0, "scale_kp_ang_com")
+kd_ang_com = scale_values(slider_4, 100.0, "scale_kd_ang_com")
 
 
-unit_vec_101 = constVector([1.0, 0.0, 1.0], "unit_vec_101")
+unit_vec_101 = constVector([0.0, 0.0, 1.0], "unit_vec_101")
 unit_vec_110 = constVector([1.0, 1.0, 0.0], "unit_vec_110")
 
 
@@ -65,18 +65,12 @@ kd_ang_com = mul_double_vec_2(kd_ang_com, unit_vec_110, "kd_ang_com")
 # kd_com = constVector([5.0, 0.0, 5.0], "kd_com")
 # kp_ang_com = constVector([100.0, 100.0, 0.0], "kp_ang_com")
 # kd_ang_com = constVector([2.0, 2.0, 0.0], "kd_ang_com")
-des_pos_com = constVector([0.0, 0.0, 0.25], "des_pos_com")
-des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
-des_fff_com = constVector([0.0, 0.0, 2.32*9.8], "des_fff_com")
+des_pos_com = constVector([0.0, 0.0, 0.26], "des_pos_com")
+des_lmom_com = constVector([0.0, 0.0, 0.0], "des_lmom_com")
+des_fff_com = constVector([0.0, 0.0, 2.17784*9.81], "des_fff_com")
 des_ori_com = constVector([0.0, 0.0, 0.0, 1.0], "des_com_ori")
-des_omega_com = constVector([0.0, 0.0, 0.0], "des_com_omega")
+des_amom_com = constVector([0.0, 0.0, 0.0], "des_com_amom")
 des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
-
-pos_des = constVector([0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.22, 0.0, 0.0, 0.0],
-                        "des_pos")
 
 vel_des = zero_vec(24, "des_vel")
 
@@ -113,7 +107,7 @@ py_hess = np.zeros((18,18))
 np.fill_diagonal(py_hess, w1)
 
 py_reg = np.zeros((18,18))
-np.fill_diagonal(py_reg, 0.1)
+np.fill_diagonal(py_reg, 0.0001)
 
 hess = constMatrix(py_hess, "hess")
 reg = constMatrix(py_reg, "regularizer")
@@ -126,9 +120,9 @@ ci0 = zero_vec(6, "ci0")
 
 
 quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
-lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
+lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_lmom_com,
                                                                     des_fff_com)
-actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_omega_com, des_fft_com)
+actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_amom_com, des_fft_com)
 # lctrl = zero_vec(3, "ltau")
 
 com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, ci0, reg)
@@ -137,14 +131,21 @@ com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, c
 
 
 ###############################################################################
-kp = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "kp_split")
-kd = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "kd_split")
+add_kp = Add_of_double('kp')
+add_kp.sin1.value = 0
+### Change this value for different gains
+add_kp.sin2.value = 0.0
+kp = add_kp.sout
+
+
+kp = mul_double_vec_2(kp,  constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "unit"), "kp_split")
+kd = constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "kd_split")
 
 ## setting desired position
-des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.25, 0.0, 0.0, 0.0],
+des_pos = constVector([0.0, 0.0, -0.2, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.2, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.2, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.2, 0.0, 0.0, 0.0],
                         "pos_des")
 
 des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
