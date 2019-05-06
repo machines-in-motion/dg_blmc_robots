@@ -1,9 +1,10 @@
-#Whole body controller for solo using QP and set up for balancing task(used for quadruped)
+# Code to carry out balancing task on a planck by solo
 #Author : Avadesh Meduri
-#Date : 25/03/19
+#Date : 25/04/19
 
 
 from leg_impedance_control.utils import *
+from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 from leg_impedance_control.quad_leg_impedance_controller import quad_com_control, quad_leg_impedance_controller
 from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values
 from dynamic_graph_manager.vicon_sdk import ViconClientEntity
@@ -42,37 +43,64 @@ plug(slider_filtered.sout, slider_4_op.sin)
 slider_4 = slider_4_op.sout
 
 
-kp_com = scale_values(slider_1, 200.0, "scale_kp_com")
-kd_com = scale_values(slider_2, 50.0, "scale_kd_com")
-
-kp_ang_com = scale_values(slider_3, 200.0, "scale_kp_ang_com")
-kd_ang_com = scale_values(slider_4, 50.0, "scale_kd_ang_com")
-
-
-unit_vec_101 = constVector([1.0, 0.0, 1.0], "unit_vec_101")
-unit_vec_110 = constVector([1.0, 1.0, 0.0], "unit_vec_110")
-
-
-kp_com = mul_double_vec_2(kp_com, unit_vec_101, "kp_com")
-kd_com = mul_double_vec_2(kd_com, unit_vec_101, "kd_com")
-kp_ang_com = mul_double_vec_2(kp_ang_com, unit_vec_110, "kp_ang_com")
-kd_ang_com = mul_double_vec_2(kd_ang_com, unit_vec_110, "kd_ang_com")
-
 ################################################################################
 
-###############################################################################
-# kp_com = constVector([100.0, 0.0, 100.0], "kp_com")
-# kd_com = constVector([5.0, 0.0, 5.0], "kd_com")
-# kp_ang_com = constVector([100.0, 100.0, 0.0], "kp_ang_com")
-# kd_ang_com = constVector([2.0, 2.0, 0.0], "kd_ang_com")
-des_pos_com = constVector([0.0, 0.0, 0.20], "des_pos_com")
-des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
+# # ### calculating leg length of FL and HL
+# joint_positions = robot.device.signal("joint_positions")
+# joint_velocities = robot.device.signal("joint_velocities")
+#
+# fl = leg_impedance_controller("balance_fl")
+#
+# jp_fl = selec_vector(joint_positions, 0, 2, 'position_slicer_fl_tmp')
+# jv_fl = selec_vector(joint_velocities, 0, 2, 'velocity_slicer_fl_tmp')
+#
+# plug(stack_zero(jp_fl,"add_base_fl_pos"), fl.robot_dg.position)
+# plug(stack_zero(jv_fl, "add_base_fl_vel"), fl.robot_dg.velocity )
+#
+# fl_ll = fl.return_leg_length()
+#
+# hl = leg_impedance_controller("balance_hl")
+#
+# jp_hl = selec_vector(joint_positions, 4, 6, 'position_slicer_hl_tmp')
+# jv_hl = selec_vector(joint_velocities, 4, 6, 'velocity_slicer_hl_tmp')
+#
+# plug(stack_zero(jp_hl,"add_base_hl_pos"), hl.robot_dg.position)
+# plug(stack_zero(jv_hl, "add_base_hl_vel"), hl.robot_dg.velocity )
+#
+#
+# hl_ll = hl.return_leg_length()
+#
+#
+# #
+# ###############################################################################
+kp_com = constVector([0.0, 0.0, 150.0], "kp_com")
+kd_com = constVector([25.0, 0.0, 20.0], "kd_com")
+kp_ang_com = constVector([200.0, 200.0, 0.0], "kp_ang_com")
+kd_ang_com = constVector([25.0, 25.0, 0.0], "kd_ang_com")
+des_pos_com = constVector([0.0, 0.0, 0.26], "des_pos_com")
 des_fff_com = constVector([0.0, 0.0, 2.17784*9.81], "des_fff_com")
 des_ori_com = constVector([0.0, 0.0, 0.0, 1.0], "des_com_ori")
-des_ang_vel_com = constVector([0.0, 0.0, 0.0], "des_com_ang_vel")
+des_amom_com = constVector([0.0, 0.0, 0.0], "des_com_amom")
 des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
 
 vel_des = zero_vec(24, "des_vel")
+
+
+###############################################################################
+
+
+
+unit_vec_100 = constVector([2.17784, 0.0, 0.0], "unit_vec_100")
+
+add_vel = Add_of_double('vel')
+add_vel.sin1.value = 0.0
+### Change this value for different gains
+add_vel.sin2.value = 0.0
+des_vel = add_vel.sout
+
+
+des_lmom_com = mul_double_vec_2(des_vel, unit_vec_100)
+
 
 ###############################################################################
 
@@ -82,8 +110,8 @@ def gen_r_matrix(rx, ry, rz):
                    [-ry, rx, 0]])
     return R
 
-###############################################################################
 
+###############################################################################
 
 I = np.matrix([[1.0 , 0.0 , 0.0],
                [0.0 , 1.0 , 0.0],
@@ -94,73 +122,40 @@ r_fr = gen_r_matrix(0.2, -0.15, 0.0)
 r_hl = gen_r_matrix(-0.2, 0.15, 0.0)
 r_hr = gen_r_matrix(-0.2, -0.15, 0.0)
 
-v_fl = np.zeros((3,3))
-v_fr = np.zeros((3,3))
-v_hl = np.zeros((3,3))
-v_hr = np.zeros((3,3))
+zero_matrix = np.zeros((3,3))
 
-zm = np.zeros((3,3))
-
-py_ce = np.block([[I, I, I, I, -I, zm, zm, zm, zm, zm ],
-                  [r_fl, r_fr, r_hl, r_hr, zm, -I, zm, zm, zm, zm],
-                  [v_fl, zm, zm ,zm, zm, zm, -I, zm, zm, zm],
-                  [zm, v_fr, zm ,zm, zm, zm, zm, -I, zm, zm],
-                  [zm, zm, v_hl ,zm, zm, zm, zm, zm, -I, zm],
-                  [zm, zm, zm ,v_hr, zm, zm, zm, zm, zm, -I]])
+py_ce = np.block([[I, I, I, I, -I, zero_matrix],
+                  [r_fl, r_fr, r_hl, r_hr, zero_matrix, -I]])
 
 py_ce = np.asarray(py_ce)
 
-w1 = 10.0
-w2 = 200.0
-w3 = 100.0
-py_hess = np.zeros((30,30))
+w1 = 1.0
+w2 = 1.0
+py_hess = np.zeros((18,18))
 np.fill_diagonal(py_hess, w1)
 
-
-py_hess[12][12] = w3
-py_hess[13][13] = w3
-py_hess[14][14] = w3
-py_hess[15][15] = w3
-py_hess[16][16] = w3
-py_hess[17][17] = w3
-
-py_hess[18][18] = w2
-py_hess[19][19] = w2
-py_hess[20][20] = w2
-py_hess[21][21] = w2
-py_hess[22][22] = w2
-py_hess[23][23] = w2
-py_hess[24][24] = w2
-py_hess[25][25] = w2
-py_hess[26][26] = w2
-py_hess[27][27] = w2
-py_hess[28][28] = w2
-py_hess[29][29] = w2
-
-
-py_reg = np.zeros((30,30))
+py_reg = np.zeros((18,18))
 np.fill_diagonal(py_reg, 0.0001)
 
 hess = constMatrix(py_hess, "hess")
 reg = constMatrix(py_reg, "regularizer")
-g0 = zero_vec(30, "g0")
+g0 = zero_vec(18, "g0")
 ce = constMatrix(py_ce, "ce")
-ce0 = zero_vec(18, "ce0")
-ci = constMatrix(np.zeros((18,30)), "ci")
-ci0 = zero_vec(18, "ci0")
+ce0 = zero_vec(6, "ce0")
+ci = constMatrix(np.zeros((6,18)), "ci")
+ci0 = zero_vec(6, "ci0")
 ###############################################################################
-
-des_abs_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "des_abs_vel")
-
-###############################################################################
-
 quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
-lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
-                                                                    des_fff_com)
-actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_ang_vel_com, des_fft_com)
-# lctrl = zero_vec(3, "ltau")
 
-com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, des_abs_vel, hess, g0, ce, ci, ci0, reg)
+# plug(fl_ll, quad_com_ctrl.com_imp_ctrl.leg_length_fl)
+# plug(hl_ll, quad_com_ctrl.com_imp_ctrl.leg_length_hl)
+# des_pos_com = quad_com_ctrl.com_imp_ctrl.compute_des_com_pos
+
+lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_lmom_com,
+                                                                    des_fff_com)
+actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_amom_com, des_fft_com)
+
+com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, ci0, reg)
 
 ############################################################################
 
@@ -169,7 +164,7 @@ com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, des_abs_vel, hess, 
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
 ### Change this value for different gains
-add_kp.sin2.value = 0.0
+add_kp.sin2.value = 100.0
 kp = add_kp.sout
 
 
@@ -194,7 +189,7 @@ des_fff = com_torques
 add_kf = Add_of_double('kf')
 add_kf.sin1.value = 0
 ### Change this value for different gains
-add_kf.sin2.value = 1.0
+add_kf.sin2.value = 0.0
 kf = add_kf.sout
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
@@ -204,4 +199,3 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 
 ###############################################################################
 quad_com_ctrl.record_data()
-quad_imp_ctrl.record_data()

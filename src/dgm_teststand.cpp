@@ -25,7 +25,7 @@ namespace dg_blmc_robots
 
   bool DGMTeststand::is_in_safety_mode()
   {
-    was_in_safety_mode_ |= teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 10.;
+    was_in_safety_mode_ |= teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 10000.;
     if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
       was_in_safety_mode_ = true;
       return true;

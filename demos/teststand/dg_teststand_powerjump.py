@@ -15,8 +15,8 @@ from dynamic_graph_manager.dg_tools import power_jump_control
 ###############################################################################
 
 des_weight_fff = constVector([0.0, 0.0, 1.8*9.81, 0.0, 0.0, 0.0], "des_weight_fff")
-des_fff = constVector([0.0, 0.0, 3.0*9.81, 0.0, 0.0, 0.0], "des_fff")
-des_pos_trigger = constVector([0.0, 0.0, -0.12, 0.0, 0.0, 0.0],"pos_des_trigger")
+des_fff = constVector([0.0, 0.0, 4.0*9.81, 0.0, 0.0, 0.0], "des_fff")
+des_pos_trigger = constVector([0.0, 0.0, -0.18, 0.0, 0.0, 0.0],"pos_des_trigger")
 des_pos_air = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0],"pos_des_air")
 des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
 
@@ -74,13 +74,13 @@ control_torques = leg_imp_ctrl.return_control_torques(des_kp, des_pos,
 plug(control_torques, robot.device.ctrl_joint_torques)
 ###############################################################################
 #
-# leg_imp_ctrl.record_data(robot)
-#
-# robot.add_trace("power_jump_ctrl", "des_pos")
-# robot.add_ros_and_trace("power_jump_ctrl", "des_pos")
-#
-# robot.add_trace("power_jump_ctrl", "des_force")
-# robot.add_ros_and_trace("power_jump_ctrl", "des_force")
-#
-# robot.add_trace("power_jump_ctrl", "des_kp")
-# robot.add_ros_and_trace("power_jump_ctrl", "des_kp")
+leg_imp_ctrl.record_data(robot)
+
+robot.add_trace("power_jump_ctrl", "des_pos")
+robot.add_ros_and_trace("power_jump_ctrl", "des_pos")
+
+robot.add_trace("power_jump_ctrl", "des_force")
+robot.add_ros_and_trace("power_jump_ctrl", "des_force")
+
+robot.add_trace("power_jump_ctrl", "des_kp")
+robot.add_ros_and_trace("power_jump_ctrl", "des_kp")

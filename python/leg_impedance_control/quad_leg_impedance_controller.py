@@ -170,7 +170,7 @@ class quad_com_control():
 
         self.com_imp_ctrl = ComImpedanceControl(EntityName)
 
-    def compute_torques(self, Kp, des_pos, Kd, des_lmom, des_fff):
+    def compute_torques(self, Kp, des_pos, Kd, des_vel, des_fff):
 
 
         self.base_pos_xyz = selec_vector(self.vicon_client.signal(self.robot_vicon_name + "_position"),
@@ -186,7 +186,7 @@ class quad_com_control():
         plug(Kp, self.com_imp_ctrl.Kp)
         plug(Kd, self.com_imp_ctrl.Kd)
         plug(des_pos, self.com_imp_ctrl.des_pos)
-        plug(des_lmom, self.com_imp_ctrl.des_lmom)
+        plug(des_vel, self.com_imp_ctrl.des_vel)
         plug(des_fff, self.com_imp_ctrl.des_fff)
         ### mass in all direction (double to vec returns zero)
         ## TODO : Check if there is dynamicgraph::double
@@ -217,7 +217,7 @@ class quad_com_control():
 
         return self.torques
 
-    def compute_ang_control_torques(self, Kp_ang, des_ori, Kd_ang, des_amom, des_fft):
+    def compute_ang_control_torques(self, Kp_ang, des_ori, Kd_ang, des_ang_vel, des_fft):
 
         """
         ### Computes torques required to control the orientation of base
@@ -234,7 +234,7 @@ class quad_com_control():
         plug(self.base_orientation, self.com_imp_ctrl.ori)
         plug(self.base_ang_vel_xyz, self.com_imp_ctrl.angvel)
         plug(des_ori, self.com_imp_ctrl.des_ori)
-        plug(des_amom, self.com_imp_ctrl.des_amom)
+        plug(des_ang_vel, self.com_imp_ctrl.des_ang_vel)
         plug(des_fft, self.com_imp_ctrl.des_fft)
 
         return self.com_imp_ctrl.angtau
@@ -353,45 +353,46 @@ class quad_com_control():
 
         return lqr_com_force
 
-    def return_com_torques(self, com_tau, ang_tau, hess, g0, ce, ci, ci0, reg):
-        ### This divides forces by four to get force per leg and fuses with contact sensor
+    def return_com_torques(self, com_tau, ang_tau, des_abs_vel, hess, g0, ce, ci, ci0, reg, cnt_plan = None):
+        ### This divides forces using the wbc controller
 
         plug(com_tau, self.com_imp_ctrl.lctrl)
         plug(ang_tau, self.com_imp_ctrl.actrl)
+        plug(des_abs_vel, self.com_imp_ctrl.abs_end_eff_vel)
         plug(hess, self.com_imp_ctrl.hess)
         plug(g0, self.com_imp_ctrl.g0)
         plug(ce, self.com_imp_ctrl.ce)
-        # plug(ce0, self.com_imp_ctrl.ce0)
         plug(ci, self.com_imp_ctrl.ci)
         plug(ci0, self.com_imp_ctrl.ci0)
         plug(reg, self.com_imp_ctrl.reg)
-        thr_cnt_sensor = self.threshold_cnt_sensor()
-        plug(thr_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
+        if cnt_plan == None:
+            thr_cnt_sensor = self.threshold_cnt_sensor()
+            plug(thr_cnt_sensor, self.com_imp_ctrl.thr_cnt_value)
 
-        # self.threshold_cnt_sensor()
-        # plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.cnt_sensor)
-        # plug(constVector([1.0, 1.0, 1.0, 1.0], "cnt_thr"), self.com_imp_ctrl.thr_cnt_value)
+        else:
+            plug(cnt_plan, self.com_imp_ctrl.cnt_sensor)
+            plug(cnt_plan, self.com_imp_ctrl.thr_cnt_value)
 
 
         self.wb_ctrl = self.com_imp_ctrl.wbctrl
 
         ## Thresholding with contact sensor to make forces event based
-        fl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 0, 1, "fl_cnt_3d")
-        fr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 1, 2, "fr_cnt_3d")
-        hl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 2, 3, "hl_cnt_3d")
-        hr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 3, 4, "hr_cnt_3d")
+        # fl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 0, 1, "fl_cnt_3d")
+        # fr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 1, 2, "fr_cnt_3d")
+        # hl_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 2, 3, "hl_cnt_3d")
+        # hr_cnt_value = self.convert_cnt_value_to_3d(thr_cnt_sensor, 3, 4, "hr_cnt_3d")
 
         torques_fl = selec_vector(self.wb_ctrl, 0, 3, self.EntityName + "torques_fl")
-        torques_fl = mul_vec_vec(fl_cnt_value, torques_fl, self.EntityName + "fused_torques_fl")
+#        torques_fl = mul_vec_vec(fl_cnt_value, torques_fl, self.EntityName + "fused_torques_fl")
 
         torques_fr = selec_vector(self.wb_ctrl, 3, 6, self.EntityName + "torques_fr")
-        torques_fr = mul_vec_vec(fr_cnt_value, torques_fr, self.EntityName + "fused_torques_fr")
+#        torques_fr = mul_vec_vec(fr_cnt_value, torques_fr, self.EntityName + "fused_torques_fr")
 
         torques_hl = selec_vector(self.wb_ctrl, 6, 9, self.EntityName + "torques_hl")
-        torques_hl = mul_vec_vec(hl_cnt_value, torques_hl, self.EntityName + "fused_torques_hl")
+#        torques_hl = mul_vec_vec(hl_cnt_value, torques_hl, self.EntityName + "fused_torques_hl")
 
         torques_hr = selec_vector(self.wb_ctrl, 9, 12, self.EntityName + "torques_hr")
-        torques_hr = mul_vec_vec(hr_cnt_value, torques_hr, self.EntityName + "fused_torques_hr")
+#        torques_hr = mul_vec_vec(hr_cnt_value, torques_hr, self.EntityName + "fused_torques_hr")
 
         torques_fl_6d = stack_two_vectors(torques_fl,
                                             zero_vec(3, "stack_fl_tau"), 3, 3)
@@ -424,8 +425,8 @@ class quad_com_control():
         self.robot.add_trace(self.EntityName, "wbctrl")
         self.robot.add_ros_and_trace(self.EntityName, "wbctrl")
 
-        # self.robot.add_trace(self.EntityName, "thr_cnt_sensor")
-        # self.robot.add_ros_and_trace(self.EntityName, "thr_cnt_sensor")
+        self.robot.add_trace(self.EntityName, "thr_cnt_sensor")
+        self.robot.add_ros_and_trace(self.EntityName, "thr_cnt_sensor")
         #
         self.robot.add_trace("com_torques", "sout")
         self.robot.add_ros_and_trace("com_torques", "sout")

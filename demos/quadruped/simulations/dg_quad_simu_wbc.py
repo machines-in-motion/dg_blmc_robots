@@ -71,7 +71,14 @@ def gen_r_matrix(rx, ry, rz):
     return R
 
 
+def gen_v_matrix(vx, vy, vz):
+    V = np.matrix([[vx, 0, 0],
+                   [0, vy, 0],
+                   [0, 0, vz]])
+    return V
+
 ###############################################################################
+
 
 I = np.matrix([[1.0 , 0.0 , 0.0],
                [0.0 , 1.0 , 0.0],
@@ -82,28 +89,37 @@ r_fr = gen_r_matrix(0.2, -0.15, 0.0)
 r_hl = gen_r_matrix(-0.2, 0.15, 0.0)
 r_hr = gen_r_matrix(-0.2, -0.15, 0.0)
 
-zero_matrix = np.zeros((3,3))
+v_fl = gen_v_matrix(0.0, 0.0, 0.0)
+v_fr = gen_v_matrix(0.0, 0.0, 0.0)
+v_hl = gen_v_matrix(0.0, 0.0, 0.0)
+v_hr = gen_v_matrix(0.0, 0.0, 0.0)
 
-py_ce = np.block([[I, I, I, I, -I, zero_matrix],
-                  [r_fl, r_fr, r_hl, r_hr, zero_matrix, -I]])
+zm = np.zeros((3,3))
+
+py_ce = np.block([[I, I, I, I, -I, zm, zm, zm, zm, zm ],
+                  [r_fl, r_fr, r_hl, r_hr, zm, -I, zm, zm, zm, zm],
+                  [v_fl, zm, zm ,zm, zm, zm, -I, zm, zm, zm],
+                  [zm, v_fr, zm ,zm, zm, zm, zm, -I, zm, zm],
+                  [zm, zm, v_hl ,zm, zm, zm, zm, zm, -I, zm],
+                  [zm, zm, zm ,v_hr, zm, zm, zm, zm, zm, -I]])
 
 py_ce = np.asarray(py_ce)
 
 w1 = 1.0
 w2 = 1.0
-py_hess = np.zeros((18,18))
+py_hess = np.zeros((30,30))
 np.fill_diagonal(py_hess, w1)
 
-py_reg = np.zeros((18,18))
+py_reg = np.zeros((30,30))
 np.fill_diagonal(py_reg, 0.0001)
 
 hess = constMatrix(py_hess, "hess")
 reg = constMatrix(py_reg, "regularizer")
-g0 = zero_vec(18, "g0")
+g0 = zero_vec(30, "g0")
 ce = constMatrix(py_ce, "ce")
-ce0 = zero_vec(6, "ce0")
-ci = constMatrix(np.zeros((6,18)), "ci")
-ci0 = zero_vec(6, "ci0")
+ce0 = zero_vec(18, "ce0")
+ci = constMatrix(np.zeros((18,30)), "ci")
+ci0 = zero_vec(18, "ci0")
 ###############################################################################
 
 
