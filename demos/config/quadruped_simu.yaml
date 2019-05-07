@@ -46,6 +46,7 @@ hardware_communication:
   margin_in_control_period: 10000
   maximum_time_for_user_cmd: 100000
 
+debug_timer_history_length: 10000
 motor_I: 0.045     # The inertia of a single blmc_motor
 motor_KT: 0.025    # The Kt constant of the motor [Nm/A]: tau = I * Kt
 motor_gear_ratio: 9 # On the quadruped the gear ration is 1:9
