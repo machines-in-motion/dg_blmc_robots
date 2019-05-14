@@ -26,17 +26,17 @@ namespace dg_blmc_robots
     quadruped_.initialize();
   }
 
-  bool DGMQuadruped::is_in_safety_mode()
-  {
-    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 1003.875;
-    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
-      was_in_safety_mode_ = true;
-      printf("Killing robot because velocity limit exceeded...\n");
-      return true;
-    } else {
-      return false;
-    }
-  }
+//  bool DGMQuadruped::is_in_safety_mode()
+//  {
+//    was_in_safety_mode_ |= quadruped_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875;
+//    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
+//      was_in_safety_mode_ = true;
+//      printf("Killing robot because velocity limit exceeded...\n");
+//      return true;
+ //   } else {
+//      return false;
+//    }
+//  }
 
 
   void DGMQuadruped::get_sensors_to_map(dynamic_graph::VectorDGMap& map)

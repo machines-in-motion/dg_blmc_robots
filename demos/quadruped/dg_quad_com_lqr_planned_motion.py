@@ -1,9 +1,9 @@
 ## This is code to track desired trajectories from the planner using the whole body controller
-## The gains have to be tuned with the sliders
+## The gains have are obtained from the centroidal LQR code inside kino-dyno opt
 ## and leg impedance
 
 ##Author : Avadesh Meduri
-#Date : 25/03/19
+#Date : 8/03/19
 
 
 from leg_impedance_control.utils import *
@@ -11,55 +11,8 @@ from leg_impedance_control.quad_leg_impedance_controller import quad_com_control
 from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values
 from dynamic_graph_manager.vicon_sdk import ViconClientEntity
 
+from dynamic_graph.sot.core.switch import SwitchVector
 
-#############################################################################
-
-# ## filter slider_value
-from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
-slider_filtered = FIRFilter_Vector_double("slider_fir_filter")
-filter_size = 400
-slider_filtered.setSize(filter_size)
-for i in range(filter_size):
-    slider_filtered.setElement(i, 1.0/float(filter_size))
-# we plug the centered sliders output to the input of the filter.
-plug(robot.device.slider_positions, slider_filtered.sin)
-
-slider_1_op = Component_of_vector("slider_1")
-slider_1_op.setIndex(0)
-plug(slider_filtered.sout, slider_1_op.sin)
-slider_1 = slider_1_op.sout
-
-slider_2_op = Component_of_vector("slider_2")
-slider_2_op.setIndex(1)
-plug(slider_filtered.sout, slider_2_op.sin)
-slider_2 = slider_2_op.sout
-
-slider_3_op = Component_of_vector("slider_3")
-slider_3_op.setIndex(2)
-plug(slider_filtered.sout, slider_3_op.sin)
-slider_3 = slider_3_op.sout
-
-slider_4_op = Component_of_vector("slider_4")
-slider_4_op.setIndex(3)
-plug(slider_filtered.sout, slider_4_op.sin)
-slider_4 = slider_4_op.sout
-
-
-kp_com = scale_values(slider_1, 100.0, "scale_kp_com")
-kd_com = scale_values(slider_2, 50.0, "scale_kd_com")
-
-kp_ang_com = scale_values(slider_3, 100.0, "scale_kp_ang_com")
-kd_ang_com = scale_values(slider_4, 50.0, "scale_kd_ang_com")
-
-
-unit_vec_101 = constVector([1.0, 0.0, 1.0], "unit_vec_101")
-unit_vec_110 = constVector([1.0, 1.0, 0.0], "unit_vec_110")
-
-
-kp_com = mul_double_vec_2(kp_com, unit_vec_101, "kp_com")
-kd_com = mul_double_vec_2(kd_com, unit_vec_101, "kd_com")
-kp_ang_com = mul_double_vec_2(kp_ang_com, unit_vec_110, "kp_ang_com")
-kd_ang_com = mul_double_vec_2(kd_ang_com, unit_vec_110, "kd_ang_com")
 
 ################################################################################
 
@@ -83,6 +36,8 @@ reader_ang_vel_com = Reader('AngVelComReader')
 reader_fft_com = Reader('FeedForwardMomentsComReader')
 reader_cnt_plan = Reader("CntPlan")
 
+reader_lqr1 = Reader("CentLQR1") ## Lqr split because there is a limit in SOT reader for size of read array
+reader_lqr2 = Reader("CentLQR2")
 
 filename_pos = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
 filename_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
@@ -96,6 +51,8 @@ filename_ori_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynami
 filename_ang_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
 filename_fft_com =  "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_moments.dat"
 
+filename_lqr1 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains1.dat"
+filename_lqr2 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains2.dat"
 
 file_exists(filename_pos)
 file_exists(filename_vel)
@@ -107,6 +64,9 @@ file_exists(filename_fff_com)
 file_exists(filename_ori_com)
 file_exists(filename_ang_vel_com)
 file_exists(filename_fft_com)
+file_exists(filename_lqr1)
+file_exists(filename_lqr2)
+
 
 print("Loading data files:")
 reader_pos.load(filename_pos)
@@ -120,6 +80,9 @@ reader_ori_com.load(filename_ori_com)
 reader_ang_vel_com.load(filename_ang_vel_com)
 reader_fft_com.load(filename_fft_com)
 
+reader_lqr1.load(filename_lqr1)
+reader_lqr2.load(filename_lqr2)
+
 # Specify which of the columns to select.
 # NOTE: This is selecting the columns in reverse order - the last number is the first column in the file
 reader_pos.selec.value = '111111111111111111111111'
@@ -132,6 +95,11 @@ reader_ori_com.selec.value = '11110'
 reader_fff_com.selec.value = '1110'
 reader_ang_vel_com.selec.value = '1110'
 reader_fft_com.selec.value = '1110'
+
+reader_lqr1.selec.value = 39*'1'
+reader_lqr1.selec.value = 39*'1'
+
+
 
 ###############################################################################
 def gen_r_matrix(rx, ry, rz):
@@ -212,9 +180,17 @@ g0 = zero_vec(30, "g0")
 ce = constMatrix(py_ce, "ce")
 ci = constMatrix(np.zeros((18,30)), "ci")
 ci0 = zero_vec(18, "ci0")
+
+###############################################################################
+com_pos_switch = SwitchVector("com_pos_switch")
+com_pos_switch.setSignalNumber(2)
+plug(reader_pos_com.vector, com_pos_switch.sin0)
+plug(constVector([0.0, 0.0, 0.2], "tmp"), com_pos_switch.sin1)
+com_pos_switch.selection.value = 1
+
 ###############################################################################
 
-des_pos_com = reader_pos_com.vector
+des_pos_com = com_pos_switch.sout
 des_vel_com = reader_vel_com.vector
 des_abs_vel = reader_abs_vel.vector
 des_cnt_plan = reader_cnt_plan.vector
@@ -222,16 +198,37 @@ des_fff_com = reader_fff_com.vector
 des_ori_com = reader_ori_com.vector
 des_ang_vel_com = reader_ang_vel_com.vector
 des_fft_com = reader_fft_com.vector
+des_lqr = stack_two_vectors(reader_lqr1.vector, reader_lqr2.vector, 39,39)
+
 ###############################################################################
 
 
-quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
-lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
-                                                                    des_fff_com)
-actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_ang_vel_com, des_fft_com)
-# lctrl = zero_vec(3, "ltau")
+################################################################################
+# des_pos_com = constVector([0.0, 0.0, 0.2], "des_pos_com")
+# des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
+# des_abs_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "des_abs_vel")
+# des_cnt_plan = constVector([1.0, 1.0, 1.0, 1.0], "des_cnt_plan")
+# des_fff_com = constVector([0.0, 0.0, 2.17*9.81], "des_fff_com")
+# des_ori_com = constVector([0.0, 0.0, 0.0, 1.0], "des_com_ori")
+# des_ang_vel_com = constVector([0.0, 0.0, 0.0], "des_com_ang_vel")
+# des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
+# des_lqr = constVector([  -100, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#                          0, -100, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0,
+#                          0, 0, -100, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0,
+#                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'des_lqr_tmp')
 
+
+################################################################################
+
+quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
+lqr_com_force = quad_com_ctrl.return_lqr_tau(des_pos_com, des_vel_com, des_ori_com, des_ang_vel_com, des_fff_com, des_fft_com, des_lqr)
+lctrl = selec_vector(lqr_com_force, 0,3, "lqr_lctrl")
+actrl = selec_vector(lqr_com_force, 3,6, "lqr_actrl")
 com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, des_abs_vel, hess, g0, ce, ci, ci0, reg, des_cnt_plan)
+
+
 
 ############################################################################
 
@@ -255,13 +252,14 @@ def start_traj():
     reader_fft_com.rewind()
     reader_fft_com.vector.recompute(0)
 
+    com_pos_switch.selection.value = 0
 
 
 ###############################################################################
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
 ### Change this value for different gains
-add_kp.sin2.value = 80.0
+add_kp.sin2.value = 50.0
 kp = add_kp.sout
 
 
@@ -272,6 +270,19 @@ kd = constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "kd_split")
 
 des_pos = reader_pos.vector
 des_vel = reader_vel.vector
+
+# des_pos = constVector([0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+#                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+#                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0,
+#                        0.0, 0.0, -0.25, 0.0, 0.0, 0.0],
+#                         "pos_des")
+#
+# des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+#                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+#                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+#                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+#                         "vel_des")
+
 
 des_fff = com_torques
 
@@ -284,34 +295,40 @@ kf = add_kf.sout
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel, kf, des_fff)
 
-plug(control_torques, robot.device.ctrl_joint_torques)
+# plug(control_torques, robot.device.ctrl_joint_torques)
 
 ###############################################################################
 quad_com_ctrl.record_data()
 
-robot.add_trace("PositionReader", "vector")
-robot.add_ros_and_trace("PositionReader", "vector")
+#
+# robot.add_trace("com_pos_switch", "sout")
+# robot.add_ros_and_trace("com_pos_switch", "sout")
+#
+# robot.add_trace("PositionReader", "vector")
+# robot.add_ros_and_trace("PositionReader", "vector")
+#
+# robot.add_trace("VelocityReader", "vector")
+# robot.add_ros_and_trace("VelocityReader", "vector")
+#
+# robot.add_trace("PositionComReader", "vector")
+# robot.add_ros_and_trace("PositionComReader", "vector")
+#
+# robot.add_trace("VelocityComReader", "vector")
+# robot.add_ros_and_trace("VelocityComReader", "vector")
+#
+# robot.add_trace("FeedForwardForceComReader", "vector")
+# robot.add_ros_and_trace("FeedForwardForceComReader", "vector")
+#
+# robot.add_trace("OrientationComReader", "vector")
+# robot.add_ros_and_trace("OrientationComReader", "vector")
+#
+# robot.add_trace("AngVelComReader", "vector")
+# robot.add_ros_and_trace("AngVelComReader", "vector")
+#
+# robot.add_trace("FeedForwardMomentsComReader", "vector")
+# robot.add_ros_and_trace("FeedForwardMomentsComReader", "vector")
+#
+# robot.add_trace("AbsVelReader", "vector")
+# robot.add_ros_and_trace("AbsVelReader", "vector")
 
-robot.add_trace("VelocityReader", "vector")
-robot.add_ros_and_trace("VelocityReader", "vector")
-
-robot.add_trace("PositionComReader", "vector")
-robot.add_ros_and_trace("PositionComReader", "vector")
-
-robot.add_trace("VelocityComReader", "vector")
-robot.add_ros_and_trace("VelocityComReader", "vector")
-
-robot.add_trace("FeedForwardForceComReader", "vector")
-robot.add_ros_and_trace("FeedForwardForceComReader", "vector")
-
-robot.add_trace("OrientationComReader", "vector")
-robot.add_ros_and_trace("OrientationComReader", "vector")
-
-robot.add_trace("AngVelComReader", "vector")
-robot.add_ros_and_trace("AngVelComReader", "vector")
-
-robot.add_trace("FeedForwardMomentsComReader", "vector")
-robot.add_ros_and_trace("FeedForwardMomentsComReader", "vector")
-
-robot.add_trace("AbsVelReader", "vector")
-robot.add_ros_and_trace("AbsVelReader", "vector")
+###############################################################################

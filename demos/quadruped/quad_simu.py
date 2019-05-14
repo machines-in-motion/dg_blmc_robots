@@ -39,7 +39,6 @@ joint_torques = zero(8)
 q[:] = np.asmatrix(robot.device.joint_positions.value).T
 dq[:] = np.asmatrix(robot.device.joint_velocities.value).T
 
-print(q, dq)
 
 dt = 0.001#config.dt
 motor_inertia = 0.045
@@ -56,9 +55,7 @@ for i in range(40000):
     joint_torques[:] = np.asmatrix(robot.device.ctrl_joint_torques.value).T
     #joint_torques[:] = control_torques.value
 
-    #print(q, dq)
-    pos_des_fl_fr.recompute(i)
-    print(pos_des_fl_fr.value)
+
 
     # integrate the configuration from the computed torques
     #q = (q + dt * dq + dt * dt * 0.5 * joint_torques / motor_inertia)
