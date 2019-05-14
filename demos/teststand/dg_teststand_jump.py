@@ -77,7 +77,7 @@ plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocit
 
 
 control_torques = leg_imp_ctrl.return_control_torques(kp_split, des_pos,
-                                                    kd_split, des_vel, kf, des_fff)
+                                                      kd_split, des_vel, kf, des_fff)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 
