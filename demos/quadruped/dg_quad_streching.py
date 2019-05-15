@@ -13,15 +13,25 @@ quad_imp_ctrl = quad_leg_impedance_controller(robot)
 #########################################################################################
 
 # ## setting desired position
-pos_bias = constVector([0.0, 0.0, -0.28, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.28, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.28, 0.0, 0.0, 0.0,
-                       0.0, 0.0, -0.28, 0.0, 0.0, 0.0],
+pos_bias = constVector([0.0, 0.0, -0.3, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.3, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.3, 0.0, 0.0, 0.0,
+                       0.0, 0.0, -0.3, 0.0, 0.0, 0.0],
                         "pos_bias")
 
-unit_vector_pos_12d = constVector([0.0, 0.0, 0.16, 0.0, 0.0, 0.0,
-                       0.0, 0.0, 0.16, 0.0, 0.0, 0.0,],
+pos_bias_x = constVector([-0.3, 0.0, -0.0, 0.0, 0.0, 0.0,
+                       -0.3, 0.0, -0.0, 0.0, 0.0, 0.0,
+                       -0.3, 0.0, -0.0, 0.0, 0.0, 0.0,
+                       -0.3, 0.0, -0.0, 0.0, 0.0, 0.0],
+                        "pos_bias_x")
+
+unit_vector_pos_12d = constVector([0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+                       0.0, 0.0, 1.0, 0.0, 0.0, 0.0,],
                        "unit_vector_pos_12d")
+
+unit_vector_pos_12dx = constVector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       1.0, 0.0, 0.0, 0.0, 0.0, 0.0,],
+                       "unit_vector_pos_12d_x")
 
 zero_vec_24d = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -49,34 +59,47 @@ slider_2_op.setIndex(1)
 plug(slider_filtered.sout, slider_2_op.sin)
 slider_2 = slider_2_op.sout
 
+slider_3_op = Component_of_vector("slider_3")
+slider_3_op.setIndex(2)
+plug(slider_filtered.sout, slider_3_op.sin)
+slider_3 = slider_3_op.sout
+
+slider_4_op = Component_of_vector("slider_4")
+slider_4_op.setIndex(3)
+plug(slider_filtered.sout, slider_4_op.sin)
+slider_4 = slider_4_op.sout
+
+
+slider_1 = scale_values(slider_1, 0.6, "des_pos_fl_fr")
+slider_2 = scale_values(slider_2, 0.6, "des_pos_hl_hr")
+slider_3 = scale_values(slider_3, 0.6, "des_pos_fl_fr_x")
+slider_4 = scale_values(slider_4, 0.6, "des_pos_hl_hr_x")
 ######################################################################################
 
 des_pos_fl_fr = mul_double_vec_2(slider_1, unit_vector_pos_12d, "l1")
 des_pos_hl_hr = mul_double_vec_2(slider_2, unit_vector_pos_12d, "l2")
 
+des_pos_fl_fr_x = mul_double_vec_2(slider_3, unit_vector_pos_12dx, "l1x")
+des_pos_hl_hr_x = mul_double_vec_2(slider_4, unit_vector_pos_12dx, "l2x")
+
+
 pos_des = stack_two_vectors(des_pos_fl_fr, des_pos_hl_hr, 12, 12)
-pos_des = add_vec_vec(pos_des, pos_bias, "pos_des")
+pos_des_x = stack_two_vectors(des_pos_fl_fr_x, des_pos_hl_hr_x, 12, 12)
+pos_des_x = add_vec_vec(pos_des_x, pos_bias_x, "pos_des_x")
+
+
+pos_des = add_vec_vec(pos_des, pos_bias, "pos_des_z")
+pos_des = add_vec_vec(pos_des_x, pos_des, "pos_des")
 
 vel_des = zero_vec_24d
 
 #######################################################################################
 
-##For making gain input dynamic through terminal
-add_kp = Add_of_double('kp')
-add_kp.sin1.value = 0
-### Change this value for different gains
-add_kp.sin2.value = 80.0
-kp = add_kp.sout
 
-##For making gain input dynamic through terminal
-add_kd = Add_of_double('kd')
-add_kd.sin1.value = 0
-### Change this value for different gains
-add_kd.sin2.value = 0.01
-kd = add_kd.sout
+kp = constVector([20.0, 0.0, 20.0, 0.0, 0.0, 0.0], "kp_split")
+kd = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
 
-
-control_torques = quad_imp_ctrl.return_control_torques(kp, pos_des)
+control_torques = quad_imp_ctrl.return_control_torques(kp, pos_des, kd, zero_vec_24d)
 
 plug(control_torques, robot.device.ctrl_joint_torques)
 

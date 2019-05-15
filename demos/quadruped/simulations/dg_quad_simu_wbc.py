@@ -51,8 +51,10 @@ des_pos_com = constVector([0.0, 0.0, 0.25], "des_pos_com")
 des_vel_com = constVector([0.0, 0.0, 0.0], "des_vel_com")
 des_fff_com = constVector([0.0, 0.0, 2.32*9.8], "des_fff_com")
 des_ori_com = constVector([0.0, 0.0, 0.0, 1.0], "des_com_ori")
-des_omega_com = constVector([0.0, 0.0, 0.0], "des_com_omega")
+des_ang_vel_com = constVector([0.0, 0.0, 0.0], "des_com_omega")
 des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
+des_abs_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "des_abs_vel")
+
 
 pos_des = constVector([0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
                        0.0, 0.0, -0.22, 0.0, 0.0, 0.0,
@@ -122,14 +124,13 @@ ci = constMatrix(np.zeros((18,30)), "ci")
 ci0 = zero_vec(18, "ci0")
 ###############################################################################
 
-
 quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
 lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
                                                                     des_fff_com)
-actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_omega_com, des_fft_com)
+actrl = quad_com_ctrl.compute_ang_control_torques(kp_ang_com, des_ori_com, kd_ang_com, des_ang_vel_com, des_fft_com)
 # lctrl = zero_vec(3, "ltau")
 
-com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, hess, g0, ce, ci, ci0, reg)
+com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, des_abs_vel, hess, g0, ce, ci, ci0, reg)
 
 ############################################################################
 
