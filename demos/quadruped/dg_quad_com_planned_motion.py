@@ -84,17 +84,17 @@ reader_fft_com = Reader('FeedForwardMomentsComReader')
 reader_cnt_plan = Reader("CntPlan")
 
 
-filename_pos = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_abs_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_abs.dat"
-filename_cnt_plan = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_contact_activation.dat"
+filename_pos = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_abs_vel = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_abs.dat"
+filename_cnt_plan = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_contact_activation.dat"
 
-filename_pos_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
-filename_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
-filename_fff_com =  "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_forces.dat"
-filename_ori_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
-filename_ang_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
-filename_fft_com =  "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_moments.dat"
+filename_pos_com = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_vel_com = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
+filename_fff_com =  "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_forces.dat"
+filename_ori_com = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
+filename_ang_vel_com = "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
+filename_fft_com =  "../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_moments.dat"
 
 
 file_exists(filename_pos)

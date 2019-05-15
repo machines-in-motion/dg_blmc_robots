@@ -119,9 +119,9 @@ def read_planned_traj(path, EntityName):
 
 #############################################################################
 
-fpath_jump = "./../../../../robots/dg_blmc_robots/demos/quadruped/trajectories/SAB/jump/"
-fpath_trot = "./../../../../robots/dg_blmc_robots/demos/quadruped/trajectories/SAB/trot/"
-fpath_fjump = "./../../../../robots/dg_blmc_robots/demos/quadruped/trajectories/SAB/forward_jump/"
+fpath_jump  = "/home/demos/sab_trajectories/jump/"
+fpath_trot  = "/home/demos/sab_trajectories/trot/"
+fpath_fjump = "/home/demos/sab_trajectories/forward_jump/"
 
 
 rpos_jump, rvel_jump, rcom_jump = read_planned_traj(fpath_jump , "jump")
