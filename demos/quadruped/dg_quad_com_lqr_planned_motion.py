@@ -295,7 +295,7 @@ kf = add_kf.sout
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel, kf, des_fff)
 
-# plug(control_torques, robot.device.ctrl_joint_torques)
+plug(control_torques, robot.device.ctrl_joint_torques)
 
 ###############################################################################
 quad_com_ctrl.record_data()

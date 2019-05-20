@@ -49,17 +49,17 @@ reader_lqr4 = Reader('lqr3')
 
 
 
-filename_pos = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_pos_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
-filename_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
-filename_ori_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
-filename_ang_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
-filename_forces = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
-filename_lqr1 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr1.dat"
-filename_lqr2 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr2.dat"
-filename_lqr3 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr3.dat"
-filename_lqr4 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr4.dat"
+filename_pos = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_pos_com = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_vel_com = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
+filename_ori_com = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
+filename_ang_vel_com = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
+filename_forces = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_forces.dat"
+filename_lqr1 = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr1.dat"
+filename_lqr2 = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr2.dat"
+filename_lqr3 = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr3.dat"
+filename_lqr4 = "./../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_lqr4.dat"
 
 
 file_exists(filename_pos)
