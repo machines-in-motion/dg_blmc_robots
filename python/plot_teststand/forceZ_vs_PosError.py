@@ -1,21 +1,29 @@
+import sys, os
+from copy import deepcopy
 import numpy as np
+from numpy import math
 import RAI
 import pkg_resources
+
+#
+# Plot parameters
+#
 import matplotlib
 #matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-
-import sys, os
-
-from numpy import math
-
-import pinocchio as se3
+font = {'family' : 'normal',
+        # 'weight' : 'bold',
+        'size'   : 22}
+matplotlib.rc('font', **font)
 
 
-##############################################################################
-### functions to compute torques for forces read through ati sensor
+#
+# Helpful methods
+#
 def compute_torques(theta_1, theta_2, Fx, Fz):
-
+    """
+    functions to compute torques for forces read through ati sensor
+    """
     fy = Fx
     fx = -Fz
 
@@ -35,62 +43,118 @@ def compute_torques(theta_1, theta_2, Fx, Fz):
     return torques
 
 
+def get_data(rai_data, start_value, end_value):
+  """
+  Parse the data file
+  """
+
+  Fx = np.array(rai_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[0]"))
+  Fz = np.array(rai_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[2]"))
+  pos_error_x = np.array(rai_data.get_streams("data0/dg_pos_error_hopper-sout.dat[0]"))
+  pos_error_z = np.array(rai_data.get_streams("data0/dg_pos_error_hopper-sout.dat[2]"))
+  pos_error_height_sensor = np.array(rai_data.get_streams("data0/dg_stiffness_measurement_height_sensor-sout.dat[0]"))
+  HFE_u = np.array(rai_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[0]"))
+  KFE_u = np.array(rai_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[1]"))
+  k_value_x = np.divide(Fx, pos_error_x)
+  k_value_z = np.divide(Fz, pos_error_z)
+  pos_error_height_sensor = 0.22 - pos_error_height_sensor
+
+  Fx = Fx[start_value:end_value]
+  Fz = Fz[start_value:end_value]
+  pos_error_x = pos_error_x[start_value:end_value]
+  pos_error_z = pos_error_z[start_value:end_value]
+  k_value_x = k_value_x[start_value:end_value]
+  k_value_z = k_value_z[start_value:end_value]
+  HFE_u = HFE_u[start_value:end_value]
+  KFE_u = KFE_u[start_value:end_value]
+  pos_error_height_sensor = pos_error_height_sensor[start_value:end_value]
+
+  return Fx, Fz, pos_error_x, pos_error_z, pos_error_height_sensor, HFE_u, KFE_u, k_value_x, k_value_z
+
+
+def parse_args(argv):
+    argc = len(argv)
+    print ("argc =", argc)
+    assert ((argc - 1) %2) == 0
+    nb_files = (argc - 1)/2
+    file_names = []
+    list_labels = []
+    for i in range(nb_files):
+        file_names.append(os.path.abspath(sys.argv[i*2 + 1]))
+        list_labels.append(sys.argv[i*2 + 2])
+    return nb_files, file_names, list_labels
+
+
 #
-# Plot parameters
+# Main plotting method
 #
-font = {'family' : 'normal',
-        # 'weight' : 'bold',
-        'size'   : 22}
-matplotlib.rc('font', **font)
+if __name__ == "__main__":
+    """
+    main function
+    """
+    #
+    # Parse the arguments
+    #
+    nb_files, file_names, list_labels = parse_args(sys.argv)
+    print ("number of file to read: ", nb_files)
+    print ("file names: ", file_names)
+    print ("labels: ", list_labels)
 
+    #
+    # Create data lists
+    #
+    list_sensors_data = []
+    list_data = []
+    list_Fx = []
+    list_Fz = []
+    list_pos_error_x = []
+    list_pos_error_z = []
+    list_pos_error_height_sensor = []
+    list_HFE_u = []
+    list_KFE_u = []
+    list_k_value_x = []
+    list_k_value_z = []
 
-########### Testing ###############################################################
+    #
+    # limit values
+    # 
+    start_value = 0
+    end_value = -1
 
-###############################################################################
+    #
+    # Load the data
+    #
+    for i in range(nb_files):
+        print("loading file : " + file_names[i])
+        list_sensors_data.append(RAI.sensors.SensorsData(file_names[i]))
+        list_data.append(list_sensors_data[-1].get_all_streams())
 
-name = str(sys.argv[1])
-print("loading file : " + name)
+        (Fx, Fz, pos_error_x, pos_error_z, pos_error_height_sensor, HFE_u, KFE_u,
+        k_value_x, k_value_z) = get_data(list_sensors_data[i], start_value, end_value)
 
-sensors_data = RAI.sensors.SensorsData(name)
-data = sensors_data.get_all_streams()
+        list_Fx.append(Fx)
+        list_Fz.append(Fz)
+        list_pos_error_x.append(pos_error_x)
+        list_pos_error_z.append(pos_error_z)
+        list_pos_error_height_sensor.append(pos_error_height_sensor)
+        list_HFE_u.append(HFE_u)
+        list_KFE_u.append(KFE_u)
+        list_k_value_x.append(k_value_x)
+        list_k_value_z.append(k_value_z)
 
-#data = sensors_data.get_all_streams()
-################ data0/dg_pos_error-sout.dat[]
-################ data0/dg_rel_pos_foot-sout.dat[]
+    #
+    # Prepare plot
+    #
+    figure, subplot = plt.subplots(1,1, sharex = True)
 
-Fx = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[0]"))
-Fz = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[2]"))
-pos_error_x = np.array(sensors_data.get_streams("data0/dg_pos_error_hopper-sout.dat[0]"))
-pos_error_z = np.array(sensors_data.get_streams("data0/dg_pos_error_hopper-sout.dat[2]"))
-pos_error_height_sensor = np.array(sensors_data.get_streams("data0/dg_stiffness_measurement_height_sensor-sout.dat[0]"))
-HFE_u = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[0]"))
-KFE_u = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[1]"))
+    for i in range(nb_files):
+        subplot.plot(list_pos_error_height_sensor[i], list_Fz[i], label = list_labels[i])
 
+    subplot.set_xlim(0.0, 0.17)
+    subplot.set_ylim(0.0, 20.0)
+    subplot.legend()
+    subplot.set_xlabel("Vertical Foot Displacement [m]")
+    subplot.set_ylabel("Vertical Force [N]")
+    subplot.grid()
 
-k_value_x = np.divide(Fx, pos_error_x)
-k_value_z = np.divide(Fz, pos_error_z)
-
-#### limit values
-start_value = 0
-end_value = -1
-
-Fx = Fx[start_value:end_value]
-Fz = Fz[start_value:end_value]
-pos_error_x = pos_error_x[start_value:end_value]
-pos_error_z = pos_error_z[start_value:end_value]
-k_value_x = k_value_x[start_value:end_value]
-k_value_z = k_value_z[start_value:end_value]
-HFE_u = HFE_u[start_value:end_value]
-KFE_u = KFE_u[start_value:end_value]
-pos_error_height_sensor = pos_error_height_sensor[start_value:end_value]
-
-fig1, ax1 = plt.subplots(1,1, sharex = True)
-ax1.plot(0.22-pos_error_height_sensor, Fz, color = "blue", label = "z_spring_behaviour")
-ax1.set_xlim(0.0, 0.17)
-ax1.set_ylim(0.0, 20.0)
-ax1.legend()
-ax1.set_xlabel("Vertical Foot Displacement [m]")
-ax1.set_ylabel("Vertical Force [N]")
-ax1.grid()
-
-plt.show()
+    plt.show()
