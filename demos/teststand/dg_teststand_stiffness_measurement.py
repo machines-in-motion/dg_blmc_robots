@@ -3,93 +3,110 @@
 ## Date : 1/03/19
 
 from leg_impedance_control.utils import *
-from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
-from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values, sine_generator
-
-
-#######################################################################################
+from leg_impedance_control.leg_impedance_controller import (
+  leg_impedance_controller
+)
+from leg_impedance_control.traj_generators import (
+  Multiply_double_vector, scale_values, sine_generator
+)
 
 ## filter slider_value
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
-slider_filtered = FIRFilter_Vector_double("slider_fir_filter")
-filter_size = 100
-slider_filtered.setSize(filter_size)
-for i in range(filter_size):
-    slider_filtered.setElement(i, 1.0/float(filter_size))
-# we plug the centered sliders output to the input of the filter.
-plug(robot.device.slider_positions, slider_filtered.sin)
-
-slider_1_op = Component_of_vector("slider_1")
-slider_1_op.setIndex(0)
-plug(slider_filtered.sout, slider_1_op.sin)
-slider_1 = slider_1_op.sout
-
-slider_2_op = Component_of_vector("slider_2")
-slider_2_op.setIndex(1)
-plug(slider_filtered.sout, slider_2_op.sin)
-slider_2 = slider_2_op.sout
-
-p_gain_z = scale_values(slider_1, 500.0, "scale_kp_z")
-amplitude = scale_values(slider_2, 0.08, "amplitdue_scale")
-
-########################################################################################################
-
-##For making gain input dynamic through terminal
-add_phase = Add_of_double('phase_op')
-add_phase.sin1.value = 0.0
-### Change this value for different gains
-add_phase.sin2.value = 0.0
-phase_zero = add_phase.sout
-
-add_omega = Add_of_double('omega_op')
-add_omega.sin1.value = 0.0
-### Change this value for different gains
-add_omega.sin2.value = 2.0*np.pi
-omega = add_omega.sout
 
 
-des_pos, des_vel = sine_generator(amplitude, omega, phase_zero, -0.22, "hopper")
+class StiffnessMeasurement:
+    def __init__(self, robot, name="stiffness_measurement"):
+        #
+        # Get the arguments
+        #
+        self.name = name
+        self.robot = robot
+
+        #
+        # Filter the input signals
+        #
+        # we define a filter for the height sensor, the output is our Height
+        # sensor data
+        self.height_sensor_filtered = FIRFilter_Vector_double(self.name + "_height_sensor")
+        # initilialize the filter
+        filter_size = 100
+        self.height_sensor_filtered.setSize(filter_size)
+        for i in range(filter_size):
+            self.height_sensor_filtered.setElement(i, 1.0/float(filter_size))
+        # we plug the hardware height_sensors signal into the filter input.
+        plug(self.robot.device.height_sensors, self.height_sensor_filtered.sin)
+
+        #
+        # Defines the impedance controller parameters
+        #
+
+        # create a vector of "kp gains", i.e. the stiffness in the cartesian
+        # space [X Y Z Wx Wy Wz]
+        self.kp_const_vec = constVector([0.4, 0.0, 1.0, 0.0, 0.0, 0.0],
+                                             self.name + "kp_const_vec")
+        # multiply the kp_const_vec by a constant double to scale them
+        self.kp_mult_double_vec = Multiply_double_vector(self.name + "kp_mult_double_vec")
+        # this variable scales the kp_const_vec
+        self.kp_mult_double_vec.sin1.value = 20.0
+        # plug the const vector to the multiplication entity
+        plug(self.kp_const_vec, self.kp_mult_double_vec.sin2)
+        
+        # some renaming for conveniency
+        self.kp_scale = self.kp_mult_double_vec.sin1
+        self.kp_gains = self.kp_mult_double_vec.sout
+
+        # for the kd "damping" gains we set them directly
+        self.kd_gains = constVector([0.8, 0.0, 2.0, 0.0, 0.0, 0.0],
+                                    self.name + "kd_gains")
+
+        # Define the gain on the feed forward term.
+        # Create a sum of double in order to get a constant double.
+        self.kf_add_double = Add_of_double(self.name + 'kf_add_double')
+        self.kf_add_double.sin1.value = 0.0
+        self.kf_add_double.sin2.value = 0.0
+        # some renaming for conveniency
+        self.kf_ratio = self.kf_add_double.sin2
+        self.kf_ratio_out = self.kf_add_double.sout
+        
+        # the desired feed forward term:
+        mass = 0.8
+        gravity = 9.81
+        self.weight = mass * gravity
+        self.des_fff = constVector([0.0, 0.0, self.weight, 0.0, 0.0, 0.0],
+                                   self.name + "des_fff")
+
+        # Desired cartesian position of the foot compare to the 
+        self.des_leg_length_pos = constVector([0.0, 0.0, -0.22, 0.0, 0.0, 0.0], "des_leg_length_pos")
+        self.des_pos = self.des_leg_length_pos
+
+        self.des_leg_length_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "des_leg_length_vel")
+        self.des_vel = self.des_leg_length_vel
+
+        # #######################################################################################
+
+        self.leg_imp_ctrl = leg_impedance_controller("hopper")
+
+        plug(stack_zero(self.robot.device.signal('joint_positions'), "add_base_joint_position"), self.leg_imp_ctrl.robot_dg.position)
+        plug(stack_zero(self.robot.device.signal('joint_velocities'), "add_base_joint_velocity"), self.leg_imp_ctrl.robot_dg.velocity)
 
 
-########################################################################################################
+        self.control_torques = self.leg_imp_ctrl.return_control_torques(
+          self.kp_gains, self.des_pos,
+          self.kd_gains, self.des_vel,
+          self.kf_ratio_out, self.des_fff)
 
-unit_vec_kp = constVector([0.4, 0.0, 1.0, 0.0, 0.0, 0.0], "kp_unit_vec")
+        plug(self.control_torques, self.robot.device.ctrl_joint_torques)
 
-kp_split = mul_double_vec_2(p_gain_z, unit_vec_kp, "kp_6d")
+        # ###################### Record Data ##########################################################
 
-kd_split = constVector([0.8, 0.0, 2.0, 0.0, 0.0, 0.0], "kd_6d")
+        self.leg_imp_ctrl.record_data(self.robot)
 
-##For making gain input dynamic through terminal
-add_kf = Add_of_double('kf')
-add_kf.sin1.value = 0
-### Change this value for different gains
-add_kf.sin2.value = 0.0
-kf = add_kf.sout
+        self.robot.add_ros_and_trace("des_leg_length_pos", "sout")
 
-des_fff = constVector([0.0, 0.0, 0.8*9.81, 0.0, 0.0, 0.0], "des_fff")
+        self.robot.add_ros_and_trace("des_leg_length_vel", "sout")
 
-#######################################################################################
-
-leg_imp_ctrl = leg_impedance_controller("hopper")
-
-plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
-plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
+        self.robot.add_ros_and_trace(self.name + "_height_sensor", "sout")
 
 
-control_torques = leg_imp_ctrl.return_control_torques(kp_split, des_pos,
-                                                      kd_split, des_vel, kf, des_fff)
-
-plug(control_torques, robot.device.ctrl_joint_torques)
-
-###################### Record Data ##########################################################
-
-leg_imp_ctrl.record_data(robot)
-
-robot.add_trace("hopper_des_position", "sout")
-robot.add_ros_and_trace("hopper_des_position", "sout")
-
-robot.add_trace("hopper_des_velocity", "sout")
-robot.add_ros_and_trace("hopper_des_velocity", "sout")
-
-robot.add_trace("slider_fir_filter", "sout")
-robot.add_ros_and_trace("slider_fir_filter", "sout")
+if ('robot' in globals()) or ('robot' in locals()):
+    stiffness_meas = StiffnessMeasurement(robot)

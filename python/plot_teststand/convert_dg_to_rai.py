@@ -6,7 +6,7 @@ Date: 13 Dec 2018
 """
 
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, basename
 import matplotlib.pyplot as plt
 import numpy as np
 import RAI
@@ -44,8 +44,9 @@ for dat_file in dat_files:
 for it in range(min_timesteps):
     dc.add_variable(0.001 * it, 'time', 's')
 
-
-index = len(listdir("./data"))
-out_file = "D" + str(int(index) + 1) +  ".npz"
+if data_path[-1] == '/':
+    out_file = join(data_path, basename(data_path[:-1]) +  ".npz")
+else:
+    out_file = join(data_path, basename(data_path) +  ".npz")
 print("Writing file to:", out_file)
-RAI.data_collector.DataCollector.dump_npz("./data/" + out_file, [dc])
+RAI.data_collector.DataCollector.dump_npz(out_file, [dc])

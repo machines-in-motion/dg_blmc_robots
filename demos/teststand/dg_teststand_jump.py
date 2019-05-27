@@ -44,7 +44,7 @@ phase_zero = add_phase.sout
 add_omega = Add_of_double('omega_op')
 add_omega.sin1.value = 0.0
 ### Change this value for different gains
-add_omega.sin2.value = 2.0*np.pi
+add_omega.sin2.value = 4.0*np.pi
 omega = add_omega.sout
 
 
@@ -61,7 +61,7 @@ kd_split = constVector([0.8, 0.0, 2.0, 0.0, 0.0, 0.0], "kd_6d")
 
 ##For making gain input dynamic through terminal
 add_kf = Add_of_double('kf')
-add_kf.sin1.value = 0
+add_kf.sin1.value = 0.0
 ### Change this value for different gains
 add_kf.sin2.value = 0.0
 kf = add_kf.sout

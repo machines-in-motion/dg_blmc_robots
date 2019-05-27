@@ -61,6 +61,7 @@ if if_check == 1:
     Fz = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[2]"))
     pos_error_x = np.array(sensors_data.get_streams("data0/dg_pos_error_hopper-sout.dat[0]"))
     pos_error_z = np.array(sensors_data.get_streams("data0/dg_pos_error_hopper-sout.dat[2]"))
+    pos_error_height_sensor = np.array(sensors_data.get_streams("data0/dg_stiffness_measurement_height_sensor-sout.dat[0]"))
     HFE_u = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[0]"))
     KFE_u = np.array(sensors_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[1]"))
 
@@ -82,6 +83,7 @@ if if_check == 1:
     k_value_z = k_value_z[start_value:end_value]
     HFE_u = HFE_u[start_value:end_value]
     KFE_u = KFE_u[start_value:end_value]
+    pos_error_height_sensor = pos_error_height_sensor[start_value:end_value]
 
     fig1, ax1 = plt.subplots(2,2,sharex = True)
     ax1[0,0].plot(np.subtract(Fx,0), color= "red", label = "Fx")
@@ -114,20 +116,27 @@ if if_check == 1:
     ax1[1,1].legend()
     ax1[1,1].grid()
 
-    fig2, ax2 = plt.subplots(2,1)
+    fig2, ax2 = plt.subplots(3,1)
 
     ax2[0].plot(pos_error_z, Fz, color = "black", label = "z_spring_behaviour")
+    ax2[0].plot(0.22-pos_error_height_sensor, Fz, color = "red", label = "z_spring_behaviour")
     ax2[0].legend()
     ax2[0].set_xlabel("m")
     ax2[0].set_xlim(-0.15, 0.15)
     ax2[0].set_ylabel("N")
     ax2[0].grid()
 
-    ax2[1].plot(pos_error_x, Fx, color = "red", label = "x_spring_behaviour")
+    ax2[1].plot(0.22-pos_error_height_sensor, Fz, color = "red", label = "z_spring_behaviour")
     ax2[1].legend()
     ax2[1].set_xlabel("m")
     ax2[1].set_ylabel("N")
     ax2[1].grid()
+    
+    ax2[2].plot(pos_error_x, Fx, color = "red", label = "x_spring_behaviour")
+    ax2[2].legend()
+    ax2[2].set_xlabel("m")
+    ax2[2].set_ylabel("N")
+    ax2[2].grid()
 
     plt.show()
 
@@ -307,17 +316,17 @@ if if_check == 4:
     ################ data0/dg_pos_errorhopper-sout.dat[]
     ################ data0/dg_rel_pos_foot-sout.dat[]
 
-    pos_error_x = np.array(sensors_data.get_streams("data0/dg_pos_errorhopper-sout.dat[0]"))
-    pos_error_z = np.array(sensors_data.get_streams("data0/dg_pos_errorhopper-sout.dat[2]"))
+    pos_error_x = np.array(sensors_data.get_streams("data0/dg_pos_error_hopper-sout.dat[0]"))
+    pos_error_z = np.array(sensors_data.get_streams("data0/dg_pos_error_hopper-sout.dat[2]"))
 
     rel_pos_foot_x = np.array(sensors_data.get_streams("data0/dg_rel_pos_foot_hopper-sout.dat[0]"))
     rel_pos_foot_z = np.array(sensors_data.get_streams("data0/dg_rel_pos_foot_hopper-sout.dat[2]"))
 
-    des_pos_x = np.array(sensors_data.get_streams("data0/dg_hopper_des_position-sout.dat[0]"))
-    des_pos_z = np.array(sensors_data.get_streams("data0/dg_hopper_des_position-sout.dat[2]"))
+    des_pos_x = np.array(sensors_data.get_streams("data0/dg_des_leg_length_pos-sout.dat[0]"))
+    des_pos_z = np.array(sensors_data.get_streams("data0/dg_des_leg_length_pos-sout.dat[2]"))
 
-    des_vel_x = np.array(sensors_data.get_streams("data0/dg_hopper_des_velocity-sout.dat[0]"))
-    des_vel_z = np.array(sensors_data.get_streams("data0/dg_hopper_des_velocity-sout.dat[2]"))
+    des_vel_x = np.array(sensors_data.get_streams("data0/dg_des_leg_length_vel-sout.dat[0]"))
+    des_vel_z = np.array(sensors_data.get_streams("data0/dg_des_leg_length_vel-sout.dat[2]"))
 
     rel_vel_foot_x = np.array(sensors_data.get_streams("data0/dg_rel_vel_foot_hopper-sout.dat[0]"))
     rel_vel_foot_z = np.array(sensors_data.get_streams("data0/dg_rel_vel_foot_hopper-sout.dat[2]"))
