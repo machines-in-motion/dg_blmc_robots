@@ -20,29 +20,6 @@ matplotlib.rc('font', **font)
 #
 # Helpful methods
 #
-def compute_torques(theta_1, theta_2, Fx, Fz):
-    """
-    functions to compute torques for forces read through ati sensor
-    """
-    fy = Fx
-    fx = -Fz
-
-    F_vector = np.matrix([fx, fy])
-    l1 = 0.16
-    l2 = 0.16
-
-    k1 = -l1*(np.sin(theta_1))
-    k2 = -l2*(np.sin(theta_1 + theta_2))
-    k3 = l1*(np.cos(theta_1))
-    k4 = l2*(np.cos(theta_1 + theta_2))
-
-    jacT = np.matrix([[k1 + k2, k3+k4], [k2, k4]])
-    #print(jacT)
-    torques = np.matmul(jacT, np.transpose(F_vector))
-
-    return torques
-
-
 def get_data(rai_data, start_value, end_value):
   """
   Parse the data file
@@ -57,7 +34,7 @@ def get_data(rai_data, start_value, end_value):
   KFE_u = np.array(rai_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[1]"))
   k_value_x = np.divide(Fx, pos_error_x)
   k_value_z = np.divide(Fz, pos_error_z)
-  pos_error_height_sensor = 0.22 - pos_error_height_sensor
+  pos_error_height_sensor = 0.22 + 0.017 - pos_error_height_sensor
 
   Fx = Fx[start_value:end_value]
   Fz = Fz[start_value:end_value]
