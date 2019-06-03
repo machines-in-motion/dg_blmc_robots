@@ -68,20 +68,20 @@ reader_cnt_plan = Reader("CntPlan")
 reader_lqr1 = Reader("CentLQR1") ## Lqr split because there is a limit in SOT reader for size of read array
 reader_lqr2 = Reader("CentLQR2")
 
-filename_pos = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_abs_vel = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_abs.dat"
-filename_cnt_plan = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_contact_activation.dat"
+filename_pos = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
+filename_vel = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
+filename_abs_vel = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_abs.dat"
+filename_cnt_plan = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_contact_activation.dat"
 
-filename_pos_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
-filename_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
-filename_fff_com =  "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_forces.dat"
-filename_ori_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
-filename_ang_vel_com = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
-filename_fft_com =  "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_moments.dat"
+filename_pos_com = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
+filename_vel_com = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
+filename_fff_com =  "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_forces.dat"
+filename_ori_com = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
+filename_ang_vel_com = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
+filename_fft_com =  "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_moments.dat"
 
-filename_lqr1 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains1.dat"
-filename_lqr2 = "/home/ameduri/devel/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains2.dat"
+filename_lqr1 = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains1.dat"
+filename_lqr2 = "../../../../../control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains2.dat"
 
 file_exists(filename_pos)
 file_exists(filename_vel)
@@ -236,7 +236,7 @@ com_torques = quad_com_ctrl.return_com_torques(lctrl, actrl, des_abs_vel, hess, 
 
 ###############################################################################
 kp = constVector([100.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
-kd = constVector([1.0, 0.0, 1.0, 0.0, 0.0, 0.0], "kd_split")
+kd = constVector([5.0, 0.0, 5.0, 0.0, 0.0, 0.0], "kd_split")
 
 des_pos = reader_pos.vector
 des_vel = reader_vel.vector

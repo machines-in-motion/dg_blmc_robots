@@ -12,7 +12,7 @@ from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values
 from dynamic_graph_manager.vicon_sdk import ViconClientEntity
 
 from dynamic_graph.sot.core.switch import SwitchVector
-
+from os.path import join
 
 ################################################################################
 
@@ -39,20 +39,19 @@ reader_cnt_plan = Reader("CntPlan")
 reader_lqr1 = Reader("CentLQR1") ## Lqr split because there is a limit in SOT reader for size of read array
 reader_lqr2 = Reader("CentLQR2")
 
-filename_pos = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_positions_eff.dat"
-filename_vel = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_eff.dat"
-filename_abs_vel = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_velocities_abs.dat"
-filename_cnt_plan = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_contact_activation.dat"
+filename_pos = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_positions_eff.dat")
+filename_vel = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_velocities_eff.dat")
+filename_abs_vel = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_velocities_abs.dat")
+filename_cnt_plan = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_contact_activation.dat")
+filename_pos_com = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_com.dat")
+filename_vel_com = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_com_vel.dat")
+filename_fff_com = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_centroidal_forces.dat")
+filename_ori_com = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_quaternion.dat")
+filename_ang_vel_com = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_base_ang_velocities.dat")
+filename_fft_com = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_centroidal_moments.dat")
 
-filename_pos_com = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com.dat"
-filename_vel_com = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_com_vel.dat"
-filename_fff_com =  "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_forces.dat"
-filename_ori_com = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_quaternion.dat"
-filename_ang_vel_com = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_base_ang_velocities.dat"
-filename_fft_com =  "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_moments.dat"
-
-filename_lqr1 = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains1.dat"
-filename_lqr2 = "/home/mkhadiv/workspace/src/catkin/control/kino-dynamic-opt/momentumopt/demos/quadruped_centroidal_gains2.dat"
+filename_lqr1 = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_centroidal_gains1.dat")
+filename_lqr2 = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_centroidal_gains2.dat")
 
 file_exists(filename_pos)
 file_exists(filename_vel)
