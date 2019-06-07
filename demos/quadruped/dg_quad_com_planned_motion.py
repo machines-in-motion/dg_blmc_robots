@@ -10,6 +10,8 @@ from leg_impedance_control.utils import *
 from leg_impedance_control.quad_leg_impedance_controller import quad_com_control, quad_leg_impedance_controller
 from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values
 from dynamic_graph_manager.vicon_sdk import ViconClientEntity
+
+from dynamic_graph.sot.core.switch import SwitchVector
 from os.path import join
 
 #############################################################################
@@ -45,10 +47,10 @@ plug(slider_filtered.sout, slider_4_op.sin)
 slider_4 = slider_4_op.sout
 
 
-kp_com = scale_values(slider_1, 100.0, "scale_kp_com")
+kp_com = scale_values(slider_1, 200.0, "scale_kp_com")
 kd_com = scale_values(slider_2, 50.0, "scale_kd_com")
 
-kp_ang_com = scale_values(slider_3, 100.0, "scale_kp_ang_com")
+kp_ang_com = scale_values(slider_3, 200.0, "scale_kp_ang_com")
 kd_ang_com = scale_values(slider_4, 50.0, "scale_kd_ang_com")
 
 
@@ -210,9 +212,17 @@ g0 = zero_vec(30, "g0")
 ce = constMatrix(py_ce, "ce")
 ci = constMatrix(np.zeros((18,30)), "ci")
 ci0 = zero_vec(18, "ci0")
+
+###############################################################################
+com_pos_switch = SwitchVector("com_pos_switch")
+com_pos_switch.setSignalNumber(2)
+plug(reader_pos_com.vector, com_pos_switch.sin0)
+plug(constVector([0.0, 0.0, 0.2], "tmp"), com_pos_switch.sin1)
+com_pos_switch.selection.value = 1
+
 ###############################################################################
 
-des_pos_com = reader_pos_com.vector
+des_pos_com = com_pos_switch.sout
 des_vel_com = reader_vel_com.vector
 des_abs_vel = reader_abs_vel.vector
 des_cnt_plan = reader_cnt_plan.vector
@@ -222,6 +232,7 @@ des_ang_vel_com = reader_ang_vel_com.vector
 des_fft_com = reader_fft_com.vector
 ###############################################################################
 
+des_ori_com = constVector([0.0, 0.0, 0.0, 1.0], "des_com_ori")
 
 quad_com_ctrl = quad_com_control(robot, ViconClientEntity, "solo")
 lctrl = quad_com_ctrl.compute_torques(kp_com, des_pos_com, kd_com, des_vel_com,
@@ -253,13 +264,15 @@ def start_traj():
     reader_fft_com.rewind()
     reader_fft_com.vector.recompute(0)
 
+    com_pos_switch.selection.value = 0
+
 
 
 ###############################################################################
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
 ### Change this value for different gains
-add_kp.sin2.value = 80.0
+add_kp.sin2.value = 30.0
 kp = add_kp.sout
 
 

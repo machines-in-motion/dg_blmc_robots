@@ -211,13 +211,12 @@ des_lqr = stack_two_vectors(reader_lqr1.vector, reader_lqr2.vector, 39,39)
 # des_ori_com = constVector([0.0, 0.0, 0.0, 1.0], "des_com_ori")
 # des_ang_vel_com = constVector([0.0, 0.0, 0.0], "des_com_ang_vel")
 # des_fft_com = constVector([0.0, 0.0, 0.0], 'des_fft_com')
-# des_lqr = constVector([  -100, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-#                          0, -100, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0,
-#                          0, 0, -100, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0,
-#                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-#                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-#                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'des_lqr_tmp')
-
+# des_lqr = constVector([  -100, 0  , 0  ,-10 , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ,
+#                           0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ,
+#                           0  , 0  ,-100, 0  , 0  ,-10 , 0  , 0  , 0  , 0  , 0  , 0  , 0  ,
+#                           0  , 0  , 0  , 0  , 0  , 0  ,-100, 0  , 0  , 0  ,-0.5, 0  , 0  ,
+#                           0  , 0  , 0  , 0  , 0  , 0  , 0  ,-100, 0  , 0  , 0  ,-1.0, 0  ,
+#                           0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ], 'des_lqr_tmp')
 
 ################################################################################
 
@@ -258,7 +257,7 @@ def start_traj():
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
 ### Change this value for different gains
-add_kp.sin2.value = 50.0
+add_kp.sin2.value = 0.0
 kp = add_kp.sout
 
 
@@ -300,34 +299,37 @@ plug(control_torques, robot.device.ctrl_joint_torques)
 quad_com_ctrl.record_data()
 
 #
-# robot.add_trace("com_pos_switch", "sout")
-# robot.add_ros_and_trace("com_pos_switch", "sout")
-#
-# robot.add_trace("PositionReader", "vector")
-# robot.add_ros_and_trace("PositionReader", "vector")
-#
-# robot.add_trace("VelocityReader", "vector")
-# robot.add_ros_and_trace("VelocityReader", "vector")
-#
-# robot.add_trace("PositionComReader", "vector")
-# robot.add_ros_and_trace("PositionComReader", "vector")
-#
-# robot.add_trace("VelocityComReader", "vector")
-# robot.add_ros_and_trace("VelocityComReader", "vector")
-#
-# robot.add_trace("FeedForwardForceComReader", "vector")
-# robot.add_ros_and_trace("FeedForwardForceComReader", "vector")
-#
-# robot.add_trace("OrientationComReader", "vector")
-# robot.add_ros_and_trace("OrientationComReader", "vector")
-#
-# robot.add_trace("AngVelComReader", "vector")
-# robot.add_ros_and_trace("AngVelComReader", "vector")
-#
-# robot.add_trace("FeedForwardMomentsComReader", "vector")
-# robot.add_ros_and_trace("FeedForwardMomentsComReader", "vector")
-#
-# robot.add_trace("AbsVelReader", "vector")
-# robot.add_ros_and_trace("AbsVelReader", "vector")
+robot.add_trace("com_pos_switch", "sout")
+robot.add_ros_and_trace("com_pos_switch", "sout")
+
+robot.add_trace("PositionReader", "vector")
+robot.add_ros_and_trace("PositionReader", "vector")
+
+robot.add_trace("VelocityReader", "vector")
+robot.add_ros_and_trace("VelocityReader", "vector")
+
+robot.add_trace("PositionComReader", "vector")
+robot.add_ros_and_trace("PositionComReader", "vector")
+
+robot.add_trace("VelocityComReader", "vector")
+robot.add_ros_and_trace("VelocityComReader", "vector")
+
+robot.add_trace("FeedForwardForceComReader", "vector")
+robot.add_ros_and_trace("FeedForwardForceComReader", "vector")
+
+robot.add_trace("OrientationComReader", "vector")
+robot.add_ros_and_trace("OrientationComReader", "vector")
+
+robot.add_trace("AngVelComReader", "vector")
+robot.add_ros_and_trace("AngVelComReader", "vector")
+
+robot.add_trace("FeedForwardMomentsComReader", "vector")
+robot.add_ros_and_trace("FeedForwardMomentsComReader", "vector")
+
+robot.add_trace("AbsVelReader", "vector")
+robot.add_ros_and_trace("AbsVelReader", "vector")
+
+robot.add_trace("CntPlan", "vector")
+robot.add_ros_and_trace("CntPlan", "vector")
 
 ###############################################################################
