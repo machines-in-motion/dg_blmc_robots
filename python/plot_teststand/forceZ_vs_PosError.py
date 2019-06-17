@@ -29,11 +29,13 @@ def get_data(rai_data, start_value, end_value):
   Fz = np.array(rai_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[2]"))
   pos_error_x = np.array(rai_data.get_streams("data0/dg_pos_error_hopper-sout.dat[0]"))
   pos_error_z = np.array(rai_data.get_streams("data0/dg_pos_error_hopper-sout.dat[2]"))
-  pos_error_height_sensor = np.array(rai_data.get_streams("data0/dg_stiffness_measurement_height_sensor-sout.dat[0]"))
+  pos_error_height_sensor_filtered = np.array(rai_data.get_streams("data0/dg_stiffness_measurement_height_sensor-sout.dat[0]"))
+  pos_error_height_sensor = np.array(rai_data.get_streams("data0/dg_hopper_teststand-height_sensors.dat[0]"))
   HFE_u = np.array(rai_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[0]"))
   KFE_u = np.array(rai_data.get_streams("data0/dg_hopper_teststand-joint_torques.dat[1]"))
   k_value_x = np.divide(Fx, pos_error_x)
   k_value_z = np.divide(Fz, pos_error_z)
+  pos_error_height_sensor_filtered = 0.22 + 0.017 - pos_error_height_sensor_filtered
   pos_error_height_sensor = 0.22 + 0.017 - pos_error_height_sensor
 
   Fx = Fx[start_value:end_value]
@@ -46,7 +48,7 @@ def get_data(rai_data, start_value, end_value):
   KFE_u = KFE_u[start_value:end_value]
   pos_error_height_sensor = pos_error_height_sensor[start_value:end_value]
 
-  return Fx, Fz, pos_error_x, pos_error_z, pos_error_height_sensor, HFE_u, KFE_u, k_value_x, k_value_z
+  return Fx, Fz, pos_error_x, pos_error_z, pos_error_height_sensor, pos_error_height_sensor_filtered, HFE_u, KFE_u, k_value_x, k_value_z
 
 
 def parse_args(argv):
@@ -87,6 +89,7 @@ if __name__ == "__main__":
     list_pos_error_x = []
     list_pos_error_z = []
     list_pos_error_height_sensor = []
+    list_pos_error_height_sensor_filtered = []
     list_HFE_u = []
     list_KFE_u = []
     list_k_value_x = []
@@ -106,14 +109,16 @@ if __name__ == "__main__":
         list_sensors_data.append(RAI.sensors.SensorsData(file_names[i]))
         list_data.append(list_sensors_data[-1].get_all_streams())
 
-        (Fx, Fz, pos_error_x, pos_error_z, pos_error_height_sensor, HFE_u, KFE_u,
-        k_value_x, k_value_z) = get_data(list_sensors_data[i], start_value, end_value)
+        (Fx, Fz, pos_error_x, pos_error_z, pos_error_height_sensor,
+         pos_error_height_sensor_filtered, HFE_u, KFE_u,
+         k_value_x, k_value_z) = get_data(list_sensors_data[i], start_value, end_value)
 
         list_Fx.append(Fx)
         list_Fz.append(Fz)
         list_pos_error_x.append(pos_error_x)
         list_pos_error_z.append(pos_error_z)
         list_pos_error_height_sensor.append(pos_error_height_sensor)
+        list_pos_error_height_sensor_filtered.append(pos_error_height_sensor_filtered)
         list_HFE_u.append(HFE_u)
         list_KFE_u.append(KFE_u)
         list_k_value_x.append(k_value_x)
