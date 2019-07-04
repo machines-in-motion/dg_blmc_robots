@@ -28,13 +28,19 @@ class StiffnessMeasurement:
         # we define a filter for the height sensor, the output is our Height
         # sensor data
         self.height_sensor_filtered = FIRFilter_Vector_double(self.name + "_height_sensor")
+        self.force_sensor_filtered = FIRFilter_Vector_double(self.name + "_force_sensor")
         # initilialize the filter
         filter_size = 100
         self.height_sensor_filtered.setSize(filter_size)
         for i in range(filter_size):
             self.height_sensor_filtered.setElement(i, 1.0/float(filter_size))
+
+        self.force_sensor_filtered.setSize(filter_size)
+        for i in range(filter_size):
+            self.force_sensor_filtered.setElement(i, 1.0/float(filter_size))
         # we plug the hardware height_sensors signal into the filter input.
         plug(self.robot.device.height_sensors, self.height_sensor_filtered.sin)
+        plug(self.robot.device.ati_force, self.force_sensor_filtered.sin)
 
         #
         # Defines the impedance controller parameters
@@ -56,7 +62,9 @@ class StiffnessMeasurement:
         self.kp_gains = self.kp_mult_double_vec.sout
 
         # for the kd "damping" gains we set them directly
-        self.kd_gains = constVector([0.8, 0.0, 2.0, 0.0, 0.0, 0.0],
+        # self.kd_gains = constVector([0.8, 0.0, 2.0, 0.0, 0.0, 0.0],
+        #                             self.name + "kd_gains")
+        self.kd_gains = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                                     self.name + "kd_gains")
 
         # Define the gain on the feed forward term.
@@ -76,7 +84,7 @@ class StiffnessMeasurement:
                                    self.name + "des_fff")
 
         # Desired cartesian position of the foot compare to the 
-        self.des_leg_length_pos = constVector([0.0, 0.0, -0.22, 0.0, 0.0, 0.0], "des_leg_length_pos")
+        self.des_leg_length_pos = constVector([0.0, 0.0, -0.27, 0.0, 0.0, 0.0], "des_leg_length_pos")
         self.des_pos = self.des_leg_length_pos
 
         self.des_leg_length_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "des_leg_length_vel")
@@ -106,6 +114,8 @@ class StiffnessMeasurement:
         self.robot.add_ros_and_trace("des_leg_length_vel", "sout")
 
         self.robot.add_ros_and_trace(self.name + "_height_sensor", "sout")
+
+        self.robot.add_ros_and_trace(self.name + "_force_sensor", "sout")
 
 
 if ('robot' in globals()) or ('robot' in locals()):

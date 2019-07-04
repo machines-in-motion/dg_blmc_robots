@@ -20,13 +20,10 @@ matplotlib.rc('font', **font)
 #
 # Helpful methods
 #
-def get_data(rai_data, start_value, end_value):
+def get_data(rai_data, start_value, end_value, index):
   """
   Parse the data file
   """
-
-  for field in rai_data.fields:
-    print field
 
   Fx = np.array(rai_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[0]"))
   Fz = np.array(rai_data.get_streams("data0/dg_hopper_teststand-ati_force.dat[2]"))
@@ -48,7 +45,9 @@ def get_data(rai_data, start_value, end_value):
   # experiment with attached foot
   pos_error_height_sensor_filtered = 0.27 - (pos_error_height_sensor_filtered - 0.01) 
   pos_error_height_sensor = 0.27 - (pos_error_height_sensor - 0.01)
+  # 
   Fz = 0.0 + Fz
+  Fz_filtered = 0.0 + Fz_filtered
 
   Fx = Fx[start_value:end_value]
   Fz = Fz[start_value:end_value]
@@ -68,13 +67,17 @@ def get_data(rai_data, start_value, end_value):
 def parse_args(argv):
     argc = len(argv)
     print ("argc =", argc)
-    assert ((argc - 1) %2) == 0
-    nb_files = (argc - 1)/2
+    assert argc == 2
+    data_path = sys.argv[1]
+    dat_folders = [f for f in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, f))]
+    dat_folders.sort()
     file_names = []
     list_labels = []
-    for i in range(nb_files):
-        file_names.append(os.path.abspath(sys.argv[i*2 + 1]))
-        list_labels.append(sys.argv[i*2 + 2])
+    for folder in dat_folders:
+        file_names.append(os.path.join(#os.path.abspath(data_path),
+                          folder, folder +  ".npz"))
+    file_names.sort()
+    nb_files = len(file_names)
     return nb_files, file_names, list_labels
 
 
@@ -90,8 +93,9 @@ if __name__ == "__main__":
     #
     nb_files, file_names, list_labels = parse_args(sys.argv)
     print ("number of file to read: ", nb_files)
-    print ("file names: ", file_names)
-    print ("labels: ", list_labels)
+    print ("file names: ")
+    for f in file_names:
+      print (f)
 
     #
     # Create data lists
@@ -109,6 +113,7 @@ if __name__ == "__main__":
     list_KFE_u = []
     list_k_value_x = []
     list_k_value_z = []
+    list_k_value_z_theo = []
 
     #
     # limit values
@@ -124,33 +129,38 @@ if __name__ == "__main__":
         list_sensors_data.append(RAI.sensors.SensorsData(file_names[i]))
         list_data.append(list_sensors_data[-1].get_all_streams())
 
-        (Fx, Fz, Fz_filtered, pos_error_x, pos_error_z, pos_error_height_sensor,
-         pos_error_height_sensor_filtered, HFE_u, KFE_u,
-         k_value_x, k_value_z) = get_data(list_sensors_data[i], start_value, end_value)
-
-        list_Fx.append(Fx)
-        list_Fz.append(Fz)
-        list_Fz_filtered.append(Fz_filtered)
-        list_pos_error_x.append(pos_error_x)
-        list_pos_error_z.append(pos_error_z)
-        list_pos_error_height_sensor.append(pos_error_height_sensor)
-        list_pos_error_height_sensor_filtered.append(pos_error_height_sensor_filtered)
-        list_HFE_u.append(HFE_u)
-        list_KFE_u.append(KFE_u)
-        list_k_value_x.append(k_value_x)
-        list_k_value_z.append(k_value_z)
+        try:
+          (Fx, Fz, Fz_filtered, pos_error_x, pos_error_z, pos_error_height_sensor,
+          pos_error_height_sensor_filtered, HFE_u, KFE_u,
+          k_value_x, k_value_z) = get_data(list_sensors_data[i], start_value, end_value, i)
+          
+          list_Fx.append(Fx)
+          list_Fz.append(Fz)
+          list_Fz_filtered.append(Fz_filtered)
+          list_pos_error_x.append(pos_error_x)
+          list_pos_error_z.append(pos_error_z)
+          list_pos_error_height_sensor.append(pos_error_height_sensor)
+          list_pos_error_height_sensor_filtered.append(pos_error_height_sensor_filtered)
+          list_HFE_u.append(HFE_u)
+          list_KFE_u.append(KFE_u)
+          list_k_value_x.append(k_value_x)
+          list_k_value_z.append(k_value_z)
+        except KeyError as err:
+          print("Key error: {0}".format(err))
+        except:
+          print("Unexpected error:", sys.exc_info()[0])
+          pass
 
     #
     # Prepare plot
     #
     figure, subplot = plt.subplots(1,1, sharex = True)
 
-    for i in range(nb_files):
-        # subplot.plot(list_pos_error_height_sensor[i], list_Fz[i], label = list_labels[i])
-        subplot.plot(list_pos_error_height_sensor_filtered[i], list_Fz_filtered[i], label = list_labels[i] + " filtered")
+    for i in range(len(list_Fx)):
+        subplot.plot(list_pos_error_height_sensor_filtered[i], list_Fz_filtered[i], label = "K=" + str((i+1)*20) + "N/m")
 
-    subplot.set_xlim(-0.10, 0.17)
-    subplot.set_ylim(-100.0, 20.0)
+    subplot.set_xlim(-0.05, 0.21)
+    subplot.set_ylim(-21, 21)
     subplot.legend()
     subplot.set_xlabel("Vertical Foot Displacement [m]")
     subplot.set_ylabel("Vertical Force [N]")
