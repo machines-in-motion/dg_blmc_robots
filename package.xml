@@ -37,4 +37,8 @@
   <build_depend> yaml_cpp </build_depend>
   <run_depend>   yaml_cpp </run_depend>
 
+  <!-- Generate messages and services -->
+  <build_depend>message_generation</build_depend>
+  <run_depend>  message_generation</run_depend>
+
 </package>

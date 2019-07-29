@@ -14,6 +14,7 @@
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <blmc_robots/teststand.hpp>
+#include "dg_blmc_robots/TeststandCalibration.h"
 
 namespace dg_blmc_robots
 {
@@ -55,21 +56,55 @@ namespace dg_blmc_robots
      * @brief is_in_safety_mode Implement custom safe-mode detection.
      */
     virtual bool is_in_safety_mode();
+
+    bool calibrate_joint_position_callback(
+      dg_blmc_robots::TeststandCalibration::Request& req,
+      dg_blmc_robots::TeststandCalibration::Response& res);
+
   private:
+    /**
+     * @brief Calibrate the robot joint position
+     * 
+     * @param soft or mechanical calibration?
+     * @param zero_to_index_angle is the angle between the theoretical zero and
+     * the next positive angle.
+     * @param index_angle is the positition of the next index.
+     */
+    void calibrate_joint_position(
+      bool mechanical_calibration,
+      std::array<double, 2>& zero_to_index_angle,
+      std::array<double, 2>& index_angle);
 
     /**
      * Entries for the real hardware.
      */
 
     /**
-    * @brief test_bench_ the real test bench hardware drivers.
-    */
+      * @brief test_bench_ the real test bench hardware drivers.
+      */
     blmc_robots::Teststand teststand_;
 
     /**
     * @brief ctrl_joint_torques_ the joint torques to be sent
     */
     Eigen::Vector2d ctrl_joint_torques_;
+
+    /**
+     * @brief These are the calibration value extracted from the paramters.
+     * They represent the distance between the theorical zero joint angle and
+     * the next jont index.
+     */
+    std::array<double, 2> zero_to_index_angle_from_file_;
+
+    /**
+     * @brief Results of the calibration.
+     */
+    std::array<double, 2> zero_to_index_angle_;
+    
+    /**
+     * @brief Results of the calibration.
+     */
+    std::array<double, 2> index_angle_;
 
     /**
      * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was entered.

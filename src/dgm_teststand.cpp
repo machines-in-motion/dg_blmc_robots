@@ -5,6 +5,7 @@
  * \date 2018
  */
 
+#include <dynamic_graph_manager/ros_init.hh>
 #include "dg_blmc_robots/dgm_teststand.hpp"
 
 namespace dg_blmc_robots
@@ -20,6 +21,29 @@ namespace dg_blmc_robots
 
   void DGMTeststand::initialize_hardware_communication_process()
   {
+    try{
+      std::vector<double> zero_to_index_angle = 
+        params_["hardware_communication"]["calibration"]["zero_to_index_angle"].
+          as<std::vector<double> >();
+      assert(zero_to_index_angle.size() == zero_to_index_angle_from_file_.size());
+      for(unsigned i=0; i<zero_to_index_angle_from_file_.size() ; ++i)
+      {
+        zero_to_index_angle_from_file_[i] = zero_to_index_angle[i];
+      }
+    }catch(...){
+      throw std::runtime_error("Error in reading yaml param:"
+                               "[hardware_communication][calibration]"
+                               "[zero_to_index_angle]");
+    }
+
+    // get the hardware communication ros node handle
+    ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
+      dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+
+    /** initialize the user commands */
+    ros_user_commands_.push_back(ros_node_handle.advertiseService(
+        "calibrate", &DGMTeststand::calibrate_joint_position_callback, this));
+
     teststand_.initialize();
   }
 
@@ -53,7 +77,7 @@ namespace dg_blmc_robots
       map.at("contact_sensors") = teststand_.get_contact_sensors_states();
       map.at("slider_positions") = teststand_.get_slider_positions();
       map.at("height_sensors") = teststand_.get_height_sensors();
-      
+
       map.at("ati_force") = teststand_.get_ati_force();
       map.at("ati_torque") = teststand_.get_ati_torque();
     }catch(...){
@@ -89,6 +113,44 @@ namespace dg_blmc_robots
       teststand_.send_target_joint_torque(ctrl_joint_torques_);
     }catch(...){
       printf("Error sending controls\n");
+    }
+  }
+
+  bool DGMTeststand::calibrate_joint_position_callback(
+    dg_blmc_robots::TeststandCalibration::Request& req,
+    dg_blmc_robots::TeststandCalibration::Response& res)
+  {
+    // parse and register the command for further call.
+    add_user_command(std::bind(&DGMTeststand::calibrate_joint_position, 
+                     this, req.mechanical_calibration, zero_to_index_angle_,
+                     index_angle_));
+
+    // return whatever the user want
+    res.sanity_check = true;
+    
+    // the service has been executed properly
+    return true;
+  }
+
+  void DGMTeststand::calibrate_joint_position(
+    bool mechanical_calibration,
+    std::array<double, 2>& zero_to_index_angle,
+    std::array<double, 2>& index_angle)
+  {
+    index_angle.fill(0.0);
+    if(mechanical_calibration)
+    {
+      zero_to_index_angle.fill(0.0);
+    }else{
+      zero_to_index_angle = zero_to_index_angle_from_file_;
+    }
+
+    teststand_.calibrate(zero_to_index_angle, index_angle, mechanical_calibration);
+
+    for(unsigned i=0 ; i<2 ; ++i)
+    {
+      rt_printf("zero_to_index_angle[%d] = %f\n", i, zero_to_index_angle[i]);
+      rt_printf("index_angle[%d] = %f\n", i, index_angle[i]);
     }
   }
 

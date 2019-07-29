@@ -58,6 +58,23 @@ set(catkin_LIBRARIES
 
 define_os()
 
+#########################################
+# Declare the service files to be built #
+#########################################
+add_service_files(FILES
+  TeststandCalibration.srv
+)
+
+###############################
+# Generate the catkin package #
+###############################
+catkin_python_setup()
+
+#####################################################################
+# Actually generate the language-specific message and service files #
+#####################################################################
+generate_messages(DEPENDENCIES std_msgs)
+
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
 ######################################################
@@ -81,8 +98,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${EXPORTED_LIBRAIRIES}
 )
-
-catkin_python_setup()
 
 #########################
 # manage the unit tests #
