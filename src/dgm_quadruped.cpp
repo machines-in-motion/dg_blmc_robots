@@ -1,5 +1,5 @@
 /**
- * \file dg_quadruped_8_motors.cpp
+ * \file dgm_quadruped.cpp
  * \brief The hardware wrapper of the the test bench with 8 blmc motors
  * \author Maximilien Naveau
  * \date 2018
@@ -98,8 +98,9 @@ namespace dg_blmc_robots
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");
       // Actually send the control to the robot
       quadruped_.send_target_joint_torque(ctrl_joint_torques_);
-    }catch(...){
-      printf("Error sending controls\n");
+    }catch(const std::exception& e){
+      rt_printf("DGMQuadruped::set_motor_controls_from_map: "
+                "Error sending controls, %s\n", e.what());
     }
   }
 
