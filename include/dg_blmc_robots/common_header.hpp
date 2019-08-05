@@ -1,3 +1,14 @@
+/**
+ * @file common_header.hpp
+ * @author Manuel Wuthrich
+ * @author Maximilien Naveau 
+ * @author Julian Viereck
+ * @author Johannes Pfleging 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ */
+
+
 #ifndef COMMON_HEADER_H
 #define COMMON_HEADER_H
 

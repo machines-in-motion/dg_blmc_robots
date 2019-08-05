@@ -1,12 +1,11 @@
 /**
- * \file dgm_test_bench_8_motors.hh
- * \brief This file define the dynamic graph manager responsible of the control
- * of the test bench with the 8 blmc motors
- * \author Maximilien Naveau
- * \date 2018
- *
- * This file declares the TestBench8Motors class which defines the test
- * bench with 8 motors.
+ * @file dgm_quadruped.hpp
+ * @author Manuel Wuthrich
+ * @author Maximilien Naveau 
+ * @author Julian Viereck
+ * @author Johannes Pfleging 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
  */
 
 #ifndef DGM_QUADRUPED_HH

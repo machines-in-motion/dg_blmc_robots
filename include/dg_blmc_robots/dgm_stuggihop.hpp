@@ -1,12 +1,11 @@
 /**
- * \file dgm_teststand.hh
- * \brief This file define the dynamic graph manager responsible of the control
- * of the stuggihop robot.
- * \author Steve Heim
- * \date 2019
- *
- * This file define the dynamic graph manager responsible of the control
- * of the stuggihop robot.
+ * @file dgm_stuggihop.hpp
+ * @author Manuel Wuthrich
+ * @author Maximilien Naveau 
+ * @author Julian Viereck
+ * @author Johannes Pfleging 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
  */
 
 #ifndef DGM_STUGGIHOP_HH

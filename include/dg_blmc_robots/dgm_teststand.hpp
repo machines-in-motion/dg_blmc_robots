@@ -1,12 +1,11 @@
 /**
- * \file dgm_teststand.hh
- * \brief This file define the dynamic graph manager responsible of the control
- * of the teststand robot.
- * \author Julian Viereck
- * \date 2018
- *
- * This file define the dynamic graph manager responsible of the control
- * of the teststand robot.
+ * @file dgm_teststandx.hpp
+ * @author Manuel Wuthrich
+ * @author Maximilien Naveau 
+ * @author Julian Viereck
+ * @author Johannes Pfleging 
+ * @license License BSD-3-Clause
+ * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
  */
 
 #ifndef DGM_TESTSTAND_HH
