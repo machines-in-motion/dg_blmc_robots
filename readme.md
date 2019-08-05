@@ -6,10 +6,10 @@ Dynamic Graph Managers for brushless control motor (BLMC) robots
 
 ## Authors
 
-Maximilien Naveau
-Manuel Wuthrich
-Julian Viereck
-Johannes Pfleging 
+- Maximilien Naveau
+- Manuel Wuthrich
+- Julian Viereck
+- Johannes Pfleging 
 
 ## Copyrights
 
