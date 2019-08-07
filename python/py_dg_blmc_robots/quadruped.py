@@ -9,7 +9,6 @@ import dynamic_graph_manager as dgm
 from dynamic_graph_manager.device import Device
 from dynamic_graph_manager.device.robot import Robot
 
-import py_robot_properties_quadruped
 from py_robot_properties_quadruped.config import QuadrupedConfig
 
 import pybullet as p
@@ -64,16 +63,20 @@ class QuadrupedBulletRobot(Robot):
 
         self.base_link_name = "base_link"
         self.joint_names = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE',
-        'HL_KFE', 'HR_HFE', 'HR_KFE']
+                            'HL_KFE', 'HR_HFE', 'HR_KFE']
         controlled_joints = ['FL_HFE', 'FL_KFE', 'FR_HFE', 'FR_KFE', 'HL_HFE',
-        'HL_KFE', 'HR_HFE', 'HR_KFE']
+                             'HL_KFE', 'HR_HFE', 'HR_KFE']
+
+        self.end_effector_names = ['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']# ['HL_END', 'HR_END', 'FL_END', 'FR_END']
 
         self.wrapper = PinBulletWrapper(self.robotId, self.pin_robot,
-            controlled_joints,
-            ## for new urdf
-            ['HL_ANKLE', 'HR_ANKLE', 'FL_ANKLE', 'FR_ANKLE']
-            # ['HL_END', 'HR_END', 'FL_END', 'FR_END']
+            controlled_joints, self.end_effector_names            
         )
+
+        self.hl_index = self.pin_robot.model.getFrameId('HL_ANKLE')
+        self.hr_index = self.pin_robot.model.getFrameId('HR_ANKLE')
+        self.fl_index = self.pin_robot.model.getFrameId('FL_ANKLE')
+        self.fr_index = self.pin_robot.model.getFrameId('FR_ANKLE')
 
         # Initialize the device.
         self.device = Device('bullet_quadruped')
@@ -95,6 +98,23 @@ class QuadrupedBulletRobot(Robot):
         self.sim2signal_()
 
         self.steps_ = 0
+
+        self.q0 = zero(self.pin_robot.nq)
+        self.dq0 = zero(self.pin_robot.nv)
+
+        self.q0[0] = 0.2
+        self.q0[1] = 0.0
+        self.q0[2] = 0.22
+        self.q0[6] = 1.
+        self.q0[7] = 0.8
+        self.q0[8] = -1.6
+        self.q0[9] = 0.8
+        self.q0[10] = -1.6
+        self.q0[11] = -0.8
+        self.q0[12] = 1.6
+        self.q0[13] = -0.8
+        self.q0[14] = 1.6
+
 
         super(QuadrupedBulletRobot, self).__init__('bullet_quadruped',
             self.device)
