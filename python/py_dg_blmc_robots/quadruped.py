@@ -25,6 +25,11 @@ class QuadrupedBulletRobot(Robot):
     def __init__(self, use_fixed_base = False, record_video = False):
         self.physicsClient = p.connect(p.GUI)
 
+        self.slider_a = p.addUserDebugParameter("a", 0, 1, 0.5)
+        self.slider_b = p.addUserDebugParameter("b", 0, 1, 0.5)
+        self.slider_c = p.addUserDebugParameter("c", 0, 1, 0.5)
+        self.slider_d = p.addUserDebugParameter("d", 0, 1, 0.5)
+
         # Load the plain.
         plain_urdf = (rospkg.RosPack().get_path("robot_properties_quadruped") +
                       "/urdf/plane_with_restitution.urdf")
@@ -143,6 +148,13 @@ class QuadrupedBulletRobot(Robot):
 
         self.signal_base_pos_.sout.value = q[0:7]
         self.signal_base_vel_.sout.value = dq[0:6]
+
+        device.slider_positions.value = [
+          p.readUserDebugParameter(self.slider_a),
+          p.readUserDebugParameter(self.slider_b),
+          p.readUserDebugParameter(self.slider_c),
+          p.readUserDebugParameter(self.slider_d),
+        ]
 
 
     def run(self, steps=1, delay=0., plot = False):
