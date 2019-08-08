@@ -154,6 +154,8 @@ def get_joint_controller(robot):
     jt_ctrl.pid = joint_pid_control(q, q_ref, dq, dq_ref, Kp, Kd, jt_ctrl.name)
 
     plug(jt_ctrl.pid.control, robot.device.ctrl_joint_torques)
+
+    return jt_ctrl
    
 if 'robot' in globals():
-    jt_ctrl = get_joint_controller(robot)
+    ctrl = get_joint_controller(robot)

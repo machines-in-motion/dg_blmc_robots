@@ -87,21 +87,6 @@ print ("fr: ", bMfr.translation.T)
 # ('fl: ', matrix([[ 0.39      ,  0.14205   , -0.00294615]]))
 # ('fr: ', matrix([[ 0.39      , -0.14205   , -0.00294615]]))
 
-# feed forward
-des_fff = constVector([0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
-                       0.0, 0.0, (2.2*9.8)/4.0, 0.0, 0.0, 0.0,
-                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                        "fff")
-
-
-# For making gain input dynamic through terminal
-add_kf = Add_of_double('kf')
-add_kf.sin1.value = 0
-### Change this value for different gains
-add_kf.sin2.value = 0.0
-kf = add_kf.sout
-
 # Update the initial state of the robot.
 robot.reset_state(q, dq)
 
@@ -114,8 +99,8 @@ des_vel = reader_vel.vector
 
 
 ### Setup the control gains
-kp = constVector([200.0, 0.0, 200.0, 0.0, 0.0, 0.0], "kp_split")
-kd = constVector([2.0, 0.0,2.0, 0.0, 0.0, 0.0], "kd_split")
+kp = constVector([100.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
+kd = constVector([0.2, 0.0, 0.2, 0.0, 0.0, 0.0], "kd_split")
 
 quad_imp_ctrl = quad_leg_impedance_controller(robot)
 control_torques = quad_imp_ctrl.return_control_torques(kp, des_pos, kd, des_vel)

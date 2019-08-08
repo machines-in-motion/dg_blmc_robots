@@ -141,7 +141,6 @@ control_switch_vel.setSignalNumber(3) # we want to switch between 2 signals
 plug(rvel_jump.vector, control_switch_vel.sin0)
 plug(rvel_trot.vector, control_switch_vel.sin1)
 plug(rvel_fjump.vector, control_switch_vel.sin2)
-
 control_switch_vel.selection.value = 0 # pick and switch manually
 
 #############################################################################
