@@ -8,6 +8,7 @@ from dynamic_graph.sot.core.control_pd import ControlPD
 from dynamic_graph.sot.core.operator import (Multiply_double_vector,
                                              Selec_of_vector, Stack_of_vector,
                                              Substract_of_vector)
+from dynamic_graph.sot.core.switch import SwitchVector
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 from leg_impedance_control.traj_generators import cubic_interpolator
 from leg_impedance_control.utils import constVector
@@ -130,6 +131,99 @@ def get_q_ref_from_4silders(sliders, max_hip_joint, entity_name):
     q_ref.sout = q_ref.q_ref.sout
     return q_ref
 
+
+def get_q_ref_from_interpolation(q_signal, max_hip_joint, entity_name):
+    """
+    In this part we define the desired joint positions from interpolation.
+    These inputs are interpolator from 0 to 1.
+    Because we have only 4 data for 8 joints we will have decompose the signal
+    in 4 different signal and then concatenate them to get a vector of dim 8.
+    """
+
+    class QRef:
+        def __init__(self, entity_name):
+            self.name = entity_name
+
+    name = "q_ref"
+    q_ref = QRef(name)
+
+    # Create the interpolator for going to zero:
+    q_ref.q_zero = len(q_signal.value) * [0.0]
+    q_ref.go0 = cubic_interpolator(q_signal, q_ref.q_zero, name + "_go0")
+
+    # duration of the motion
+    q_ref.duration = 2.0
+
+    # Create the way points:
+    #  _
+    # < <
+    q_ref.q_knee_back = [
+      + max_hip_joint, -2.0*max_hip_joint,
+      + max_hip_joint, -2.0*max_hip_joint,
+      + max_hip_joint, -2.0*max_hip_joint,
+      + max_hip_joint, -2.0*max_hip_joint,
+    ]
+    q_ref.go_knee_back = cubic_interpolator(
+      q_signal, q_ref.q_knee_back, q_ref.duration, name + "_go_knee_back")
+    #  _
+    # > >
+    q_ref.q_knee_front = [
+      - max_hip_joint, +2.0*max_hip_joint,
+      - max_hip_joint, +2.0*max_hip_joint,
+      - max_hip_joint, +2.0*max_hip_joint,
+      - max_hip_joint, +2.0*max_hip_joint,
+    ]
+    q_ref.go_knee_front = cubic_interpolator(
+      q_signal, q_ref.q_knee_front, q_ref.duration, name + "_go_knee_front")
+    #  _
+    # > <
+    q_ref.q_knee_inward = [
+      - max_hip_joint, +2.0*max_hip_joint,
+      - max_hip_joint, +2.0*max_hip_joint,
+      + max_hip_joint, -2.0*max_hip_joint,
+      + max_hip_joint, -2.0*max_hip_joint,
+    ]
+    q_ref.go_knee_inward = cubic_interpolator(
+      q_signal, q_ref.q_knee_inward, q_ref.duration, name + "_go_knee_inward")
+    #  _
+    # < >
+    q_ref.q_knee_outward = [
+      + max_hip_joint, -2.0*max_hip_joint,
+      + max_hip_joint, -2.0*max_hip_joint,
+      - max_hip_joint, +2.0*max_hip_joint,
+      - max_hip_joint, +2.0*max_hip_joint,
+    ]
+    q_ref.go_knee_outward = cubic_interpolator(
+      q_signal, q_ref.q_knee_outward, q_ref.duration, name + "_go_knee_outward")
+
+    q_ref.switch = SwitchVector(name + "_switch")
+    q_ref.switch.setSignalNumber(4)
+    q_ref.switch.selection.value = 0
+
+    plug(q_ref.go_knee_back.sout, q_ref.switch.sin0)
+    plug(q_ref.go_knee_front.sout, q_ref.switch.sin1)
+    plug(q_ref.go_knee_inward.sout, q_ref.switch.sin2)
+    plug(q_ref.go_knee_outward.sout, q_ref.switch.sin3)
+
+    # Here we just do a simple shortcut
+    q_ref.sout = q_ref.switch.sout
+    return q_ref
+
+
+def reset_q_ref_interpolation(q_ref):
+    q_ref.go_knee_back.reset()
+    q_ref.go_knee_front.reset()
+    q_ref.go_knee_inward.reset()
+    q_ref.go_knee_outward.reset()
+
+
+def start_q_ref_interpolation(q_ref):
+    q_ref.go_knee_back.start(q_ref.duration)
+    q_ref.go_knee_front.start(q_ref.duration)
+    q_ref.go_knee_inward.start(q_ref.duration)
+    q_ref.go_knee_outward.start(q_ref.duration)
+
+
 def get_joint_controller(robot):
     class JointController():
         def __init__(self):
@@ -140,12 +234,16 @@ def get_joint_controller(robot):
     jt_ctrl.solo_config = SoloConfig()
     jt_ctrl.Kp = constVector(8*[jt_ctrl.solo_config.kp], jt_ctrl.name + "_Kp")
     jt_ctrl.Kd = constVector(8*[jt_ctrl.solo_config.kd], jt_ctrl.name + "_Kd")
-    jt_ctrl.q_ref_sliders = get_q_ref_from_4silders(
-        robot.device.slider_positions, 2.0, jt_ctrl.name + "_q_ref")
+    
+    # jt_ctrl.q_ref = get_q_ref_from_4silders(
+    #     robot.device.slider_positions, 2.0, jt_ctrl.name + "_q_ref")
+    jt_ctrl.q_ref = get_q_ref_from_interpolation(
+          robot.device.joint_positions, 2.0, jt_ctrl.name + "_q_ref" )
+
     jt_ctrl.dq_ref = constVector(8*[0.0], jt_ctrl.name + "_dq_ref")
     
     q = robot.device.joint_positions
-    q_ref = jt_ctrl.q_ref_sliders.sout
+    q_ref = jt_ctrl.q_ref.sout
     dq = robot.device.joint_velocities
     dq_ref = jt_ctrl.dq_ref
     Kp = jt_ctrl.Kp
@@ -156,6 +254,22 @@ def get_joint_controller(robot):
     plug(jt_ctrl.pid.control, robot.device.ctrl_joint_torques)
 
     return jt_ctrl
-   
+
+motion_index = -1
+def start_next(ctrl):
+    """
+    Here we define a sequencer
+    """
+    # make sure we actually do not input a crazy number
+    global motion_index
+    motion_index = motion_index + 1
+    if motion_index >= 4 or motion_index < 0:
+        motion_index=0
+       
+    reset_q_ref_interpolation(ctrl.q_ref)
+    ctrl.q_ref.switch.selection.value = motion_index
+    start_q_ref_interpolation(ctrl.q_ref)
+    
+
 if 'robot' in globals():
     ctrl = get_joint_controller(robot)
