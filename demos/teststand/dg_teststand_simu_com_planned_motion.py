@@ -1,14 +1,9 @@
 ## simple impedance controller implementation on impact test stand
-## Author : Avadesh Meduri
-## Date : 12/02/19
-
-
+## Author : Elham
 
 import pinocchio as se3
 from pinocchio.utils import zero
-
-from catkin.robots.dg_blmc_robots.demos.teststand.dg_teststand_com_planned_motion import ComPlannedMotion
-
+from dg_teststand_com_planned_motion import ComPlannedMotion
 from py_dg_blmc_robots.teststand import get_teststand_robot
 
 # Get the robot corresponding to the quadruped.
@@ -31,4 +26,4 @@ stiffness_meas = ComPlannedMotion(robot)
 
 #########################################################################
 
-robot.run(10000, 1./60.)
+robot.run(1000000, 1./60.)
