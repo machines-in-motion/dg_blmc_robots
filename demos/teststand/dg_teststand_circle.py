@@ -1,10 +1,12 @@
 ## Author : Elham
 # from dynamic_graph_manager.device.robot import robot
+
 from leg_impedance_control.utils import *
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 from leg_impedance_control.utils import *
 from leg_impedance_control.traj_generators import circular_trajectory_generator, mul_doub_doub
+
 
 def read_slider(number):
     slider_filtered = FIRFilter_Vector_double("slider_fir_filter")
@@ -23,6 +25,7 @@ def read_slider(number):
         slider.append(slider_op[i].sout)
     return slider
 
+
 slider = read_slider(2)
 
 add_constant = Add_of_double('constant')
@@ -36,30 +39,16 @@ leg_imp_ctrl = leg_impedance_controller("hopper")
 plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
 plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
 
-# timer = Add_of_double("timer")
-# timer =
-'''
-add_omega = Add_of_double('omega')
-add_omega.sin1.value = 0.0
-### Change this value for different gains
-add_omega.sin2.value = 0.6
-omega = add_omega.sout
-'''
-
 add_phase = Add_of_double('phase')
 add_phase.sin1.value = 0.0
 ### Change this value for different gains
-add_phase.sin2.value = 3 * np.pi * 0.0
+add_phase.sin2.value = 0.0
 phase = add_phase.sout
 
 des_pos, des_vel = circular_trajectory_generator(radius, radius, slider[1], phase, -0.20, "circle")
 
 kp_split = constVector([30.0, 0.0, 30.0, 0.0, 0.0, 0.0], "kp_split")
-# des_pos = constVector([0.0, 0.0, -0.2, 0.0, 0.0, 0.0],"pos_des")
-# des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
 kd_split = constVector([0.8, 0.0, 2.0, 0.0, 0.0, 0.0], "kd_split")
 
 result = leg_imp_ctrl.return_control_torques(kp_split, des_pos, None, des_vel)
 plug(result, robot.device.ctrl_joint_torques)
-
-print ":)"
