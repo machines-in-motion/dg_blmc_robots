@@ -21,8 +21,11 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class TeststandBulletRobot(Robot):
-    def __init__(self, fixed_slider=False):
+    def __init__(self, fixed_slider=True):
         self.physicsClient = p.connect(p.GUI)
+
+        self.slider_a = p.addUserDebugParameter("a", 0, 1, 0.5)
+        self.slider_b = p.addUserDebugParameter("b", 0, 1, 0.5)
 
         # Load the plain.
         plain_urdf = rospkg.RosPack().get_path("robot_properties_teststand") + \
@@ -38,7 +41,7 @@ class TeststandBulletRobot(Robot):
         self.urdf_path = TeststandConfig.urdf_path
         self.robotId = p.loadURDF(self.urdf_path, robotStartPos,
             robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE,
-            useFixedBase=True)
+            useFixedBase=False)
         p.getBasePositionAndOrientation(self.robotId)
 
         # Create the robot wrapper in pinocchio.
@@ -104,6 +107,11 @@ class TeststandBulletRobot(Robot):
         device.joint_velocities.value = dq[1:]
 
         device.height_sensors.value = [q[0]]
+
+        device.slider_positions.value = [
+          p.readUserDebugParameter(self.slider_a),
+          p.readUserDebugParameter(self.slider_b),
+        ]
 
         ## uncomment if force at the ground is desired
         # #contact_frames, contact_forces = self.wrapper.get_force()

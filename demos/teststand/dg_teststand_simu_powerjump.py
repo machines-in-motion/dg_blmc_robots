@@ -12,10 +12,13 @@ robot = get_teststand_robot(fixed_slider=False)
 config = TeststandConfig()
 
 # Update the initial state of the robot.
+print (config.q0, config.v0)
 robot.reset_state(config.q0, config.v0)
 
 # Load the controller
 ctrl = PowerJump(robot)
 
 # Run the simulation
-robot.run(10000, 1./60.)
+for i in range(10000):
+    robot.run(1, 1./60.)
+    print(robot.device.ctrl_joint_torques.value)
