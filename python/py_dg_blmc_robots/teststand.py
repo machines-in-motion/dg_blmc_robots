@@ -21,11 +21,11 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class TeststandBulletRobot(Robot):
-    def __init__(self, fixed_slider=True):
+    def __init__(self, fixed_slider=True, slider_a_init_value=0.5, slider_b_init_value=0.5):
         self.physicsClient = p.connect(p.GUI)
 
-        self.slider_a = p.addUserDebugParameter("a", 0, 1, 0.5)
-        self.slider_b = p.addUserDebugParameter("b", 0, 1, 0.5)
+        self.slider_a = p.addUserDebugParameter("a", 0, 1, slider_a_init_value)
+        self.slider_b = p.addUserDebugParameter("b", 0, 1, slider_b_init_value)
 
         # Load the plain.
         plain_urdf = rospkg.RosPack().get_path("robot_properties_teststand") + \
@@ -74,7 +74,6 @@ class TeststandBulletRobot(Robot):
         self.device.initialize(TeststandConfig.yaml_path)
 
         # Initialize signals that are not filled in sim2signals.
-        self.device.slider_positions.value = 1 * [0.]
         self.device.contact_sensors.value = 1 * [0.]
         self.device.height_sensors.value = 1 * [0.]
         self.device.ati_force.value = 3 * [0.]
@@ -146,5 +145,5 @@ class TeststandBulletRobot(Robot):
         self.sim2signal_()
 
 
-def get_teststand_robot(fixed_slider=False):
-    return TeststandBulletRobot(fixed_slider)
+def get_teststand_robot(fixed_slider=False, slider_a_init_value=0.5, slider_b_init_value=0.5):
+    return TeststandBulletRobot(fixed_slider, slider_a_init_value, slider_b_init_value)
