@@ -36,7 +36,7 @@ class JointOscillation:
         #     method "setElement(index, value)"
         # in the end here we do an averaging filter on 200 points.
         self.slider_filtered = FIRFilter_Vector_double("slider_fir_filter")
-        filter_size = 200
+        filter_size = 800
         self.slider_filtered.setSize(filter_size)
         for i in range(filter_size):
             self.slider_filtered.setElement(i, 1.0/float(filter_size))
@@ -44,7 +44,7 @@ class JointOscillation:
         plug(robot.device.slider_positions, self.slider_filtered.sin)
 
         # select the slider A and B
-        self.slider_a = Selec_of_vector(name + "_slider_a")
+        self.  = Selec_of_vector(name + "_slider_a")
         self.slider_a.selec(0, 1)
         plug(self.slider_filtered.sout, self.slider_a.sin)
         #
@@ -130,8 +130,8 @@ class JointOscillation:
         # create the pid control
         self.pd_ctrl = ControlPD(name + "_pd_ctrl")
         # reset and redimension all input signals:
-        self.pd_ctrl.Kp.value = 2 * [5.0,]
-        self.pd_ctrl.Kd.value = 2 * [0.1,]
+        self.pd_ctrl.Kp.value = 2 * [2.5,]
+        self.pd_ctrl.Kd.value = 2 * [0.05,]
         plug(robot.device.joint_positions, self.pd_ctrl.position)
         plug(self.desired_position.sout, self.pd_ctrl.desired_position)
         plug(robot.device.joint_velocities, self.pd_ctrl.velocity)
@@ -144,10 +144,11 @@ class JointOscillation:
         writeGraph('/tmp/teststand_joint_oscillation.dot')
 
         # add some ros debug:
-        robot.add_to_ros(name + "_hip_pos", "omega", topic_type="double")
-        robot.add_to_ros(name + "_hip_pos", "magnitude", topic_type="double")
-        robot.add_to_ros(name + "_hip_pos", "phase", topic_type="double")
-        robot.add_to_ros(name + "_hip_pos", "bias", topic_type="double")
+        # robot.add_to_ros(name + "_hip_pos", "omega", topic_type="double")
+        # robot.add_to_ros(name + "_hip_pos", "magnitude", topic_type="double")
+        # robot.add_to_ros(name + "_hip_pos", "phase", topic_type="double")
+        # robot.add_to_ros(name + "_hip_pos", "bias", topic_type="double")
+        robot.add_to_ros(name + "_hip_vel", "sout", topic_type="double")
         robot.add_to_ros(name + "_hip_pos", "sout", topic_type="double")
 
 if ('robot' in globals()) or ('robot' in locals()):

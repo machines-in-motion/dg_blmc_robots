@@ -3,7 +3,7 @@
 
 import pinocchio as se3
 from pinocchio.utils import zero
-from dg_teststand_com_planned_motion import ComPlannedMotion
+from dg_teststand_planned_motion import PlannedMotion
 from py_dg_blmc_robots.teststand import get_teststand_robot
 
 # Get the robot corresponding to the quadruped.
@@ -22,8 +22,8 @@ robot.reset_state(q, dq)
 
 ###################################################################################
 
-stiffness_meas = ComPlannedMotion(robot)
+stiffness_meas = PlannedMotion(robot)
 
 #########################################################################
 
-robot.run(1000000, 1./60.)
+robot.run(100000, 1./60.)
