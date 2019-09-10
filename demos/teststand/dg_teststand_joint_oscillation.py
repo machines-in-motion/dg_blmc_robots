@@ -44,7 +44,7 @@ class JointOscillation:
         plug(robot.device.slider_positions, self.slider_filtered.sin)
 
         # select the slider A and B
-        self.  = Selec_of_vector(name + "_slider_a")
+        self.slider_a  = Selec_of_vector(name + "_slider_a")
         self.slider_a.selec(0, 1)
         plug(self.slider_filtered.sout, self.slider_a.sin)
         #

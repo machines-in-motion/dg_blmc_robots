@@ -6,6 +6,7 @@
 
 from leg_impedance_control.utils import *
 from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values
+
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 from dynamic_graph.sot.core.fir_filter import FIRFilter_Vector_double
 from dynamic_graph.sot.core.reader import Reader
@@ -78,6 +79,7 @@ class PlannedMotion:
         self.des_pos = self.reader_pos.vector
         self.des_vel = self.reader_vel.vector
         self.des_fff = stack_two_vectors(self.reader_fff.vector, constVector([0.0, 0.0, 0.0], 'zero'), 3, 3)
+        self.acc = mul_double_vec(4/2.178, self.des_fff)
 
         ###############################################################################
         self.ati_force = Component_of_vector("ati_force")
@@ -95,8 +97,9 @@ class PlannedMotion:
         leg_imp_ctrl = leg_impedance_controller("hopper")
         plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
         plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
+        self.acc = constVector([0.0, 0.1, 0.0, 0.0, 0.0, 0.0], "acc")
 
-        control_torques = leg_imp_ctrl.return_control_torques(self.kp, self.des_pos, self.kd, self.des_vel, self.kf, self.des_fff)
+        control_torques = leg_imp_ctrl.return_control_torques(self.kp, self.des_pos, self.kd, self.des_vel, self.kf, self.des_fff, self.acc)
 
         plug(control_torques, robot.device.ctrl_joint_torques)
 

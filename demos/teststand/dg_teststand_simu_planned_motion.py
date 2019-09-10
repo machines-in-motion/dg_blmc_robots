@@ -13,7 +13,7 @@ robot = get_teststand_robot(fixed_slider=False)
 q = zero(robot.pin_robot.nq)
 dq = zero(robot.pin_robot.nv)
 
-q[0] = 0.4
+q[0] = 0.2
 q[1] = 0.8
 q[2] = -1.6
 
