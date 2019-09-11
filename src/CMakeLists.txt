@@ -27,6 +27,7 @@ create_dgm_library(dgm_quadruped_simu)
 create_dgm_library(dgm_teststand)
 # create_dgm_library(dgm_single_motor)
 create_dgm_library(dgm_stuggihop)
+create_dgm_library(dgm_test_bench)
 
 ######################################################
 # Export the libraries in the devel folder of catkin #
