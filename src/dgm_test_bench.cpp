@@ -61,6 +61,7 @@ namespace dg_blmc_robots
         zero_to_index_angle_.fill(0.0);
         index_angle_.fill(0.0);
         mechanical_calibration_ = false;
+        initial_error_=0;
     }
 
     DGMTeststand::~DGMTeststand()
@@ -71,9 +72,9 @@ namespace dg_blmc_robots
         can_buses_ = std::make_shared<blmc_drivers::CanBus>("can0");
         can_motor_boards_ = std::make_shared<blmc_drivers::CanBusMotorBoard>(can_buses_);
         // MOTOR_HFE
-        motors_[0] = std::make_shared<blmc_drivers::Motor> (can_motor_boards_, 1);
+        motors_[0] = std::make_shared<blmc_drivers::Motor> (can_motor_boards_, 0);
         // MOTOR_KFE
-        motors_[1] = std::make_shared<blmc_drivers::Motor> (can_motor_boards_, 0);
+        motors_[1] = std::make_shared<blmc_drivers::Motor> (can_motor_boards_, 1);
         // wait until all board are ready and connected
 
         // JOINT_HFE
@@ -98,6 +99,9 @@ namespace dg_blmc_robots
         // wait until all board are ready and connected
         can_motor_boards_->wait_until_ready();
 
+        // Compute the difference between the two encoders and save the data internally
+        acquire_sensors();
+        initial_error_ = -(joint_positions_(0) / 9) - joint_positions_(1);
 
     }
 
@@ -144,17 +148,21 @@ namespace dg_blmc_robots
             /**
               * Joint data
               */
+
+            // acquire the joint position
+            joint_positions_(0) = joints_[0]->get_measured_angle();
+            // acquire the joint position
+            joint_positions_(1) = joints_[1]->get_measured_angle() - initial_error_;
+
+            // acquire the joint torques
+            joint_torques_(0) = joints_[0]->get_measured_torque();
+            // acquire the target joint torques
+            joint_target_torques_(0) = joints_[0]->get_sent_torque();
             for (unsigned i=0 ; i<joints_.size() ; ++i) {
-                // acquire the joint position
-                joint_positions_(i) = joints_[i]->get_measured_angle();
                 // acquire the joint velocities
                 joint_velocities_(i) = joints_[i]->get_measured_velocity();
-                // acquire the joint torques
-                joint_torques_(i) = joints_[i]->get_measured_torque();
                 // acquire the joint index
                 joint_encoder_index_(i) = joints_[i]->get_measured_index_angle();
-                // acquire the target joint torques
-                joint_target_torques_(i) = joints_[i]->get_sent_torque();
             }
             /**
               * Additional data
@@ -230,11 +238,8 @@ namespace dg_blmc_robots
     {
         try{
             ctrl_joint_torques_ = map.at("ctrl_joint_torques");
-            for (unsigned i=0 ; i<joints_.size() - 1 ; ++i)
-            {
-                joints_[i]->set_torque(ctrl_joint_torques_(i));
-                joints_[i]->send_torque();
-            }
+            joints_[0]->set_torque(ctrl_joint_torques_(0));
+            joints_[0]->send_torque();
         }catch(...){
           printf("Error sending controls\n");
         }
@@ -289,70 +294,3 @@ namespace dg_blmc_robots
     }
 
 } // namespace dg_blmc_robots
-
-std::atomic_bool StopDemos (false);
-
-void my_handler(int s){
-    StopDemos = true;
-}
-
-static THREAD_FUNCTION_RETURN_TYPE control_loop(void* robot_void_ptr)
-{
-    dg_blmc_robots::DGMTeststand& robot = *(static_cast<dg_blmc_robots::DGMTeststand*>(robot_void_ptr));
-
-    blmc_robots::Vector2d desired_torque;
-
-
-    std::vector<std::deque<double> > sliders_filt_buffer(robot.get_slider_positions().size());
-    int max_filt_dim = 200;
-    for(unsigned i=0 ; i<sliders_filt_buffer.size() ; ++i)
-    {
-        sliders_filt_buffer[i].clear();
-    }
-    size_t count = 0;
-    bool success_acquiring_sensor = true;
-    bool success_sending_torques = true;
-    while(!StopDemos && success_acquiring_sensor && success_sending_torques)
-    {
-
-    }//endwhile
-    // send zero torques after the control loop.
-    desired_torque.fill(0.0);
-    robot.send_target_joint_torque(desired_torque);
-    StopDemos = true;
-
-    return THREAD_FUNCTION_RETURN_VALUE;
-}// end control_loop
-
-/*int main(int argc, char **argv)
-{
-    std::cout << "!!!!!!!!";
-    // make sure we catch the ctrl+c signal to kill the application properly.
-    struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = my_handler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-    sigaction(SIGINT, &sigIntHandler, NULL);
-    StopDemos = false;
-
-    real_time_tools::RealTimeThread thread;
-
-    dg_blmc_robots::DGMTeststand robot;
-
-    robot.initialization();
-
-    rt_printf("controller is set up \n");
-
-    thread.create_realtime_thread(&control_loop, &robot);
-
-    // Wait until the application is killed.
-    while(!StopDemos)
-    {
-        real_time_tools::Timer::sleep_sec(0.01);
-    }
-    thread.join();
-
-    rt_printf("Exit cleanly \n");
-
-    return 0;
-}*/
