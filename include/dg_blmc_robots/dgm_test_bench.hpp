@@ -18,7 +18,6 @@
 
 namespace dg_blmc_robots
 {
-
   class DGMTeststand : public dynamic_graph::DynamicGraphManager
   {
   public:
@@ -174,11 +173,11 @@ namespace dg_blmc_robots
     * @brief joint_torques_ is the measured data from the onboard card
     * converted at the joint level.
     */
-    blmc_robots::Vector2d joint_torques_;
+    blmc_robots::Vector1d joint_torques_;
     /**
     * @brief joint_target_torques_ is the last given command to be sent.
     */
-    blmc_robots::Vector2d joint_target_torques_;
+    blmc_robots::Vector1d joint_target_torques_;
     /**
     * @brief joint_gear_ratios are the joint gear ratios
     */
@@ -235,7 +234,7 @@ namespace dg_blmc_robots
     *
     * @return the joint torques
     */
-    Eigen::Ref<blmc_robots::Vector2d> get_joint_torques()
+    Eigen::Ref<blmc_robots::Vector1d> get_joint_torques()
     {
         return joint_torques_;
     }
@@ -244,7 +243,7 @@ namespace dg_blmc_robots
     * @brief get_joint_torques
     * @return the target joint torques
     */
-    Eigen::Ref<blmc_robots::Vector2d> get_joint_target_torques()
+    Eigen::Ref<blmc_robots::Vector1d> get_joint_target_torques()
     {
         return joint_target_torques_;
     }
@@ -314,17 +313,20 @@ namespace dg_blmc_robots
     * @brief This gives the status (enabled/disabled of the onboard control cards)
     */
     std::array<int, 2> motor_board_errors_;
-
-
-
-
-
-
-
-      /**
+    /**
+    * @brief This gives the difference between two encoders
+    */
+    double initial_error_;
+    /**
     * @brief ctrl_joint_torques_ the joint torques to be sent
     */
-    Eigen::Vector2d ctrl_joint_torques_;
+    blmc_robots::Vector1d ctrl_joint_torques_;
+
+
+
+
+
+
 
     /**
      * @brief These are the calibration value extracted from the paramters.
