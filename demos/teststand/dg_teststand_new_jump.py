@@ -1,7 +1,3 @@
-## simple jump on impact test stand
-## Author : Avadesh Meduri
-## Date : 1/03/19
-
 from leg_impedance_control.utils import *
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 from leg_impedance_control.traj_generators import mul_double_vec_2, scale_values, sine_generator

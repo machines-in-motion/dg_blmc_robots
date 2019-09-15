@@ -152,8 +152,7 @@ namespace dg_blmc_robots
             // acquire the joint position
             joint_positions_(0) = joints_[0]->get_measured_angle();
             // acquire the joint position
-            joint_positions_(1) = joints_[1]->get_measured_angle() - initial_error_;
-
+            joint_positions_(1) = joints_[1]->get_measured_angle() + initial_error_;
             // acquire the joint torques
             joint_torques_(0) = joints_[0]->get_measured_torque();
             // acquire the target joint torques
