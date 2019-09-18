@@ -56,30 +56,33 @@ class PlannedMotion:
         self.reader_pos = Reader('PositionReader')
         self.reader_vel = Reader('VelocityReader')
         self.reader_fff = Reader('FeedForwardForceReader')
-
+        self.reader_acc = Reader('AccelerationReader')
         self.filename_pos = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_positions_eff.dat")
         self.filename_vel = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_velocities_eff.dat")
         self.filename_fff = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_forces.dat")
-
+        self.filename_acc = join(rospkg.RosPack().get_path("momentumopt"),"demos","quadruped_generalized_acceleration2.dat")
         file_exists(self.filename_pos)
         file_exists(self.filename_vel)
         file_exists(self.filename_fff)
+        file_exists(self.filename_acc)
 
         print("Loading data files:")
         self.reader_pos.load(self.filename_pos)
         self.reader_vel.load(self.filename_vel)
         self.reader_fff.load(self.filename_fff)
+        self.reader_acc.load(self.filename_acc)
 
         # Specify which of the columns to select.
         # NOTE: This is selecting the columns in reverse order - the last number is the first column in the file
         self.reader_pos.selec.value = '000000000000000000111111'
         self.reader_vel.selec.value = '000000000000000000111111'
         self.reader_fff.selec.value = '0000000001110'
+        self.reader_acc.selec.value = '11'
 
         self.des_pos = self.reader_pos.vector
         self.des_vel = self.reader_vel.vector
         self.des_fff = stack_two_vectors(self.reader_fff.vector, constVector([0.0, 0.0, 0.0], 'zero'), 3, 3)
-        self.acc = mul_double_vec(4/2.178, self.des_fff)
+        self.des_acc = mul_double_vec(81 * 0.00000447, self.reader_acc.vector, 'acc')
 
         ###############################################################################
         self.ati_force = Component_of_vector("ati_force")
@@ -97,9 +100,8 @@ class PlannedMotion:
         leg_imp_ctrl = leg_impedance_controller("hopper")
         plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
         plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
-        self.acc = constVector([0.0, 0.1, 0.0, 0.0, 0.0, 0.0], "acc")
 
-        control_torques = leg_imp_ctrl.return_control_torques(self.kp, self.des_pos, self.kd, self.des_vel, self.kf, self.des_fff, self.acc)
+        control_torques = leg_imp_ctrl.return_control_torques(self.kp, self.des_pos, self.kd, self.des_vel, self.kf, self.des_fff, self.des_acc)
 
         plug(control_torques, robot.device.ctrl_joint_torques)
 

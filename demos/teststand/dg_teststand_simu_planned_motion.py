@@ -26,4 +26,7 @@ stiffness_meas = PlannedMotion(robot)
 
 #########################################################################
 
-robot.run(100000, 1./60.)
+
+for i in range(10000):
+    robot.run(1, 1./60.)
+    print(robot.device.ctrl_joint_torques.value)
