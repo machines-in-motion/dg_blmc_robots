@@ -61,7 +61,7 @@ namespace dg_blmc_robots
         zero_to_index_angle_.fill(0.0);
         index_angle_.fill(0.0);
         mechanical_calibration_ = false;
-        initial_error_=0;
+        initial_error_= 0.0;
     }
 
     DGMTeststand::~DGMTeststand()
@@ -79,11 +79,11 @@ namespace dg_blmc_robots
 
         // JOINT_HFE
         joints_[0] = std::make_shared<blmc_robots::BlmcJointModule> (
-                motors_[0], motor_torque_constants_[0], joint_gear_ratios_[0], 0.0, false,
+                motors_[0], motor_torque_constants_[0], 9.0, 0.0, false,
                 motor_max_current_[0]);
         // JOINT_KFE
         joints_[1] = std::make_shared<blmc_robots::BlmcJointModule> (
-                motors_[1], motor_torque_constants_[1], joint_gear_ratios_[1], 0.0, false,
+                motors_[1], motor_torque_constants_[1], 1.0, 0.0, true,
                 motor_max_current_[1]);
 
         // can 1
@@ -101,7 +101,7 @@ namespace dg_blmc_robots
 
         // Compute the difference between the two encoders and save the data internally
         acquire_sensors();
-        initial_error_ = -(joint_positions_(0) / 9) - joint_positions_(1);
+        initial_error_ = 0;
 
     }
 
