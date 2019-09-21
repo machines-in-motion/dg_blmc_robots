@@ -11,7 +11,7 @@
 namespace dg_blmc_robots
 {
 
-    DGMTeststand::DGMTeststand(): was_in_safety_mode_(false)
+    DGMTestBench::DGMTestBench(): was_in_safety_mode_(false)
     {
         /**
         * Motor data
@@ -64,10 +64,10 @@ namespace dg_blmc_robots
         initial_error_= 0.0;
     }
 
-    DGMTeststand::~DGMTeststand()
+    DGMTestBench::~DGMTestBench()
     {
     }
-    void DGMTeststand::initialization(){
+    void DGMTestBench::initialization(){
         // initialize the communication with the can cards
         can_buses_ = std::make_shared<blmc_drivers::CanBus>("can0");
         can_motor_boards_ = std::make_shared<blmc_drivers::CanBusMotorBoard>(can_buses_);
@@ -105,7 +105,7 @@ namespace dg_blmc_robots
 
     }
 
-    void DGMTeststand::initialize_hardware_communication_process()
+    void DGMTestBench::initialize_hardware_communication_process()
     {
         try{
             std::vector<double> zero_to_index_angle =
@@ -126,12 +126,12 @@ namespace dg_blmc_robots
 
         /** initialize the user commands */
         ros_user_commands_.push_back(ros_node_handle.advertiseService(
-            "calibrate", &DGMTeststand::calibrate_joint_position_callback, this));
+            "calibrate", &DGMTestBench::calibrate_joint_position_callback, this));
 
         initialization();
     }
 
-    bool DGMTeststand::is_in_safety_mode()
+    bool DGMTestBench::is_in_safety_mode()
     {
         was_in_safety_mode_ |= get_joint_velocities().cwiseAbs().maxCoeff() > 10000.;
         if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
@@ -142,7 +142,7 @@ namespace dg_blmc_robots
         }
     }
 
-    bool DGMTeststand::acquire_sensors()
+    bool DGMTestBench::acquire_sensors()
     {
         try{
             /**
@@ -181,7 +181,7 @@ namespace dg_blmc_robots
         return true;
     }
 
-    void DGMTeststand::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+    void DGMTestBench::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
     {
         try{
             acquire_sensors();
@@ -217,7 +217,7 @@ namespace dg_blmc_robots
             map.at("slider_positions").fill(0.0);
         }
     }
-    bool DGMTeststand::calibrate(std::array<double, 2>& zero_to_index_angle,
+    bool DGMTestBench::calibrate(std::array<double, 2>& zero_to_index_angle,
                               std::array<double, 2>& index_angle,
                               bool mechanical_calibration)
     {
@@ -233,7 +233,7 @@ namespace dg_blmc_robots
         index_angle = index_angle_;
         return true;
     }
-    void DGMTeststand::set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
+    void DGMTestBench::set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map)
     {
         try{
             ctrl_joint_torques_ = map.at("ctrl_joint_torques");
@@ -244,12 +244,12 @@ namespace dg_blmc_robots
         }
     }
 
-    bool DGMTeststand::calibrate_joint_position_callback(
+    bool DGMTestBench::calibrate_joint_position_callback(
     dg_blmc_robots::TeststandCalibration::Request& req,
     dg_blmc_robots::TeststandCalibration::Response& res)
     {
         // parse and register the command for further call.
-        add_user_command(std::bind(&DGMTeststand::calibrate_joint_position,
+        add_user_command(std::bind(&DGMTestBench::calibrate_joint_position,
                          this, req.mechanical_calibration, zero_to_index_angle_,
                          index_angle_));
 
@@ -260,7 +260,7 @@ namespace dg_blmc_robots
         return true;
     }
 
-    void DGMTeststand::calibrate_joint_position(
+    void DGMTestBench::calibrate_joint_position(
     bool mechanical_calibration,
     std::array<double, 2>& zero_to_index_angle,
     std::array<double, 2>& index_angle)
@@ -281,7 +281,7 @@ namespace dg_blmc_robots
             rt_printf("index_angle[%d] = %f\n", i, index_angle[i]);
         }
     }
-    bool DGMTeststand::send_target_joint_torque(
+    bool DGMTestBench::send_target_joint_torque(
             const Eigen::Ref<blmc_robots::Vector2d> target_joint_torque)
     {
         for (unsigned i=0 ; i<joints_.size() ; ++i)
