@@ -14,7 +14,7 @@ int main(int , char* []) {
             << YAML_PARAMS
             << std::endl;
   YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-  dg_blmc_robots::DGMTeststand dgm;
+  dg_blmc_robots::DGMTestBench dgm;
 
   dgm.initialize(param);
   dgm.run();

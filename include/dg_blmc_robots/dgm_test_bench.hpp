@@ -18,18 +18,18 @@
 
 namespace dg_blmc_robots
 {
-  class DGMTeststand : public dynamic_graph::DynamicGraphManager
+  class DGMTestBench : public dynamic_graph::DynamicGraphManager
   {
   public:
     /**
      * @brief DGMTeststand is the constructor.
      */
-    DGMTeststand();
+    DGMTestBench();
 
     /**
      * @brief ~DGMTeststand is the destructor.
      */
-    ~DGMTeststand();
+    ~DGMTestBench();
 
     /**
      * @brief initialize_hardware_communication_process is the function that
@@ -146,13 +146,13 @@ namespace dg_blmc_robots
     }
     static void* calibrate_hfe(void *context)
     {
-        static_cast<DGMTeststand *>(context)->calibrate_one_joint(0);
+        static_cast<DGMTestBench *>(context)->calibrate_one_joint(0);
         return nullptr;
     }
 
     static void* calibrate_kfe(void *context)
     {
-        static_cast<DGMTeststand *>(context)->calibrate_one_joint(1);
+        static_cast<DGMTestBench *>(context)->calibrate_one_joint(1);
         return nullptr;
     }
     bool acquire_sensors();
