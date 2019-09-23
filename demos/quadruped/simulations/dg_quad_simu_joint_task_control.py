@@ -99,13 +99,13 @@ des_joint_vel = reader_joint_vel.vector
 
 ###############################################################################
 
-kp = constVector([50.0, 0.0, 0.0, 0.0, 0.0, 0.0], "kp_split")
-kd = constVector([1.0, 0.0,.0, 0.0, 0.0, 0.0], "kd_split")
+kp = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "kp_split")
+kd = constVector([0.0, 0.0,.0, 0.0, 0.0, 0.0], "kd_split")
 
 add_kpj = Add_of_double('kpj')
 add_kpj.sin1.value = 0
 ### Change this value for different gains
-add_kpj.sin2.value = 1.
+add_kpj.sin2.value = 5.
 kpj = add_kpj.sout
 
 

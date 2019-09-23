@@ -47,11 +47,11 @@ plug(slider_filtered.sout, slider_4_op.sin)
 slider_4 = slider_4_op.sout
 
 
-kp_com = scale_values(slider_1, 200.0, "scale_kp_com")
-kd_com = scale_values(slider_2, 50.0, "scale_kd_com")
+kp_com = scale_values(slider_1, 1.0, "scale_kp_com")
+kd_com = scale_values(slider_2, 1.0, "scale_kd_com")
 
-kp_ang_com = scale_values(slider_3, 200.0, "scale_kp_ang_com")
-kd_ang_com = scale_values(slider_4, 50.0, "scale_kd_ang_com")
+kp_ang_com = scale_values(slider_3, 1.0, "scale_kp_ang_com")
+kd_ang_com = scale_values(slider_4, 1.0, "scale_kd_ang_com")
 
 
 unit_vec_101 = constVector([1.0, 0.0, 1.0], "unit_vec_101")
@@ -287,9 +287,12 @@ def start_traj():
 
 
 ###############################################################################
-
-kp = constVector([50.0, 0.0, 20.0, 0.0, 0.0, 0.0], "kp_split")
-kd = constVector([0.5, 0.0, 0.2, 0.0, 0.0, 0.0], "kd_split")
+#For knee inversion
+# kp = constVector([50.0, 0.0, 20.0, 0.0, 0.0, 0.0], "kp_split")
+# kd = constVector([0.5, 0.0, 0.2, 0.0, 0.0, 0.0], "kd_split")
+#For step on box
+kp = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "kp_split")
+kd = constVector([0.0, 0.0, 0., 0.0, 0.0, 0.0], "kd_split")
 
 add_kpj = Add_of_double('kpj')
 add_kpj.sin1.value = 0
@@ -323,31 +326,31 @@ control_torques = add_vec_vec(joint_ctrl_torques, task_control_torques, "control
 plug(control_torques, robot.device.ctrl_joint_torques)
 
 ###############################################################################
-quad_com_ctrl.record_data()
+# quad_com_ctrl.record_data()
 
-robot.add_trace("PositionReader", "vector")
-robot.add_ros_and_trace("PositionReader", "vector")
-
-robot.add_trace("VelocityReader", "vector")
-robot.add_ros_and_trace("VelocityReader", "vector")
-
-robot.add_trace("PositionComReader", "vector")
-robot.add_ros_and_trace("PositionComReader", "vector")
-
-robot.add_trace("VelocityComReader", "vector")
-robot.add_ros_and_trace("VelocityComReader", "vector")
-
-robot.add_trace("FeedForwardForceComReader", "vector")
-robot.add_ros_and_trace("FeedForwardForceComReader", "vector")
-
-robot.add_trace("OrientationComReader", "vector")
-robot.add_ros_and_trace("OrientationComReader", "vector")
-
-robot.add_trace("AngVelComReader", "vector")
-robot.add_ros_and_trace("AngVelComReader", "vector")
-
-robot.add_trace("FeedForwardMomentsComReader", "vector")
-robot.add_ros_and_trace("FeedForwardMomentsComReader", "vector")
-
-robot.add_trace("AbsVelReader", "vector")
-robot.add_ros_and_trace("AbsVelReader", "vector")
+# robot.add_trace("PositionReader", "vector")
+# robot.add_ros_and_trace("PositionReader", "vector")
+#
+# robot.add_trace("VelocityReader", "vector")
+# robot.add_ros_and_trace("VelocityReader", "vector")
+#
+# robot.add_trace("PositionComReader", "vector")
+# robot.add_ros_and_trace("PositionComReader", "vector")
+#
+# robot.add_trace("VelocityComReader", "vector")
+# robot.add_ros_and_trace("VelocityComReader", "vector")
+#
+# robot.add_trace("FeedForwardForceComReader", "vector")
+# robot.add_ros_and_trace("FeedForwardForceComReader", "vector")
+#
+# robot.add_trace("OrientationComReader", "vector")
+# robot.add_ros_and_trace("OrientationComReader", "vector")
+#
+# robot.add_trace("AngVelComReader", "vector")
+# robot.add_ros_and_trace("AngVelComReader", "vector")
+#
+# robot.add_trace("FeedForwardMomentsComReader", "vector")
+# robot.add_ros_and_trace("FeedForwardMomentsComReader", "vector")
+#
+# robot.add_trace("AbsVelReader", "vector")
+# robot.add_ros_and_trace("AbsVelReader", "vector")

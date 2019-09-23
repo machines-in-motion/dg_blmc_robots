@@ -70,10 +70,10 @@ plug(slider_filtered.sout, slider_4_op.sin)
 slider_4 = slider_4_op.sout
 
 
-slider_1 = scale_values(slider_1, 0.25, "des_pos_fl_fr")
-slider_2 = scale_values(slider_2, 0.25, "des_pos_hl_hr")
-slider_3 = scale_values(slider_3, 0.25, "des_pos_fl_fr_x")
-slider_4 = scale_values(slider_4, 0.25, "des_pos_hl_hr_x")
+slider_1 = scale_values(slider_1, 0.6, "des_pos_fl_fr")
+slider_2 = scale_values(slider_2, 0.6, "des_pos_hl_hr")
+slider_3 = scale_values(slider_3, 0.6, "des_pos_fl_fr_x")
+slider_4 = scale_values(slider_4, 0.6, "des_pos_hl_hr_x")
 ######################################################################################
 
 des_pos_fl_fr = mul_double_vec_2(slider_1, unit_vector_pos_12d, "l1")
@@ -97,7 +97,7 @@ vel_des = zero_vec_24d
 add_kp = Add_of_double('kp')
 add_kp.sin1.value = 0
 ### Change this value for different gains
-add_kp.sin2.value = 20.0
+add_kp.sin2.value = 0.0
 kp = add_kp.sout
 
 add_kd = Add_of_double('kd')
