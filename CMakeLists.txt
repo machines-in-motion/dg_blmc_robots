@@ -56,8 +56,6 @@ set(catkin_LIBRARIES
   ${catkin_LIBRARIES}
 )
 
-define_os()
-
 #########################################
 # Declare the service files to be built #
 #########################################
