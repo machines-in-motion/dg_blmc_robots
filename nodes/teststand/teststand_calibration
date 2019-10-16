@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import sys
-from dg_blmc_robots.calibration import calibrate
+from dg_blmc_robots.teststand.calibration import calibrate
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         mechanical_calibration = bool(sys.argv[1])
+        calibrate(mechanical_calibration)
     else:
         print("Please indicate if you want a mechanical calibration or not.")
-    calibrate(mechanical_calibration)
