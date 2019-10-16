@@ -23,7 +23,7 @@ set(CATKIN_PKGS ${CATKIN_PKGS}
 #  robot_properties_stuggihop
   blmc_drivers
   blmc_robots
-  #yaml_cpp
+  yaml_cpp_catkin
   dynamic_graph_manager
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
@@ -32,10 +32,8 @@ search_for_boost()
 search_for_eigen()
 
 # Trigger dependency to dynamic-graph.
-add_required_dependency("yaml-cpp >= 0.5")
 add_required_dependency("dynamic-graph >= 3.0.0")
 add_required_dependency("dynamic-graph-python >= 3.0.0")
-build_prefix_for_pkg("yaml-cpp" yaml_cpp_name)
 build_prefix_for_pkg("dynamic-graph" dg_name)
 build_prefix_for_pkg("dynamic-graph-python" dgp_name)
 set(catkin_INCLUDE_DIRS
@@ -60,7 +58,7 @@ set(catkin_LIBRARIES
 # Declare the service files to be built #
 #########################################
 add_service_files(FILES
-  TeststandCalibration.srv
+  teststand/TeststandCalibration.srv
 )
 
 ###############################

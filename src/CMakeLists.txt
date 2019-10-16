@@ -1,33 +1,79 @@
+####################################################
+# Write here your robot name in order to build it. #
+####################################################
+
+set(ROBOT_NAMES
+    solo
+    solo_simple_simu
+    teststand
+    stuggihop
+)
+
 ###############################################
 # Declare a simple macro to build the library #
 ###############################################
 
-macro(create_dgm_library lib_name)
+macro(create_dgm_library robot_name)
+    cmake_policy(SET CMP0037 "OLD")
+    cmake_policy(PUSH)
 
-add_library(${lib_name} SHARED ${lib_name}.cpp)
+    set(lib_name dgm_${robot_name})
 
-target_link_libraries(${lib_name} ${catkin_LIBRARIES})
+    add_library(${lib_name} SHARED ${lib_name}.cpp)
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  target_link_libraries(${lib_name} rt pthread)
-endif()
+    target_link_libraries(${lib_name} ${catkin_LIBRARIES})
 
-set(LIBRARIES_TO_BE_EXPORTED ${LIBRARIES_TO_BE_EXPORTED} ${lib_name})
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(${lib_name} rt pthread)
+    endif()
 
+    set(LIBRARIES_TO_BE_EXPORTED ${LIBRARIES_TO_BE_EXPORTED} ${lib_name})
+
+    cmake_policy(POP)
 endmacro(create_dgm_library lib_name)
 
-##################
-# build the DGMs #
-##################
+#############################################
+# Declare a simple macro to build the demos #
+#############################################
 
-create_dgm_library(dgm_test_bench_8_motors)
-create_dgm_library(dgm_test_bench_8_motors_simu)
-create_dgm_library(dgm_quadruped)
-create_dgm_library(dgm_quadruped_simu)
-create_dgm_library(dgm_teststand)
-# create_dgm_library(dgm_single_motor)
-create_dgm_library(dgm_stuggihop)
-create_dgm_library(dgm_test_bench)
+macro(create_dgm_executable robot_name)
+
+    set(executable_name dg_main_${robot_name})
+
+    ### demo off the 8 blmc motor test bench ####
+    add_executable(${executable_name}
+        robot_executable/${robot_name}.cpp
+    )
+
+    target_link_libraries(${executable_name}
+        dgm_${robot_name}
+        ${catkin_LIBRARIES}
+    )
+
+    # first look if a robot_properties_${robot_name} package contain a config file.
+    set(config_file
+        "${robot_properties_${robot_name}_SOURCE_DIR}/config/dgm_parameters.yaml"
+    )
+    # if this file do not exists then use one from the dg_blmc_robots package demos
+    if(NOT EXISTS ${config_file})
+        set(config_file
+            "${CMAKE_CURRENT_SOURCE_DIR}/config/${robot_name}_dgm_parameters.yaml"
+        )
+    endif()
+
+    target_compile_definitions(${executable_name} PUBLIC
+    YAML_PARAMS="${config_file}")
+
+endmacro(create_dgm_executable robot_name)
+
+#####################################
+# build the DGMs and the executable #
+#####################################
+
+FOREACH(ROBOT_NAME ${ROBOT_NAMES})
+    create_dgm_library(${ROBOT_NAME})
+    create_dgm_executable(${ROBOT_NAME})
+ENDFOREACH(ROBOT_NAME ${ROBOT_NAMES})
 
 ######################################################
 # Export the libraries in the devel folder of catkin #
