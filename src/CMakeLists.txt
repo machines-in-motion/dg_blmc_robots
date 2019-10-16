@@ -14,22 +14,16 @@ set(ROBOT_NAMES
 ###############################################
 
 macro(create_dgm_library robot_name)
-    cmake_policy(SET CMP0037 "OLD")
-    cmake_policy(PUSH)
-
     set(lib_name dgm_${robot_name})
 
     add_library(${lib_name} SHARED ${lib_name}.cpp)
 
     target_link_libraries(${lib_name} ${catkin_LIBRARIES})
-
     if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(${lib_name} rt pthread)
+        target_link_libraries(${lib_name} rt pthread)
     endif()
 
     set(LIBRARIES_TO_BE_EXPORTED ${LIBRARIES_TO_BE_EXPORTED} ${lib_name})
-
-    cmake_policy(POP)
 endmacro(create_dgm_library lib_name)
 
 #############################################
