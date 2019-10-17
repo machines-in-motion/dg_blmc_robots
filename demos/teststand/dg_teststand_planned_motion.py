@@ -82,7 +82,6 @@ class PlannedMotion:
         self.des_pos = self.reader_pos.vector
         self.des_vel = self.reader_vel.vector
         self.des_fff = stack_two_vectors(self.reader_fff.vector, constVector([0.0, 0.0, 0.0], 'zero'), 3, 3)
-        self.des_acc = mul_double_vec(81 * 0.00000447, self.reader_acc.vector, 'acc')
 
         ###############################################################################
         self.ati_force = Component_of_vector("ati_force")
@@ -101,7 +100,7 @@ class PlannedMotion:
         plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
         plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
 
-        control_torques = leg_imp_ctrl.return_control_torques(self.kp, self.des_pos, self.kd, self.des_vel, self.kf, self.des_fff, self.des_acc)
+        control_torques = leg_imp_ctrl.return_control_torques(self.kp, self.des_pos, self.kd, self.des_vel, self.kf, self.des_fff)
 
         plug(control_torques, robot.device.ctrl_joint_torques)
 

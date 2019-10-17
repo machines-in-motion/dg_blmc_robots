@@ -5,28 +5,37 @@
 from leg_impedance_control.utils import *
 from leg_impedance_control.leg_impedance_controller import leg_impedance_controller
 
-#######################################################################################
+class impedance:
+    def __init__(self, robot, name="impedance"):
+        self.name = name
+        self.robot = robot
+        self.kp_split = constVector([30.0, 0.0, 30.0, 0.0, 0.0, 0.0], "kp_split")
+
+        self.kd_split = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
+
+        self.des_pos = constVector([0.0, 0.0, -0.2, 0.0, 0.0, 0.0],"pos_des")
+        self.des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
 
 
-#######################################################################################
+        self.leg_imp_ctrl = leg_impedance_controller("hopper")
 
-kp_split = constVector([100.0, 0.0, 100.0, 0.0, 0.0, 0.0], "kp_split")
+        plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), self.leg_imp_ctrl.robot_dg.position)
+        plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), self.leg_imp_ctrl.robot_dg.velocity)
 
-kd_split = constVector([0.5, 0.0, 0.5, 0.0, 0.0, 0.0], "kd_split")
+        self.control_torques = self.leg_imp_ctrl.return_control_torques(self.kp_split, self.des_pos, self.kd_split, self.des_vel)
 
-des_pos = constVector([0.0, 0.0, -0.2, 0.0, 0.0, 0.0],"pos_des")
-des_vel = constVector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0],"vel_des")
+        plug(self.control_torques, robot.device.ctrl_joint_torques)
+        robot.add_to_ros("jacTranspose" + "hopper", "sout", topic_type= 'matrix')
+        robot.add_to_ros("add_base_joint_velocity", "sout")
 
-#######################################################################################
 
-leg_imp_ctrl = leg_impedance_controller("hopper")
+        robot.add_to_ros("impedance_torques_" + "hopper", "sout")
+        robot.add_to_ros("neg_op_" + "hopper", "sout")
+        robot.add_to_ros("sel_torques_" + "hopper", "sout")
+        robot.add_to_ros("friction", "sout")
 
-plug(stack_zero(robot.device.signal('joint_positions'), "add_base_joint_position"), leg_imp_ctrl.robot_dg.position)
-plug(stack_zero(robot.device.signal('joint_velocities'), "add_base_joint_velocity"), leg_imp_ctrl.robot_dg.velocity)
+        ###################### Record Data ##########################################################
+        # leg_imp_ctrl.record_data(robot)
 
-control_torques = leg_imp_ctrl.return_control_torques(kp_split, des_pos, kd_split, des_vel)
-
-plug(control_torques, robot.device.ctrl_joint_torques)
-
-###################### Record Data ##########################################################
-# leg_imp_ctrl.record_data(robot)
+if ('robot' in globals()) or ('robot' in locals()):
+    power_jump = impedance(robot)

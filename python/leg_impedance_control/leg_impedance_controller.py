@@ -36,15 +36,29 @@ class leg_impedance_controller():
                  : end_index (to select actuated torques to plug to the robot)
         '''
         jacT = transpose_mat(self.jac, "jacTranspose" + self.leg_name)
+
         ## multiplying negative
         errors = mul_double_vec(-1.0, self.total_error, "neg_op_" + self.leg_name)
         control_torques = multiply_mat_vec(jacT,errors, "compute_control_torques_" + self.leg_name)
 
+
+        add_viscous_friction = Add_of_double('viscous_friction')
+        add_viscous_friction.sin1.value = 0
+        ### Change this value for different gains
+        add_viscous_friction.sin2.value = 0.00000538
+        viscous_friction = add_viscous_friction.sout
+        friction = mul_double_vec(viscous_friction, self.robot_dg.velocity, "friction")
+
         ## selecting the torques to be plugged to the robot
-        sel = Selec_of_vector("impedance_torques_" + self.leg_name)
-        sel.selec(start_index, end_index)
+        sel = Selec_of_vector("@impedance_torques_" + self.leg_name)
+        sel.selec(start_index - 1, end_index)
         plug(control_torques, sel.signal('sin'))
-        return sel.signal('sout')
+
+        sel2 = Selec_of_vector("sel_torques_" + self.leg_name)
+        add_vec_vec(sel.sout, friction, "torque")
+        sel.selec(start_index, end_index)
+        plug(sel2.sout, sel.signal('sin'))
+        return sel2.sout
 
     def return_leg_length(self):
         '''
