@@ -59,31 +59,23 @@ namespace dg_blmc_robots
     bool calibrate_joint_position_callback(
       dg_blmc_robots::TeststandCalibration::Request& req,
       dg_blmc_robots::TeststandCalibration::Response& res);
+    /**
+    * @brief get_slider_positions
+    * WARNING !!!! The method acquire_sensors() has to be called prior to
+    * any getter to have up to date data.
+    *
+    * @return the current sliders positions.
+    */
+    const Eigen::Ref<blmc_robots::Vector2d> get_slider_positions()
+    {
+       return slider_positions_;
+    }
+    /**
+    * @brief send_target_torques sends the target currents to the motors
+    */
+    bool send_target_joint_torque(const Eigen::Ref<blmc_robots::Vector2d> target_joint_torque);
 
-
-
-
-
-
-
-
-      /**
-      * @brief get_slider_positions
-      * WARNING !!!! The method acquire_sensors() has to be called prior to
-      * any getter to have up to date data.
-      *
-      * @return the current sliders positions.
-      */
-      const Eigen::Ref<blmc_robots::Vector2d> get_slider_positions()
-      {
-          return slider_positions_;
-      }
-      /**
-      * @brief send_target_torques sends the target currents to the motors
-      */
-      bool send_target_joint_torque(const Eigen::Ref<blmc_robots::Vector2d> target_joint_torque);
-
-      void initialization();
+    void initialization();
 
   private:
     /**

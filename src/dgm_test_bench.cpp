@@ -55,7 +55,7 @@ namespace dg_blmc_robots
         motor_max_current_.fill(12);
         motor_torque_constants_.fill(0.025);
         motor_inertias_.fill(0.045);
-        joint_gear_ratios_.fill(9.0);
+        joint_gear_ratios_.fill(1.0);
 
         // calibration data
         zero_to_index_angle_.fill(0.0);
@@ -79,7 +79,7 @@ namespace dg_blmc_robots
 
         // JOINT_HFE
         joints_[0] = std::make_shared<blmc_robots::BlmcJointModule> (
-                motors_[0], motor_torque_constants_[0], 9.0, 0.0, false,
+                motors_[0], motor_torque_constants_[0], 1.0, 0.0, false,
                 motor_max_current_[0]);
         // JOINT_KFE
         joints_[1] = std::make_shared<blmc_robots::BlmcJointModule> (
@@ -152,7 +152,7 @@ namespace dg_blmc_robots
             // acquire the joint position
             joint_positions_(0) = joints_[0]->get_measured_angle();
             // acquire the joint position
-            joint_positions_(1) = joints_[1]->get_measured_angle() + initial_error_;
+            joint_positions_(1) = joints_[1]->get_measured_angle();
             // acquire the joint torques
             joint_torques_(0) = joints_[0]->get_measured_torque();
             // acquire the target joint torques
