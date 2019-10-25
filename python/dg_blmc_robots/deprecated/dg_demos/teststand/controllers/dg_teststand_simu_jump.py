@@ -16,8 +16,8 @@ from leg_impedance_control.traj_generators import *
 #from leg_impedance_control.utils import *
 #from leg_impedance_control.traj_generators import *
 
-from py_dg_blmc_robots.teststand import get_teststand_robot
-from py_dg_blmc_robots.teststand import TeststandConfig
+from dg_blmc_robots.teststand import get_teststand_robot
+from dg_blmc_robots.teststand import TeststandConfig
 
 
 # Get the robot corresponding to the quadruped.

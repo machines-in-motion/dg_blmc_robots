@@ -7,8 +7,8 @@ from leg_impedance_control.leg_impedance_controller import leg_impedance_control
 
 #######################################################################################
 
-from py_dg_blmc_robots.teststand import get_teststand_robot
-from py_dg_blmc_robots.teststand import TeststandConfig
+from dg_blmc_robots.teststand import get_teststand_robot
+from dg_blmc_robots.teststand import TeststandConfig
 
 import pinocchio as se3
 from pinocchio.robot_wrapper import RobotWrapper

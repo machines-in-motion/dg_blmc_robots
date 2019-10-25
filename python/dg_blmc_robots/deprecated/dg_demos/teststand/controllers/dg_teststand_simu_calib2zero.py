@@ -8,8 +8,8 @@ import pinocchio as se3
 from pinocchio.utils import zero
 from dynamic_graph import plug
 
-from py_dg_blmc_robots.teststand import get_teststand_robot
-from py_dg_blmc_robots.teststand import TeststandConfig
+from dg_blmc_robots.teststand import get_teststand_robot
+from dg_blmc_robots.teststand import TeststandConfig
 
 from dynamic_graph_manager.dg_tools import Calibrator
 from dynamic_graph.sot.core.switch import SwitchVector

@@ -4,8 +4,8 @@
 ## Date: 12/02./2019
 
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+import dg_blmc_robots
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 from leg_impedance_control.traj_generators import *
 
 import pinocchio as se3

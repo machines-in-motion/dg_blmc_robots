@@ -13,7 +13,7 @@ from dynamic_graph.sot.core.reader import Reader
 from leg_impedance_control.utils import constVector, Add_of_double
 from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller
 
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 
 def file_exists(filename):
     if os.path.isfile(filename):

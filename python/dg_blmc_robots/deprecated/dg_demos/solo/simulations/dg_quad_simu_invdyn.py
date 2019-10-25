@@ -9,8 +9,8 @@ from pinocchio.utils import zero
 import eigenpy
 eigenpy.switchToNumpyArray()
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+import dg_blmc_robots
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 
 from dynamic_graph import plug
 from dynamic_graph.sot.core.control_pd import ControlPD

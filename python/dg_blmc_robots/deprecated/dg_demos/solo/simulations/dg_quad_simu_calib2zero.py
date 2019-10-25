@@ -31,8 +31,8 @@ import pinocchio as se3
 from pinocchio.utils import zero
 from dynamic_graph import plug
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+import dg_blmc_robots
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 
 from dynamic_graph.sot.core.control_pd import ControlPD
 from dynamic_graph_manager.dg_tools import Calibrator

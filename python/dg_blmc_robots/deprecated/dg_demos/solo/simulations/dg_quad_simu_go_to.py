@@ -15,7 +15,7 @@ from robot_properties_solo.config import SoloConfig
 
 ##########################################################################################
 # Get the robot corresponding to the quadruped.
-# from py_dg_blmc_robots.quadruped import get_quadruped_robot
+# from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 # robot = get_quadruped_robot()
 
 
@@ -314,7 +314,7 @@ def start_next(ctrl):
 #
 # setup and run simulation
 #
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 robot = get_quadruped_robot(use_fixed_base=True)
 robot.device.slider_positions.value = [0.0, 0.5, 0.5, 0.5]
 

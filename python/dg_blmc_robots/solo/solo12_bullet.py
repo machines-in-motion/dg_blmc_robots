@@ -9,7 +9,7 @@ import dynamic_graph_manager as dgm
 from dynamic_graph_manager.device import Device
 from dynamic_graph_manager.device.robot import Robot
 
-from robot_properties_solo.config import SoloConfig
+from robot_properties_solo.config import Solo12Config
 
 import pybullet as p
 import pinocchio as se3
@@ -41,7 +41,7 @@ class QuadrupedBulletRobot(Robot):
         robotStartPos = [0.,0,.22]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
-        self.urdf_path = SoloConfig.urdf_path
+        self.urdf_path = Solo12Config.urdf_path
         self.robotId = p.loadURDF(self.urdf_path, robotStartPos,
             robotStartOrientation, flags=p.URDF_USE_INERTIA_FROM_FILE,
             useFixedBase=use_fixed_base)
@@ -53,7 +53,7 @@ class QuadrupedBulletRobot(Robot):
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) +
         '/urdf']
-        self.pin_robot = SoloConfig.buildRobotWrapper()
+        self.pin_robot = Solo12Config.buildRobotWrapper()
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
@@ -85,7 +85,7 @@ class QuadrupedBulletRobot(Robot):
 
         # Initialize the device.
         self.device = Device('bullet_quadruped')
-        self.device.initialize(SoloConfig.yaml_path)
+        self.device.initialize(Solo12Config.yaml_path)
 
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
@@ -266,7 +266,7 @@ class QuadrupedBulletRobot(Robot):
                local_inertia_diag,
                local_inertia_pos,
                local_inertia_ori,
-               resitution,
+               restitution,
                rolling_friction,
                spinning_friction,
                contact_damping,
@@ -281,7 +281,7 @@ class QuadrupedBulletRobot(Robot):
               print ("    - local_inertia_diag : " , local_inertia_diag)
               print ("    - local_inertia_pos : " , local_inertia_pos)
               print ("    - local_inertia_ori : " , local_inertia_ori)
-              print ("    - resitution : " , resitution)
+              print ("    - restitution : " , restitution)
               print ("    - rolling_friction : " , rolling_friction)
               print ("    - spinning_friction : " , spinning_friction)
               print ("    - contact_damping : " , contact_damping)

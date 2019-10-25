@@ -7,8 +7,8 @@ from leg_impedance_control.utils import *
 from leg_impedance_control.quad_leg_impedance_controller import quad_leg_impedance_controller
 
 ##########################################################################################
-import py_dg_blmc_robots
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+import dg_blmc_robots
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 
 import pinocchio as se3
 from pinocchio.utils import zero

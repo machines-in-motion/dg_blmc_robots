@@ -9,7 +9,7 @@ from pinocchio.utils import zero
 
 from dg_teststand_joint_oscillation import JointOscillation
 
-from py_dg_blmc_robots.teststand import get_teststand_robot
+from dg_blmc_robots.teststand import get_teststand_robot
 
 # Get the robot corresponding to the quadruped.
 robot = get_teststand_robot(fixed_slider=False, slider_a_init_value=0.0, slider_b_init_value=0.0)

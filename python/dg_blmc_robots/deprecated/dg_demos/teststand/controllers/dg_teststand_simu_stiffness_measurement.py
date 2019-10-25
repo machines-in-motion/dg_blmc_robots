@@ -9,7 +9,7 @@ from pinocchio.utils import zero
 
 from dg_teststand_stiffness_measurement import StiffnessMeasurement
 
-from py_dg_blmc_robots.teststand import get_teststand_robot
+from dg_blmc_robots.teststand import get_teststand_robot
 
 # Get the robot corresponding to the quadruped.
 robot = get_teststand_robot(fixed_slider=False)

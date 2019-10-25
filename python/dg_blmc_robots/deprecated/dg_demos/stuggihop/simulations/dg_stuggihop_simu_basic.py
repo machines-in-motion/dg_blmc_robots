@@ -3,8 +3,8 @@ import numpy as np
 import pinocchio as se3
 from pinocchio.utils import zero
 
-import py_dg_blmc_robots
-from py_dg_blmc_robots.stuggihop import get_stuggihop_robot
+import dg_blmc_robots
+from dg_blmc_robots.stuggihop import get_stuggihop_robot
 
 from dynamic_graph import plug
 # from dynamic_graph.sot.core.control_pd import ControlPD

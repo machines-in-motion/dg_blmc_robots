@@ -2,7 +2,7 @@
 ## Author : Avadesh Meduri
 ## Date : 14/04/2019
 
-from py_dg_blmc_robots.teststand import get_teststand_robot
+from dg_blmc_robots.teststand import get_teststand_robot
 from py_robot_properties_teststand.config import TeststandConfig
 
 from dg_teststand_powerjump import PowerJump

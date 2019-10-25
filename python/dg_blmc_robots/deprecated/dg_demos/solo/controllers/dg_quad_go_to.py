@@ -16,7 +16,7 @@ from robot_properties_solo.config import SoloConfig
 
 ##########################################################################################
 # Get the robot corresponding to the quadruped.
-# from py_dg_blmc_robots.quadruped import get_quadruped_robot
+# from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 # robot = get_quadruped_robot()
 
 

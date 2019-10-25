@@ -2,8 +2,8 @@
 # from pinocchio.robot_wrapper import RobotWrapper
 from pinocchio.utils import zero
 
-from py_dg_blmc_robots.stuggihop import get_stuggihop_robot
-# from py_dg_blmc_robots.stuggihop import StuggihopConfig
+from dg_blmc_robots.stuggihop import get_stuggihop_robot
+# from dg_blmc_robots.stuggihop import StuggihopConfig
 # import dynamic_graph.sot.dynamics_pinocchio as dyn_pin
 
 from leg_impedance_control.utils import Add_of_double, constVector, stack_zero

@@ -10,8 +10,8 @@ from leg_impedance_control.traj_generators import mul_double_vec_2
 from dynamic_graph.sot.core.reader import Reader
 
 import time
-import py_dg_blmc_robots
-from py_dg_blmc_robots.quadruped import get_quadruped_robot
+import dg_blmc_robots
+from dg_blmc_robots.solo.solo_bullet import get_quadruped_robot
 
 ###### robot init #######################################################
 # Get the robot corresponding to the quadruped.
