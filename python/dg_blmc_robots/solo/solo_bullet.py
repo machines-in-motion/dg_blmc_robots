@@ -37,6 +37,8 @@ class QuadrupedBulletRobot(Robot):
 
         print("Loaded plain.")
 
+        self.config = SoloConfig()
+
         # Load the robot
         robotStartPos = [0.,0,.22]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
