@@ -23,6 +23,9 @@ from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
     def __init__(self, use_fixed_base = False, record_video = False):
+
+        self.config = Solo12Config()
+
         self.physicsClient = p.connect(p.GUI)
 
         self.slider_a = p.addUserDebugParameter("a", 0, 1, 0.5)
