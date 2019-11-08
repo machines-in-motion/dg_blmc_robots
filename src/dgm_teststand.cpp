@@ -22,9 +22,9 @@ namespace dg_blmc_robots
   void DGMTeststand::initialize_hardware_communication_process()
   {
     try{
-      std::vector<double> zero_to_index_angle = 
+      Eigen::Vector2d zero_to_index_angle = 
         params_["hardware_communication"]["calibration"]["index_to_zero_angle"].
-          as<std::vector<double> >();
+          as<Eigen::Vector2d >();
       assert(zero_to_index_angle.size() == zero_to_index_angle_from_file_.size());
       for(unsigned i=0; i<zero_to_index_angle_from_file_.size() ; ++i)
       {
@@ -122,8 +122,7 @@ namespace dg_blmc_robots
   {
     // parse and register the command for further call.
     add_user_command(std::bind(&DGMTeststand::calibrate_joint_position, 
-                     this, req.mechanical_calibration, zero_to_index_angle_,
-                     index_angle_));
+                     this, zero_to_index_angle_from_file_));
 
     // return whatever the user want
     res.sanity_check = true;
@@ -133,25 +132,9 @@ namespace dg_blmc_robots
   }
 
   void DGMTeststand::calibrate_joint_position(
-    bool mechanical_calibration,
-    std::array<double, 2>& zero_to_index_angle,
-    std::array<double, 2>& index_angle)
+    const Eigen::Vector2d& zero_to_index_angle)
   {
-    index_angle.fill(0.0);
-    if(mechanical_calibration)
-    {
-      zero_to_index_angle.fill(0.0);
-    }else{
-      zero_to_index_angle = zero_to_index_angle_from_file_;
-    }
-
-    teststand_.calibrate(zero_to_index_angle, index_angle, mechanical_calibration);
-
-    for(unsigned i=0 ; i<2 ; ++i)
-    {
-      rt_printf("zero_to_index_angle[%d] = %f\n", i, zero_to_index_angle[i]);
-      rt_printf("index_angle[%d] = %f\n", i, index_angle[i]);
-    }
+    teststand_.calibrate(zero_to_index_angle);
   }
 
 } // namespace dg_blmc_robots

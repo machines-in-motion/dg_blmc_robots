@@ -69,10 +69,7 @@ namespace dg_blmc_robots
      * the next positive angle.
      * @param index_angle is the positition of the next index.
      */
-    void calibrate_joint_position(
-      bool mechanical_calibration,
-      std::array<double, 2>& zero_to_index_angle,
-      std::array<double, 2>& index_angle);
+    void calibrate_joint_position(const Eigen::Vector2d& zero_to_index_angle);
 
     /**
      * Entries for the real hardware.
@@ -93,12 +90,12 @@ namespace dg_blmc_robots
      * They represent the distance between the theorical zero joint angle and
      * the next jont index.
      */
-    std::array<double, 2> zero_to_index_angle_from_file_;
+    Eigen::Vector2d zero_to_index_angle_from_file_;
 
     /**
      * @brief Results of the calibration.
      */
-    std::array<double, 2> zero_to_index_angle_;
+    Eigen::Vector2d zero_to_index_angle_;
     
     /**
      * @brief Results of the calibration.
