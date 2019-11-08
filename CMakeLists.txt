@@ -83,18 +83,25 @@ include_directories(
     ${Eigen_INCLUDE_DIRS}
 )
 
+##########################################
+# export the package as a catkin package #
+##########################################
+set(exported_libraries
+  dgm_solo
+  dgm_solo_simple_simu
+  dgm_teststand
+  dgm_stuggihop
+)
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${exported_libraries}
+  CATKIN_DEPENDS ${CATKIN_PKGS}
+)
+
 ########################################################
 # manage the creation of the libraries and executables #
 ########################################################
 add_subdirectory(src)
-
-##########################################
-# export the package as a catkin package #
-##########################################
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${EXPORTED_LIBRAIRIES}
-)
 
 #########################
 # manage the unit tests #
