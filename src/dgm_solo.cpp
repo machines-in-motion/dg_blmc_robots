@@ -1,6 +1,6 @@
 /**
  * \file dgm_solo.cpp
- * \brief The hardware wrapper of the the test bench with 8 blmc motors
+ * \brief The hardware wrapper of the solo robot
  * \author Maximilien Naveau
  * \date 2018
  *
@@ -12,21 +12,21 @@
 namespace dg_blmc_robots
 {
 
-  DGMQuadruped::DGMQuadruped()
+  DGMSolo::DGMSolo()
   {
     was_in_safety_mode_ = false;
   }
 
-  DGMQuadruped::~DGMQuadruped()
+  DGMSolo::~DGMSolo()
   {
   }
 
-  void DGMQuadruped::initialize_hardware_communication_process()
+  void DGMSolo::initialize_hardware_communication_process()
   {
     solo_.initialize();
   }
 
-//  bool DGMQuadruped::is_in_safety_mode()
+//  bool DGMSolo::is_in_safety_mode()
 //  {
 //    was_in_safety_mode_ |= solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875;
 //    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
@@ -39,17 +39,9 @@ namespace dg_blmc_robots
 //  }
 
 
-  void DGMQuadruped::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMSolo::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
     solo_.acquire_sensors();
-
-    /**
-      * Motor data
-      */
-    map.at("motor_target_currents") = solo_.get_motor_target_currents();
-    map.at("motor_torques") = solo_.get_motor_torques();
-    map.at("motor_target_torques") = solo_.get_target_motor_torques();
-    map.at("motor_encoder_indexes") = solo_.get_motor_encoder_indexes();
 
     /**
       * Joint data
@@ -58,6 +50,7 @@ namespace dg_blmc_robots
     map.at("joint_velocities") = solo_.get_joint_velocities();
     map.at("joint_torques") = solo_.get_joint_torques();
     map.at("joint_target_torques") = solo_.get_joint_target_torques();
+    map.at("joint_encoder_index") = solo_.get_joint_encoder_index();
 
     /**
       * Additional data
@@ -89,7 +82,7 @@ namespace dg_blmc_robots
     }
   }
 
-  void DGMQuadruped::set_motor_controls_from_map(
+  void DGMSolo::set_motor_controls_from_map(
       const dynamic_graph::VectorDGMap& map)
   {
     try{
@@ -99,7 +92,7 @@ namespace dg_blmc_robots
       // Actually send the control to the robot
       solo_.send_target_joint_torque(ctrl_joint_torques_);
     }catch(const std::exception& e){
-      rt_printf("DGMQuadruped::set_motor_controls_from_map: "
+      rt_printf("DGMSolo::set_motor_controls_from_map: "
                 "Error sending controls, %s\n", e.what());
     }
   }

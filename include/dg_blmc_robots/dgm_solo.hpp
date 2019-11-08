@@ -1,5 +1,5 @@
 /**
- * @file dgm_quadruped.hpp
+ * @file dgm_solo.hpp
  * @author Manuel Wuthrich
  * @author Maximilien Naveau 
  * @author Julian Viereck
@@ -8,27 +8,27 @@
  * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
  */
 
-#ifndef DGM_QUADRUPED_HH
-#define DGM_QUADRUPED_HH
+#ifndef DGM_SOLO_HH
+#define DGM_SOLO_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/quadruped.hpp>
+#include <blmc_robots/solo.hpp>
 
 namespace dg_blmc_robots
 {
 
-  class DGMQuadruped : public dynamic_graph::DynamicGraphManager
+  class DGMSolo : public dynamic_graph::DynamicGraphManager
   {
   public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
-    DGMQuadruped();
+    DGMSolo();
 
     /**
      * @brief ~DemoSingleMotor is the destructor.
      */
-    ~DGMQuadruped();
+    ~DGMSolo();
 
     /**
      * @brief This function make also sure that the joint velocity do not exceed
@@ -65,12 +65,12 @@ namespace dg_blmc_robots
     /**
      * @brief test_bench_ the real test bench hardware drivers.
      */
-    blmc_robots::Quadruped solo_;
+    blmc_robots::Solo solo_;
     
     /**
      * @brief ctrl_joint_torques_ the joint torques to be sent. Used in this
      * class to perform a local copy of the control. This is need in order
-     * to send this copy to the blmc_robots::Quadruped class
+     * to send this copy to the blmc_robots::Solo class
      */
     blmc_robots::Vector8d ctrl_joint_torques_;
 
