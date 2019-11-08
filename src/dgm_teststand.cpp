@@ -23,7 +23,7 @@ namespace dg_blmc_robots
   {
     try{
       std::vector<double> zero_to_index_angle = 
-        params_["hardware_communication"]["calibration"]["zero_to_index_angle"].
+        params_["hardware_communication"]["calibration"]["index_to_zero_angle"].
           as<std::vector<double> >();
       assert(zero_to_index_angle.size() == zero_to_index_angle_from_file_.size());
       for(unsigned i=0; i<zero_to_index_angle_from_file_.size() ; ++i)
