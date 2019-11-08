@@ -13,6 +13,8 @@
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <blmc_robots/solo.hpp>
+#include "dg_blmc_robots/JointCalibration.h"
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
@@ -56,7 +58,26 @@ namespace dg_blmc_robots
      */
     void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
 
+    /**
+     * @brief 
+     * 
+     * @param req 
+     * @param res 
+     * @return true 
+     * @return false 
+     */
+    bool calibrate_joint_position_callback(
+        dg_blmc_robots::JointCalibration::Request& req,
+        dg_blmc_robots::JointCalibration::Response& res);
+
   private:
+    /**
+     * @brief Calibrate the robot joint position
+     * 
+     * @param zero_to_index_angle is the angle between the theoretical zero and
+     * the next positive angle.
+     */
+    void calibrate_joint_position(const blmc_robots::Vector8d& zero_to_index_angle);
 
     /**
      * Entries for the real hardware.
@@ -78,6 +99,13 @@ namespace dg_blmc_robots
      * @brief Check if we entered once in the safety mode and stay there if so
      */
     bool was_in_safety_mode_;
+
+    /**
+     * @brief These are the calibration value extracted from the paramters.
+     * They represent the distance between the theorical zero joint angle and
+     * the next jont index.
+     */
+    blmc_robots::Vector8d zero_to_index_angle_from_file_;
   };
 
 

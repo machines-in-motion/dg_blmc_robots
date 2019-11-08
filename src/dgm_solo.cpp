@@ -7,6 +7,7 @@
  * This file defines the TestBench8Motors class.
  */
 
+#include <dynamic_graph_manager/ros_init.hh>
 #include "dg_blmc_robots/dgm_solo.hpp"
 
 namespace dg_blmc_robots
@@ -23,6 +24,22 @@ namespace dg_blmc_robots
 
   void DGMSolo::initialize_hardware_communication_process()
   {
+    /**
+     * Load the calibration parameters
+     */
+    blmc_robots::Vector8d joint_index_to_zero;
+    YAML::ReadParameter(params_["hardware_communication"]["calibration"],
+                        "index_to_zero_angle", zero_to_index_angle_from_file_);
+
+    // get the hardware communication ros node handle
+    ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
+      dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+
+    /** initialize the user commands */
+    ros_user_commands_.push_back(ros_node_handle.advertiseService(
+        "calibrate_joint_position",
+        &DGMSolo::calibrate_joint_position_callback, this));
+
     solo_.initialize();
   }
 
@@ -37,7 +54,6 @@ namespace dg_blmc_robots
 //      return false;
 //    }
 //  }
-
 
   void DGMSolo::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
@@ -86,7 +102,7 @@ namespace dg_blmc_robots
       const dynamic_graph::VectorDGMap& map)
   {
     try{
-      // here we need to perform and internal copy. Otherwize the compilator
+      // here we need to perform and internal copy. Otherwise the compilator
       // complains
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");
       // Actually send the control to the robot
@@ -95,6 +111,27 @@ namespace dg_blmc_robots
       rt_printf("DGMSolo::set_motor_controls_from_map: "
                 "Error sending controls, %s\n", e.what());
     }
+  }
+
+  bool DGMSolo::calibrate_joint_position_callback(
+    dg_blmc_robots::JointCalibration::Request& req,
+    dg_blmc_robots::JointCalibration::Response& res)
+  {
+    // parse and register the command for further call.
+    add_user_command(std::bind(&DGMSolo::calibrate_joint_position, 
+                     this, zero_to_index_angle_from_file_));
+
+    // return whatever the user want
+    res.sanity_check = true;
+    
+    // the service has been executed properly
+    return true;
+  }
+
+  void DGMSolo::calibrate_joint_position(
+    const blmc_robots::Vector8d& zero_to_index_angle)
+  {
+    solo_.calibrate(zero_to_index_angle);
   }
 
 } // namespace dg_blmc_robots

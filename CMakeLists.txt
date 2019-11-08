@@ -59,7 +59,7 @@ set(catkin_LIBRARIES
 # Declare the service files to be built #
 #########################################
 add_service_files(FILES
-  teststand/TeststandCalibration.srv
+  JointCalibration.srv
 )
 
 ###############################

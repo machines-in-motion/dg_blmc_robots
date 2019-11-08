@@ -21,20 +21,12 @@ namespace dg_blmc_robots
 
   void DGMTeststand::initialize_hardware_communication_process()
   {
-    try{
-      Eigen::Vector2d zero_to_index_angle = 
-        params_["hardware_communication"]["calibration"]["index_to_zero_angle"].
-          as<Eigen::Vector2d >();
-      assert(zero_to_index_angle.size() == zero_to_index_angle_from_file_.size());
-      for(unsigned i=0; i<zero_to_index_angle_from_file_.size() ; ++i)
-      {
-        zero_to_index_angle_from_file_[i] = zero_to_index_angle[i];
-      }
-    }catch(...){
-      throw std::runtime_error("Error in reading yaml param:"
-                               "[hardware_communication][calibration]"
-                               "[zero_to_index_angle]");
-    }
+    /**
+     * Load the calibration parameters
+     */
+    Eigen::Vector2d joint_index_to_zero;
+    YAML::ReadParameter(params_["hardware_communication"]["calibration"],
+                        "index_to_zero_angle", zero_to_index_angle_from_file_);
 
     // get the hardware communication ros node handle
     ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
@@ -42,8 +34,12 @@ namespace dg_blmc_robots
 
     /** initialize the user commands */
     ros_user_commands_.push_back(ros_node_handle.advertiseService(
-        "calibrate", &DGMTeststand::calibrate_joint_position_callback, this));
+        "calibrate_joint_position",
+        &DGMTeststand::calibrate_joint_position_callback, this));
 
+    /**
+     * Initialize the hardware
+     */
     teststand_.initialize();
   }
 
@@ -117,8 +113,8 @@ namespace dg_blmc_robots
   }
 
   bool DGMTeststand::calibrate_joint_position_callback(
-    dg_blmc_robots::TeststandCalibration::Request& req,
-    dg_blmc_robots::TeststandCalibration::Response& res)
+    dg_blmc_robots::JointCalibration::Request& req,
+    dg_blmc_robots::JointCalibration::Response& res)
   {
     // parse and register the command for further call.
     add_user_command(std::bind(&DGMTeststand::calibrate_joint_position, 
