@@ -22,16 +22,16 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
-    def __init__(self, use_fixed_base = False, record_video = False):
+    def __init__(self, use_fixed_base = False, record_video = False, init_sliders_pose=4*[0.5]):
 
         self.config = Solo12Config()
 
         self.physicsClient = p.connect(p.GUI)
 
-        self.slider_a = p.addUserDebugParameter("a", 0, 1, 0.5)
-        self.slider_b = p.addUserDebugParameter("b", 0, 1, 0.5)
-        self.slider_c = p.addUserDebugParameter("c", 0, 1, 0.5)
-        self.slider_d = p.addUserDebugParameter("d", 0, 1, 0.5)
+        self.slider_a = p.addUserDebugParameter("a", 0, 1, init_sliders_pose[0])
+        self.slider_b = p.addUserDebugParameter("b", 0, 1, init_sliders_pose[1])
+        self.slider_c = p.addUserDebugParameter("c", 0, 1, init_sliders_pose[2])
+        self.slider_d = p.addUserDebugParameter("d", 0, 1, init_sliders_pose[3])
 
         # Load the plain.
         plain_urdf = (rospkg.RosPack().get_path("robot_properties_solo") +
@@ -296,11 +296,12 @@ class QuadrupedBulletRobot(Robot):
         self.signal_name = signal_name
 
 
-def get_quadruped_robot(use_fixed_base=False, record_video = False):
-    return QuadrupedBulletRobot(use_fixed_base, record_video)
+def get_quadruped_robot(use_fixed_base=False, record_video = False, init_sliders_pose=4*[0.5]):
+    return QuadrupedBulletRobot(use_fixed_base, record_video, init_sliders_pose)
 
 
 #### Viconclient object for center of mass control
+
 
 class ViconClientEntity:
     def __init__(self, clientName):
