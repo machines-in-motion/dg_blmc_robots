@@ -22,7 +22,8 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 class QuadrupedBulletRobot(Robot):
-    def __init__(self, use_fixed_base = False, record_video = False, init_sliders_pose=4*[0.5]):
+    def __init__(self, use_fixed_base=False, record_video=False,
+                 init_sliders_pose=4*[0.5]):
         self.physicsClient = p.connect(p.GUI)
 
         self.slider_a = p.addUserDebugParameter("a", 0, 1, init_sliders_pose[0])
@@ -295,8 +296,10 @@ class QuadrupedBulletRobot(Robot):
         self.signal_name = signal_name
 
 
-def get_quadruped_robot(use_fixed_base=False, record_video = False, init_sliders_pose=4*[0.5]):
-    return QuadrupedBulletRobot(use_fixed_base, record_video, init_sliders_pose)
+def get_robot(use_fixed_base=False, record_video = False,
+              init_sliders_pose=4*[0.5]):
+    return QuadrupedBulletRobot(use_fixed_base, record_video,
+                                init_sliders_pose)
 
 
 #### Viconclient object for center of mass control
