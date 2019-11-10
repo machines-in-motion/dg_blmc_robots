@@ -16,13 +16,27 @@ from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 
 class TeststandBulletRobot(Robot):
-    def __init__(self, fixed_slider, init_sliders_pose):
-        self.physicsClient = p.connect(p.GUI)
+    def __init__(self, fixed_slider, init_sliders_pose, with_gui):
+        # store the arguments
+        self.fixed_slider = fixed_slider
+        self.init_sliders_pose = init_sliders_pose
+        self.with_gui = with_gui
 
-        self.slider_a = p.addUserDebugParameter("a", 0, 1,
-                                                init_sliders_pose[0])
-        self.slider_b = p.addUserDebugParameter("b", 0, 1,
-                                                init_sliders_pose[1])
+        # connect to the server
+        if self.with_gui:
+            self.physicsClient = p.connect(p.GUI)
+        else:
+            self.physicsClient = p.connect(p.DIRECT)
+
+        # create sliders
+        if self.with_gui:
+            self.slider_a = p.addUserDebugParameter("a", 0, 1,
+                                                    init_sliders_pose[0])
+            self.slider_b = p.addUserDebugParameter("b", 0, 1,
+                                                    init_sliders_pose[1])
+        else:
+            self.slider_a = init_sliders_pose[0]
+            self.slider_b = init_sliders_pose[0]
 
         # Load the plain.
         plain_urdf = os.path.join(
@@ -109,10 +123,13 @@ class TeststandBulletRobot(Robot):
 
         device.height_sensors.value = [q[0]]
 
-        device.slider_positions.value = [
-          p.readUserDebugParameter(self.slider_a),
-          p.readUserDebugParameter(self.slider_b),
-        ]
+        if self.with_gui:
+            device.slider_positions.value = [
+                p.readUserDebugParameter(self.slider_a),
+                p.readUserDebugParameter(self.slider_b),
+            ]
+        else:
+            device.slider_positions.value = [self.slider_a, self.slider_b]
 
         # uncomment if force at the ground is desired
         # #contact_frames, contact_forces = self.wrapper.get_force()
@@ -147,5 +164,6 @@ class TeststandBulletRobot(Robot):
         self._sim2signal()
 
 
-def get_robot(use_fixed_base=False, init_sliders_pose=2*[0.5, ]):
-    return TeststandBulletRobot(use_fixed_base, init_sliders_pose)
+def get_robot(use_fixed_base=False, init_sliders_pose=2*[0.5, ],
+              with_gui=True):
+    return TeststandBulletRobot(use_fixed_base, init_sliders_pose, with_gui)
