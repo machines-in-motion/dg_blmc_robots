@@ -3,7 +3,7 @@ import rospy
 from dg_blmc_robots.srv import TeststandCalibration
 
 
-def calibrate(mechanical_calibration):
+def calibrate_joint_position(mechanical_calibration):
     rospy.wait_for_service("dg_blmc_robots/TeststandCalibration")
     response = False
     try:
@@ -16,4 +16,4 @@ def calibrate(mechanical_calibration):
 
 
 if __name__ == '__main__':
-    calibrate(bool(sys.argv[1]))
+    calibrate_joint_position(bool(sys.argv[1]))

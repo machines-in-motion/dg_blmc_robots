@@ -1,5 +1,5 @@
 /**
- * @file dgm_quadruped.hpp
+ * @file dgm_solo.hpp
  * @author Manuel Wuthrich
  * @author Maximilien Naveau 
  * @author Julian Viereck
@@ -8,27 +8,29 @@
  * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
  */
 
-#ifndef DGM_QUADRUPED_HH
-#define DGM_QUADRUPED_HH
+#ifndef DGM_SOLO_HH
+#define DGM_SOLO_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/quadruped.hpp>
+#include <blmc_robots/solo.hpp>
+#include "dg_blmc_robots/JointCalibration.h"
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
 
-  class DGMQuadruped : public dynamic_graph::DynamicGraphManager
+  class DGMSolo : public dynamic_graph::DynamicGraphManager
   {
   public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
-    DGMQuadruped();
+    DGMSolo();
 
     /**
      * @brief ~DemoSingleMotor is the destructor.
      */
-    ~DGMQuadruped();
+    ~DGMSolo();
 
     /**
      * @brief This function make also sure that the joint velocity do not exceed
@@ -56,7 +58,26 @@ namespace dg_blmc_robots
      */
     void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
 
+    /**
+     * @brief 
+     * 
+     * @param req 
+     * @param res 
+     * @return true 
+     * @return false 
+     */
+    bool calibrate_joint_position_callback(
+        dg_blmc_robots::JointCalibration::Request& req,
+        dg_blmc_robots::JointCalibration::Response& res);
+
   private:
+    /**
+     * @brief Calibrate the robot joint position
+     * 
+     * @param zero_to_index_angle is the angle between the theoretical zero and
+     * the next positive angle.
+     */
+    void calibrate_joint_position(const blmc_robots::Vector8d& zero_to_index_angle);
 
     /**
      * Entries for the real hardware.
@@ -65,12 +86,12 @@ namespace dg_blmc_robots
     /**
      * @brief test_bench_ the real test bench hardware drivers.
      */
-    blmc_robots::Quadruped solo_;
+    blmc_robots::Solo solo_;
     
     /**
      * @brief ctrl_joint_torques_ the joint torques to be sent. Used in this
      * class to perform a local copy of the control. This is need in order
-     * to send this copy to the blmc_robots::Quadruped class
+     * to send this copy to the blmc_robots::Solo class
      */
     blmc_robots::Vector8d ctrl_joint_torques_;
 
@@ -78,6 +99,13 @@ namespace dg_blmc_robots
      * @brief Check if we entered once in the safety mode and stay there if so
      */
     bool was_in_safety_mode_;
+
+    /**
+     * @brief These are the calibration value extracted from the paramters.
+     * They represent the distance between the theorical zero joint angle and
+     * the next jont index.
+     */
+    blmc_robots::Vector8d zero_to_index_angle_from_file_;
   };
 
 

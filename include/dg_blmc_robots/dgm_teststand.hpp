@@ -13,7 +13,8 @@
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <blmc_robots/teststand.hpp>
-#include "dg_blmc_robots/TeststandCalibration.h"
+#include "dg_blmc_robots/JointCalibration.h"
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
@@ -56,18 +57,24 @@ namespace dg_blmc_robots
      */
     virtual bool is_in_safety_mode();
 
+    /**
+     * @brief ROS callback
+     * 
+     * @param req 
+     * @param res 
+     * @return true 
+     * @return false 
+     */
     bool calibrate_joint_position_callback(
-      dg_blmc_robots::TeststandCalibration::Request& req,
-      dg_blmc_robots::TeststandCalibration::Response& res);
+      dg_blmc_robots::JointCalibration::Request& req,
+      dg_blmc_robots::JointCalibration::Response& res);
 
   private:
     /**
      * @brief Calibrate the robot joint position
      * 
-     * @param soft or mechanical calibration?
      * @param zero_to_index_angle is the angle between the theoretical zero and
      * the next positive angle.
-     * @param index_angle is the positition of the next index.
      */
     void calibrate_joint_position(const Eigen::Vector2d& zero_to_index_angle);
 
@@ -91,16 +98,6 @@ namespace dg_blmc_robots
      * the next jont index.
      */
     Eigen::Vector2d zero_to_index_angle_from_file_;
-
-    /**
-     * @brief Results of the calibration.
-     */
-    Eigen::Vector2d zero_to_index_angle_;
-    
-    /**
-     * @brief Results of the calibration.
-     */
-    std::array<double, 2> index_angle_;
 
     /**
      * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was entered.

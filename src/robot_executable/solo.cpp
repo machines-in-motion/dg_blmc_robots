@@ -1,6 +1,6 @@
 /**
  * \file solo.cpp
- * \brief Execute the main program to control the quadruped
+ * \brief Execute the main program to control the solo
  * \author Maximilien Naveau
  * \date 2018
  *
@@ -14,7 +14,7 @@ int main(int , char* []) {
             << YAML_PARAMS
             << std::endl;
   YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-  dg_blmc_robots::DGMQuadruped dgm;
+  dg_blmc_robots::DGMSolo dgm;
 
   dgm.initialize(param);
   dgm.run();
