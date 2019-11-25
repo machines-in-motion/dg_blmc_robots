@@ -87,7 +87,8 @@ include_directories(
 # export the package as a catkin package #
 ##########################################
 set(exported_libraries
-  dgm_solo
+  dgm_solo8
+  dgm_solo12
   dgm_solo_simple_simu
   dgm_teststand
   dgm_stuggihop

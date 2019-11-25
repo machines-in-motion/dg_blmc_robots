@@ -12,25 +12,25 @@
 #define DGM_SOLO_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/solo.hpp>
+#include <blmc_robots/solo12.hpp>
 #include "dg_blmc_robots/JointCalibration.h"
 #include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
 
-  class DGMSolo : public dynamic_graph::DynamicGraphManager
+  class DGMSolo12 : public dynamic_graph::DynamicGraphManager
   {
   public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
-    DGMSolo();
+    DGMSolo12();
 
     /**
      * @brief ~DemoSingleMotor is the destructor.
      */
-    ~DGMSolo();
+    ~DGMSolo12();
 
     /**
      * @brief This function make also sure that the joint velocity do not exceed
@@ -77,7 +77,7 @@ namespace dg_blmc_robots
      * @param zero_to_index_angle is the angle between the theoretical zero and
      * the next positive angle.
      */
-    void calibrate_joint_position(const blmc_robots::Vector8d& zero_to_index_angle);
+    void calibrate_joint_position(const blmc_robots::Vector12d& zero_to_index_angle);
 
     /**
      * Entries for the real hardware.
@@ -86,14 +86,14 @@ namespace dg_blmc_robots
     /**
      * @brief test_bench_ the real test bench hardware drivers.
      */
-    blmc_robots::Solo solo_;
+    blmc_robots::Solo12 solo_;
     
     /**
      * @brief ctrl_joint_torques_ the joint torques to be sent. Used in this
      * class to perform a local copy of the control. This is need in order
      * to send this copy to the blmc_robots::Solo class
      */
-    blmc_robots::Vector8d ctrl_joint_torques_;
+    blmc_robots::Vector12d ctrl_joint_torques_;
 
     /**
      * @brief Check if we entered once in the safety mode and stay there if so
@@ -105,7 +105,7 @@ namespace dg_blmc_robots
      * They represent the distance between the theorical zero joint angle and
      * the next jont index.
      */
-    blmc_robots::Vector8d zero_to_index_angle_from_file_;
+    blmc_robots::Vector12d zero_to_index_angle_from_file_;
   };
 
 

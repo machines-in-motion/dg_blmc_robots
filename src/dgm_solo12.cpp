@@ -8,21 +8,21 @@
  */
 
 #include <dynamic_graph_manager/ros_init.hh>
-#include "dg_blmc_robots/dgm_solo.hpp"
+#include "dg_blmc_robots/dgm_solo12.hpp"
 
 namespace dg_blmc_robots
 {
 
-  DGMSolo::DGMSolo()
+  DGMSolo12::DGMSolo12()
   {
     was_in_safety_mode_ = false;
   }
 
-  DGMSolo::~DGMSolo()
+  DGMSolo12::~DGMSolo12()
   {
   }
 
-  void DGMSolo::initialize_hardware_communication_process()
+  void DGMSolo12::initialize_hardware_communication_process()
   {
     /**
      * Load the calibration parameters
@@ -38,12 +38,12 @@ namespace dg_blmc_robots
     /** initialize the user commands */
     ros_user_commands_.push_back(ros_node_handle.advertiseService(
         "calibrate_joint_position",
-        &DGMSolo::calibrate_joint_position_callback, this));
+        &DGMSolo12::calibrate_joint_position_callback, this));
 
-    solo_.initialize();
+    solo_.initialize("");
   }
 
-//  bool DGMSolo::is_in_safety_mode()
+//  bool DGMSolo12::is_in_safety_mode()
 //  {
 //    was_in_safety_mode_ |= solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875;
 //    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
@@ -55,7 +55,7 @@ namespace dg_blmc_robots
 //    }
 //  }
 
-  void DGMSolo::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMSolo12::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
     solo_.acquire_sensors();
 
@@ -81,24 +81,24 @@ namespace dg_blmc_robots
     dynamicgraph::Vector& map_motor_ready = map.at("motor_ready");
     dynamicgraph::Vector& map_motor_board_enabled = map.at("motor_board_enabled");
     dynamicgraph::Vector& map_motor_board_errors = map.at("motor_board_errors");
-    const std::array<bool, 8>& motor_enabled = solo_.get_motor_enabled();
-    const std::array<bool, 8>& motor_ready = solo_.get_motor_ready();
-    const std::array<bool, 4>& motor_board_enabled = solo_.get_motor_board_enabled();
-    const std::array<int, 4>& motor_board_errors = solo_.get_motor_board_errors();
+    const std::array<bool, 12>& motor_enabled = solo_.get_motor_enabled();
+    const std::array<bool, 12>& motor_ready = solo_.get_motor_ready();
+    const std::array<bool, 6>& motor_board_enabled = solo_.get_motor_board_enabled();
+    const std::array<int, 6>& motor_board_errors = solo_.get_motor_board_errors();
 
-    for(unsigned i=0 ; i<8 ; ++i)
+    for(size_t i=0 ; i<motor_enabled.size() ; ++i)
     {
       map_motor_enabled[i] = motor_enabled[i];
       map_motor_ready[i] = motor_ready[i];
     }
-    for(unsigned i=0 ; i<4 ; ++i)
+    for(size_t i=0 ; i<motor_board_enabled.size() ; ++i)
     {
       map_motor_board_enabled[i] = motor_board_enabled[i];
       map_motor_board_errors[i] = motor_board_errors[i];
     }
   }
 
-  void DGMSolo::set_motor_controls_from_map(
+  void DGMSolo12::set_motor_controls_from_map(
       const dynamic_graph::VectorDGMap& map)
   {
     try{
@@ -108,17 +108,17 @@ namespace dg_blmc_robots
       // Actually send the control to the robot
       solo_.send_target_joint_torque(ctrl_joint_torques_);
     }catch(const std::exception& e){
-      rt_printf("DGMSolo::set_motor_controls_from_map: "
+      rt_printf("DGMSolo12::set_motor_controls_from_map: "
                 "Error sending controls, %s\n", e.what());
     }
   }
 
-  bool DGMSolo::calibrate_joint_position_callback(
+  bool DGMSolo12::calibrate_joint_position_callback(
     dg_blmc_robots::JointCalibration::Request& req,
     dg_blmc_robots::JointCalibration::Response& res)
   {
     // parse and register the command for further call.
-    add_user_command(std::bind(&DGMSolo::calibrate_joint_position, 
+    add_user_command(std::bind(&DGMSolo12::calibrate_joint_position, 
                      this, zero_to_index_angle_from_file_));
 
     // return whatever the user want
@@ -128,8 +128,8 @@ namespace dg_blmc_robots
     return true;
   }
 
-  void DGMSolo::calibrate_joint_position(
-    const blmc_robots::Vector8d& zero_to_index_angle)
+  void DGMSolo12::calibrate_joint_position(
+    const blmc_robots::Vector12d& zero_to_index_angle)
   {
     solo_.calibrate(zero_to_index_angle);
   }
