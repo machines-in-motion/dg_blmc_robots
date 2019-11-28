@@ -21,8 +21,6 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
-from dg_blmc_robots.vicon_client_bullet import ViconClientEntity
-
 class SoloBaseRobot(Robot):
     """
     Base implementation for solo8 and solo12 robot.

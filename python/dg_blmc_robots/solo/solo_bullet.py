@@ -22,7 +22,6 @@ from dynamic_graph.sot.core.vector_constant import VectorConstant
 from py_pinocchio_bullet.wrapper import PinBulletWrapper
 
 from dg_blmc_robots.solo.solo_base_bullet import SoloBaseRobot
-from dg_blmc_robots.vicon_client_bullet import ViconClientEntity
 
 class QuadrupedBulletRobot(SoloBaseRobot):
     def __init__(self, use_fixed_base=False, record_video=False,

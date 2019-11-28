@@ -1,6 +1,6 @@
 
 #### Viconclient object for center of mass control
-class ViconClientEntity(object):
+class ViconClientEntityBullet(object):
     def __init__(self, clientName):
         self.clientName = clientName
 
