@@ -76,6 +76,8 @@ namespace dg_blmc_robots
 
       map.at("ati_force") = teststand_.get_ati_force();
       map.at("ati_torque") = teststand_.get_ati_torque();
+      map.at("imu_linear_acceleration") = teststand_.get_imu_linear_acceleration();
+      map.at("imu_angular_acceleration") = teststand_.get_imu_angular_acceleration(); 
     }catch(...){
       printf("Error in acquiring the sensors data\n");
       printf("Setting all of them 0.0\n");
@@ -98,6 +100,8 @@ namespace dg_blmc_robots
 
       map.at("ati_force").fill(0.0);
       map.at("ati_torque").fill(0.0);
+      map.at("imu_linear_acceleration").fill(0.0);
+      map.at("imu_angular_acceleration").fill(0.0);
     }
   }
 
