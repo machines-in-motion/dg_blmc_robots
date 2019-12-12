@@ -11,11 +11,11 @@ set(ROBOT_NAMES
 )
 
 set(ROBOT_CONFIG_FILES
-    "${robot_properties_solo_SOURCE_DIR}/config/dgm_parameters_solo8.yaml"
-    "${robot_properties_solo_SOURCE_DIR}/config/dgm_parameters_solo12.yaml"
+    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo8.yaml"
+    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo12.yaml"
     "${CMAKE_CURRENT_SOURCE_DIR}/config/solo_simple_simu.yaml"
-    "${robot_properties_teststand_SOURCE_DIR}/config/dgm_parameters.yaml"
-    "${robot_properties_stuggihop_SOURCE_DIR}/config/stuggihop.yaml"
+    "${robot_properties_teststand_SOURCE_PREFIX}/config/dgm_parameters.yaml"
+    "${robot_properties_stuggihop_SOURCE_PREFIX}/config/stuggihop.yaml"
 )
 
 ###############################################

@@ -12,7 +12,7 @@
 #define DGM_SOLO_HH
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/solo.hpp>
+#include <blmc_robots/solo8.hpp>
 #include "dg_blmc_robots/JointCalibration.h"
 #include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
@@ -86,7 +86,7 @@ namespace dg_blmc_robots
     /**
      * @brief test_bench_ the real test bench hardware drivers.
      */
-    blmc_robots::Solo solo_;
+    blmc_robots::Solo8 solo_;
     
     /**
      * @brief ctrl_joint_torques_ the joint torques to be sent. Used in this
