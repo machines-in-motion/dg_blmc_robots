@@ -40,7 +40,11 @@ namespace dg_blmc_robots
         "calibrate_joint_position",
         &DGMSolo12::calibrate_joint_position_callback, this));
 
-    solo_.initialize("");
+    std::string network_id;
+    YAML::ReadParameter(params_["hardware_communication"],
+                        "network_id", network_id);
+
+    solo_.initialize(network_id);
   }
 
 //  bool DGMSolo12::is_in_safety_mode()
@@ -71,7 +75,6 @@ namespace dg_blmc_robots
     /**
       * Additional data
       */
-    map.at("contact_sensors") = solo_.get_contact_sensors_states();
     map.at("slider_positions") = solo_.get_slider_positions();
 
     /**
