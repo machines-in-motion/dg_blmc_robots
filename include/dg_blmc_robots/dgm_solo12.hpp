@@ -36,7 +36,7 @@ namespace dg_blmc_robots
      * @brief This function make also sure that the joint velocity do not exceed
      * a certain value
      */
-//    bool is_in_safety_mode();
+    bool is_in_safety_mode();
 
     /**
      * @brief initialize_hardware_communication_process is the function that
@@ -59,12 +59,14 @@ namespace dg_blmc_robots
     void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
 
     /**
-     * @brief 
+     * @brief Ros callback for the callibration procedure. Warning the robot
+     * will move to the next the joint index and back to "0" upon this call.
+     * Be sure that no controller are running in parallel.
      * 
-     * @param req 
-     * @param res 
-     * @return true 
-     * @return false 
+     * @param req nothing
+     * @param res True if everything went well.
+     * @return true if everything went well.
+     * @return false if something went wrong.
      */
     bool calibrate_joint_position_callback(
         dg_blmc_robots::JointCalibration::Request& req,
