@@ -25,17 +25,17 @@ namespace dg_blmc_robots
   void DGMSolo12::initialize_hardware_communication_process()
   {
     /**
-     * Load the calibration parameters
+     * Load the calibration parameters.
      */
     blmc_robots::Vector8d joint_index_to_zero;
     YAML::ReadParameter(params_["hardware_communication"]["calibration"],
                         "index_to_zero_angle", zero_to_index_angle_from_file_);
 
-    // get the hardware communication ros node handle
+    // Get the hardware communication ros node handle.
     ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
       dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
 
-    /** initialize the user commands */
+    /** Initialize the user commands. */
     ros_user_commands_.push_back(ros_node_handle.advertiseService(
         "calibrate_joint_position",
         &DGMSolo12::calibrate_joint_position_callback, this));
@@ -64,7 +64,7 @@ namespace dg_blmc_robots
     solo_.acquire_sensors();
 
     /**
-      * Joint data
+      * Joint data.
       */
     map.at("joint_positions") = solo_.get_joint_positions();
     map.at("joint_velocities") = solo_.get_joint_velocities();
@@ -73,12 +73,12 @@ namespace dg_blmc_robots
     map.at("joint_encoder_index") = solo_.get_joint_encoder_index();
 
     /**
-      * Additional data
+      * Additional data.
       */
     map.at("slider_positions") = solo_.get_slider_positions();
 
     /**
-     * Robot status
+     * Robot status.
      */
     dynamicgraph::Vector& map_motor_enabled = map.at("motor_enabled");
     dynamicgraph::Vector& map_motor_ready = map.at("motor_ready");
@@ -105,10 +105,10 @@ namespace dg_blmc_robots
       const dynamic_graph::VectorDGMap& map)
   {
     try{
-      // here we need to perform and internal copy. Otherwise the compilator
-      // complains
+      // Here we need to perform and internal copy. Otherwise the compilator
+      // complains.
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");
-      // Actually send the control to the robot
+      // Actually send the control to the robot.
       solo_.send_target_joint_torque(ctrl_joint_torques_);
     }catch(const std::exception& e){
       rt_printf("DGMSolo12::set_motor_controls_from_map: "
@@ -120,14 +120,15 @@ namespace dg_blmc_robots
     dg_blmc_robots::JointCalibration::Request& req,
     dg_blmc_robots::JointCalibration::Response& res)
   {
-    // parse and register the command for further call.
+    // Parse and register the command for further call.
     add_user_command(std::bind(&DGMSolo12::calibrate_joint_position, 
                      this, zero_to_index_angle_from_file_));
 
-    // return whatever the user want
+    // Return a sanity check that assert that the function has been correctly
+    // registered in the hardware process.
     res.sanity_check = true;
     
-    // the service has been executed properly
+    // The service has been executed properly.
     return true;
   }
 
