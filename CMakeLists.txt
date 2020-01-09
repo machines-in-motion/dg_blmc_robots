@@ -33,8 +33,10 @@ search_for_boost()
 search_for_eigen()
 
 # Trigger dependency to dynamic-graph.
+add_required_dependency("yaml-cpp")
 add_required_dependency("dynamic-graph >= 3.0.0")
 add_required_dependency("dynamic-graph-python >= 3.0.0")
+build_prefix_for_pkg("yaml-cpp" yaml_cpp_name)
 build_prefix_for_pkg("dynamic-graph" dg_name)
 build_prefix_for_pkg("dynamic-graph-python" dgp_name)
 set(catkin_INCLUDE_DIRS
@@ -87,7 +89,8 @@ include_directories(
 # export the package as a catkin package #
 ##########################################
 set(exported_libraries
-  dgm_solo
+  dgm_solo8
+  dgm_solo12
   dgm_solo_simple_simu
   dgm_teststand
   dgm_stuggihop

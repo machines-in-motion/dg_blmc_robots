@@ -7,14 +7,14 @@
  * This file uses the TestBench8Motors class in a small demo.
  */
 
-#include "dg_blmc_robots/dgm_solo.hpp"
+#include "dg_blmc_robots/dgm_solo12.hpp"
 
 int main(int , char* []) {
   std::cout << "Loading paramters from "
             << YAML_PARAMS
             << std::endl;
   YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-  dg_blmc_robots::DGMSolo dgm;
+  dg_blmc_robots::DGMSolo12 dgm;
 
   dgm.initialize(param);
   dgm.run();

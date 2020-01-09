@@ -3,10 +3,19 @@
 ####################################################
 
 set(ROBOT_NAMES
-    solo
+    solo8
+    solo12
     solo_simple_simu
     teststand
     stuggihop
+)
+
+set(ROBOT_CONFIG_FILES
+    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo8.yaml"
+    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo12.yaml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config/solo_simple_simu.yaml"
+    "${robot_properties_teststand_SOURCE_PREFIX}/config/dgm_parameters.yaml"
+    "${robot_properties_stuggihop_SOURCE_PREFIX}/config/stuggihop.yaml"
 )
 
 ###############################################
@@ -19,6 +28,11 @@ macro(create_dgm_library robot_name)
     add_library(${lib_name} SHARED ${lib_name}.cpp)
 
     target_link_libraries(${lib_name} ${catkin_LIBRARIES})
+
+    if(TARGET ${robot_name})
+      target_link_libraries(${lib_name} ${robot_name})
+    endif()
+
     if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         target_link_libraries(${lib_name} rt pthread)
     endif()
@@ -44,30 +58,29 @@ macro(create_dgm_executable robot_name)
         ${catkin_LIBRARIES}
     )
 
-    # first look if a robot_properties_${robot_name} package contain a config file.
-    set(config_file
-        "${robot_properties_${robot_name}_SOURCE_DIR}/config/dgm_parameters.yaml"
-    )
-    # if this file do not exists then use one from the dg_blmc_robots package demos
-    if(NOT EXISTS ${config_file})
-        set(config_file
-            "${CMAKE_CURRENT_SOURCE_DIR}/config/${robot_name}_dgm_parameters.yaml"
-        )
+    set(executable_name dg_main_${robot_name})
+    if(NOT EXISTS ${robot_config_file})
+        message(FATAL_ERROR "Error, cannot find the DGM config file: ${robot_config_file}")
     endif()
-
     target_compile_definitions(${executable_name} PUBLIC
-    YAML_PARAMS="${config_file}")
-
+                               YAML_PARAMS="${robot_config_file}")
 endmacro(create_dgm_executable robot_name)
 
 #####################################
 # build the DGMs and the executable #
 #####################################
 
-FOREACH(ROBOT_NAME ${ROBOT_NAMES})
-    create_dgm_library(${ROBOT_NAME})
-    create_dgm_executable(${ROBOT_NAME})
-ENDFOREACH(ROBOT_NAME ${ROBOT_NAMES})
+list(LENGTH ROBOT_NAMES nb_names_tmp)
+math(EXPR nb_names_tmp "${nb_names_tmp} - 1")
+
+foreach(i RANGE ${nb_names_tmp})
+  list(GET ROBOT_NAMES ${i} robot_name)
+  list(GET ROBOT_CONFIG_FILES ${i} robot_config_file)
+
+  create_dgm_library(${robot_name})
+  create_dgm_executable(${robot_name} ${robot_config_file})
+endforeach()
+
 
 ######################################################
 # Export the libraries in the devel folder of catkin #
