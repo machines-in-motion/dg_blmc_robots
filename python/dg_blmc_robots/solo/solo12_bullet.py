@@ -32,7 +32,7 @@ class Solo12BulletRobot(SoloBaseRobot):
 
         self.q0[0] = 0.2
         self.q0[1] = 0.0
-        self.q0[2] = 0.22
+        self.q0[2] = 0.25
         self.q0[6] = 1.
         self.q0[7] = 0.0
         self.q0[8] = 0.8
