@@ -30,6 +30,7 @@ class SoloBaseRobot(Robot):
         self.config = solo_config
 
         self.physicsClient = p.connect(p.GUI)
+        p.resetDebugVisualizerCamera(1.2, 50, -35, (0., 0., 0.))
 
         # Load the plain.
         plain_urdf = (rospkg.RosPack().get_path("robot_properties_solo") +
@@ -275,7 +276,7 @@ class SoloBaseRobot(Robot):
               print ("    - contact_damping : " , contact_damping)
               print ("    - contact_stiffness : " , contact_stiffness)
 
-    def add_ros_and_trace(self, client_name, signal_name):
+    def add_ros_and_trace(self, client_name, signal_name, topic_name=None, topic_type=None):
 
         ## for vicon entity
         self.signal_name = signal_name
