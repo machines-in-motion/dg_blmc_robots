@@ -4,6 +4,7 @@
 
 set(ROBOT_NAMES
     solo8
+    solo8ti
     solo12
     solo_simple_simu
     teststand
@@ -11,6 +12,7 @@ set(ROBOT_NAMES
 )
 
 set(ROBOT_CONFIG_FILES
+    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo8.yaml"
     "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo8.yaml"
     "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo12.yaml"
     "${CMAKE_CURRENT_SOURCE_DIR}/config/solo_simple_simu.yaml"
