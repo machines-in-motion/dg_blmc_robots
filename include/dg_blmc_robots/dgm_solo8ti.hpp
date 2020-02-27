@@ -8,8 +8,7 @@
  * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
  */
 
-#ifndef DGM_SOLO_HH
-#define DGM_SOLO_HH
+#pragma once
 
 #include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <blmc_robots/solo8ti.hpp>
@@ -33,12 +32,6 @@ namespace dg_blmc_robots
     ~DGMSolo8TI();
 
     /**
-     * @brief This function make also sure that the joint velocity do not exceed
-     * a certain value
-     */
-//    bool is_in_safety_mode();
-
-    /**
      * @brief initialize_hardware_communication_process is the function that
      * initialize the hardware.
      */
@@ -59,12 +52,11 @@ namespace dg_blmc_robots
     void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
 
     /**
-     * @brief
+     * @brief Handle the calibrate_joint callback.
      *
-     * @param req
-     * @param res
-     * @return true
-     * @return false
+     * @param req ROS request.
+     * @param res ROS response.
+     * @returns True if calibration was successful, false otherwise.
      */
     bool calibrate_joint_position_callback(
         dg_blmc_robots::JointCalibration::Request& req,
@@ -111,4 +103,3 @@ namespace dg_blmc_robots
 
 } // namespace dg_blmc_robots
 
-#endif // DGM_TEST_BENCH_8_MOTORS_HH

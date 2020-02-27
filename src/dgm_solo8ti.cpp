@@ -43,18 +43,6 @@ namespace dg_blmc_robots
     solo_.initialize();
   }
 
-//  bool DGMSolo8TI::is_in_safety_mode()
-//  {
-//    was_in_safety_mode_ |= solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875;
-//    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
-//      was_in_safety_mode_ = true;
-//      printf("Killing robot because velocity limit exceeded...\n");
-//      return true;
- //   } else {
-//      return false;
-//    }
-//  }
-
   void DGMSolo8TI::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
     solo_.acquire_sensors();
