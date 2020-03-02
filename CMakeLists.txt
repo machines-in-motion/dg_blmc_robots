@@ -90,6 +90,7 @@ include_directories(
 ##########################################
 set(exported_libraries
   dgm_solo8
+  dgm_solo8ti
   dgm_solo12
   dgm_solo_simple_simu
   dgm_teststand

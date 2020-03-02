@@ -8,21 +8,21 @@
  */
 
 #include <dynamic_graph_manager/ros_init.hh>
-#include "dg_blmc_robots/dgm_solo8.hpp"
+#include "dg_blmc_robots/dgm_solo8ti.hpp"
 
 namespace dg_blmc_robots
 {
 
-  DGMSolo8::DGMSolo8()
+  DGMSolo8TI::DGMSolo8TI()
   {
     was_in_safety_mode_ = false;
   }
 
-  DGMSolo8::~DGMSolo8()
+  DGMSolo8TI::~DGMSolo8TI()
   {
   }
 
-  void DGMSolo8::initialize_hardware_communication_process()
+  void DGMSolo8TI::initialize_hardware_communication_process()
   {
     /**
      * Load the calibration parameters
@@ -38,28 +38,12 @@ namespace dg_blmc_robots
     /** initialize the user commands */
     ros_user_commands_.push_back(ros_node_handle.advertiseService(
         "calibrate_joint_position",
-        &DGMSolo8::calibrate_joint_position_callback, this));
+        &DGMSolo8TI::calibrate_joint_position_callback, this));
 
-    std::string network_id;
-    YAML::ReadParameter(params_["hardware_communication"],
-                        "network_id", network_id);
-
-    solo_.initialize(network_id);
+    solo_.initialize();
   }
 
-//  bool DGMSolo8::is_in_safety_mode()
-//  {
-//    was_in_safety_mode_ |= solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875;
-//    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
-//      was_in_safety_mode_ = true;
-//      printf("Killing robot because velocity limit exceeded...\n");
-//      return true;
- //   } else {
-//      return false;
-//    }
-//  }
-
-  void DGMSolo8::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMSolo8TI::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
   {
     solo_.acquire_sensors();
 
@@ -102,7 +86,7 @@ namespace dg_blmc_robots
     }
   }
 
-  void DGMSolo8::set_motor_controls_from_map(
+  void DGMSolo8TI::set_motor_controls_from_map(
       const dynamic_graph::VectorDGMap& map)
   {
     try{
@@ -112,17 +96,17 @@ namespace dg_blmc_robots
       // Actually send the control to the robot
       solo_.send_target_joint_torque(ctrl_joint_torques_);
     }catch(const std::exception& e){
-      rt_printf("DGMSolo8::set_motor_controls_from_map: "
+      rt_printf("DGMSolo8TI::set_motor_controls_from_map: "
                 "Error sending controls, %s\n", e.what());
     }
   }
 
-  bool DGMSolo8::calibrate_joint_position_callback(
+  bool DGMSolo8TI::calibrate_joint_position_callback(
     dg_blmc_robots::JointCalibration::Request& req,
     dg_blmc_robots::JointCalibration::Response& res)
   {
     // parse and register the command for further call.
-    add_user_command(std::bind(&DGMSolo8::calibrate_joint_position,
+    add_user_command(std::bind(&DGMSolo8TI::calibrate_joint_position,
                      this, zero_to_index_angle_from_file_));
 
     // return whatever the user want
@@ -132,7 +116,7 @@ namespace dg_blmc_robots
     return true;
   }
 
-  void DGMSolo8::calibrate_joint_position(
+  void DGMSolo8TI::calibrate_joint_position(
     const blmc_robots::Vector8d& zero_to_index_angle)
   {
     solo_.calibrate(zero_to_index_angle);
