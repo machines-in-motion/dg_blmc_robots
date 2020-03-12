@@ -92,9 +92,11 @@ class SoloBaseRobot(Robot):
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
         self.signal_base_vel_ = VectorConstant("bullet_quadruped_base_vel")
+        self.signal_base_vel_world_ = VectorConstant("bullet_quadruped_base_vel_world")
         self.signal_base_pos_.sout.value = np.hstack([robotStartPos,
             robotStartOrientation]).tolist()
         self.signal_base_vel_.sout.value = [0., 0., 0., 0., 0., 0.]
+        self.signal_base_vel_world_.sout.value = [0., 0., 0., 0., 0., 0.]
 
         # Initialize signals that are not filled in sim2signals.
         #self.device.motor_encoder_indexes.value = 8 * [0.]
@@ -138,6 +140,7 @@ class SoloBaseRobot(Robot):
 
         self.signal_base_pos_.sout.value = q[0:7]
         self.signal_base_vel_.sout.value = dq[0:6]
+        self.signal_base_vel_world_.sout.value = self.wrapper.get_base_velocity_world().reshape(-1).tolist()
 
         device.slider_positions.value = [
           p.readUserDebugParameter(self.slider_a),
