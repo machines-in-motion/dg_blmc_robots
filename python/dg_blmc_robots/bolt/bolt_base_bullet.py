@@ -52,13 +52,13 @@ class BoltBaseRobot(Robot):
 
         # Query all the joints.
         num_joints = p.getNumJoints(self.robotId)
-
         for ji in range(num_joints):
             p.changeDynamics(self.robotId, ji, linearDamping=.04,
-                angularDamping=0.04, restitution=0.0, lateralFriction=0.5)
+                angularDamping=0.04, restitution=0.0, lateralFriction=1.0)
 
         p.setGravity(0, 0, -9.81)
         p.setPhysicsEngineParameter(fixedTimeStep=1.0/1000.0, numSubSteps=1)
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
 
         self.base_link_name = "base_link"
         self.joint_names = self.config.joint_names
@@ -94,6 +94,7 @@ class BoltBaseRobot(Robot):
             self.device.contact_sensors.value = 4 * [0.]
 
         # Sync the current robot state to the graph input signals.
+        self.f2 = open("q_qdot.txt", "a")
         self.sim2signal_()
 
         self.q0 = zero(self.pin_robot.nq)
@@ -121,6 +122,8 @@ class BoltBaseRobot(Robot):
 
         q, dq = [np.array(t).reshape(-1).tolist() for t in
         self.wrapper.get_state()]
+        print(self.wrapper.get_state())
+        self.f2.write(" ".join( repr(e) for e in q) + " " + " ".join( repr(e) for e in dq) + "\n")
 
         device = self.device
         device.joint_positions.value = q[7:]
@@ -148,19 +151,25 @@ class BoltBaseRobot(Robot):
         tracked_base_pos = np.zeros((steps, 7))
         tracked_base_vel = np.zeros((steps, 6))
         tracked_torque = np.zeros((steps, 6))
-
+        self.f2 = open("q_qdot.txt", "a")
+        f = open("torque.txt", "a")
         for i in range(steps):
             print("step: ", i)
             self.device.execute_graph()
             print("Torque: ")
+            print(type(self.device.ctrl_joint_torques.value[0]))
             print(np.matrix(
                   self.device.ctrl_joint_torques.value).T)
-            self.wrapper.send_joint_command(np.matrix(
-                self.device.ctrl_joint_torques.value).T)
+            Torque = np.matrix(self.device.ctrl_joint_torques.value).T
+            print(type(Torque[0][0]))
+            for i in range(6):
+                Torque[i][0] = round(Torque[i][0], 10)
+            self.wrapper.send_joint_command(Torque)
             p.stepSimulation()
             self.sim2signal_()
             self.steps_ += 1
 
+            print("TP", self.signal_base_pos_.sout.value)
             if plot:
                 tracked_base_pos[i] = self.signal_base_pos_.sout.value
                 tracked_base_vel[i] = self.signal_base_vel_.sout.value
@@ -169,7 +178,11 @@ class BoltBaseRobot(Robot):
             if delay != 0. and self.steps_ % 17 == 0:#Lhum Are you serious?
                 time.sleep(delay)
 
-
+            f.write(str(Torque[0][0].item()) + " " + str(Torque[1][0].item()) + " " + str(Torque[2][0].item()) + " " +
+                    str(Torque[3][0].item()) + " " + str(Torque[4][0].item()) + " " + str(Torque[5][0].item()) + " " + "\n")
+        f.close()
+        self.f2.close()
+        print("done")
         if plot:
             tracked_base_pos = np.asarray(tracked_base_pos)
             tracked_base_vel = np.asarray(tracked_base_vel)

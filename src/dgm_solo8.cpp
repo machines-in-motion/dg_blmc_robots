@@ -40,7 +40,12 @@ namespace dg_blmc_robots
         "calibrate_joint_position",
         &DGMSolo8::calibrate_joint_position_callback, this));
 
-    solo_.initialize();
+    std::string network_id;
+    YAML::ReadParameter(params_["hardware_communication"],
+                       "network_id", network_id);
+
+    solo_.initialize(network_id);
+
   }
 
 //  bool DGMSolo8::is_in_safety_mode()
