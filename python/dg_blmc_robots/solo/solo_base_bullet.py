@@ -30,6 +30,7 @@ class SoloBaseRobot(Robot):
         self.config = solo_config
 
         self.physicsClient = p.connect(p.GUI)
+        p.resetDebugVisualizerCamera(1.2, 50, -35, (0., 0., 0.))
 
         # Load the plain.
         plain_urdf = (rospkg.RosPack().get_path("robot_properties_solo") +
@@ -91,9 +92,11 @@ class SoloBaseRobot(Robot):
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
         self.signal_base_vel_ = VectorConstant("bullet_quadruped_base_vel")
+        self.signal_base_vel_world_ = VectorConstant("bullet_quadruped_base_vel_world")
         self.signal_base_pos_.sout.value = np.hstack([robotStartPos,
             robotStartOrientation]).tolist()
         self.signal_base_vel_.sout.value = [0., 0., 0., 0., 0., 0.]
+        self.signal_base_vel_world_.sout.value = [0., 0., 0., 0., 0., 0.]
 
         # Initialize signals that are not filled in sim2signals.
         #self.device.motor_encoder_indexes.value = 8 * [0.]
@@ -137,6 +140,7 @@ class SoloBaseRobot(Robot):
 
         self.signal_base_pos_.sout.value = q[0:7]
         self.signal_base_vel_.sout.value = dq[0:6]
+        self.signal_base_vel_world_.sout.value = self.wrapper.get_base_velocity_world().reshape(-1).tolist()
 
         device.slider_positions.value = [
           p.readUserDebugParameter(self.slider_a),
@@ -275,7 +279,7 @@ class SoloBaseRobot(Robot):
               print ("    - contact_damping : " , contact_damping)
               print ("    - contact_stiffness : " , contact_stiffness)
 
-    def add_ros_and_trace(self, client_name, signal_name):
+    def add_ros_and_trace(self, client_name, signal_name, topic_name=None, topic_type=None):
 
         ## for vicon entity
         self.signal_name = signal_name

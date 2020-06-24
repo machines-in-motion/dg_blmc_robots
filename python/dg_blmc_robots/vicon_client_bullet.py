@@ -23,7 +23,9 @@ class ViconClientEntityBullet(object):
             value = self.robot.signal_base_pos_.sout
             print(value)
         elif signal_name == self.robot_vicon_name + "_velocity_body":
-		    value = self.robot.signal_base_vel_.sout
+		        value = self.robot.signal_base_vel_.sout
+        elif signal_name == self.robot_vicon_name + "_velocity_world":
+		        value = self.robot.signal_base_vel_world_.sout
         else:
             raise ValueError('Signal not defined: ' + signal_name)
 

@@ -44,15 +44,27 @@ namespace dg_blmc_robots
     YAML::ReadParameter(params_["hardware_communication"],
                         "network_id", network_id);
 
-    solo_.initialize(network_id);
+    std::string serial_port;
+    YAML::ReadParameter(params_["hardware_communication"],
+                        "serial_port", serial_port);
+
+    solo_.initialize(network_id, serial_port);
   }
 
  bool DGMSolo12::is_in_safety_mode()
  {
-   was_in_safety_mode_ |= solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875;
+   static int counter = 0;
+   if (solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875) {
+     printf("DGMSolo12: Going into safe mode as joint velocity exceeded bound.\n");
+     was_in_safety_mode_ = true;
+   }
+
    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
      was_in_safety_mode_ = true;
-     printf("DGMSolo12::is_in_safety_mode: Killing robot because velocity limit exceeded...\n");
+     counter++;
+     if (counter % 2000 == 0) {
+      printf("DGMSolo12: is_in_safety_mode.\n");
+     }
      return true;
    } else {
      return false;
@@ -121,13 +133,13 @@ namespace dg_blmc_robots
     dg_blmc_robots::JointCalibration::Response& res)
   {
     // Parse and register the command for further call.
-    add_user_command(std::bind(&DGMSolo12::calibrate_joint_position, 
+    add_user_command(std::bind(&DGMSolo12::calibrate_joint_position,
                      this, zero_to_index_angle_from_file_));
 
     // Return a sanity check that assert that the function has been correctly
     // registered in the hardware process.
     res.sanity_check = true;
-    
+
     // The service has been executed properly.
     return true;
   }
