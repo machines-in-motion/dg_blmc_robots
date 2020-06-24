@@ -113,7 +113,7 @@ namespace dg_blmc_robots
   }
 
   bool DGMTeststand::calibrate_joint_position_callback(
-    dg_blmc_robots::JointCalibration::Request& req,
+    dg_blmc_robots::JointCalibration::Request&,
     dg_blmc_robots::JointCalibration::Response& res)
   {
     // parse and register the command for further call.

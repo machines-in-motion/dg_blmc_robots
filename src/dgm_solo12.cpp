@@ -129,7 +129,7 @@ namespace dg_blmc_robots
   }
 
   bool DGMSolo12::calibrate_joint_position_callback(
-    dg_blmc_robots::JointCalibration::Request& req,
+    dg_blmc_robots::JointCalibration::Request&,
     dg_blmc_robots::JointCalibration::Response& res)
   {
     // Parse and register the command for further call.

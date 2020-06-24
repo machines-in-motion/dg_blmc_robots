@@ -86,7 +86,7 @@ namespace dg_blmc_robots
      */
 
     /**
-     * @brief test_bench_ the real test bench hardware drivers.
+     * @brief solo_ is the hardware drivers.
      */
     blmc_robots::Solo12 solo_;
     
