@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>dg_blmc_robots</name>
   <version>1.0.0</version>
   <description>
@@ -7,29 +7,22 @@
   </description>
   <author email="mnaveau@tue.mpg.de">Maximilien Naveau</author>
   <maintainer email="mnaveau@tue.mpg.de">Maximilien Naveau</maintainer>
-  <license>TODO</license>
+  <license>BSD 3-CLause</license>
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend> blmc_drivers </build_depend>
-  <run_depend>   blmc_drivers </run_depend>
+  <depend> mpi_cmake_modules </depend>
+  <depend> blmc_drivers </depend>
+  <depend> blmc_robots </depend>
+  <depend> pinocchio_bullet </depend>
+  <depend> dynamic_graph_manager </depend>
+  <depend> realtime_tools </depend>
+  <depend> yaml_cpp_catkin </depend>
 
-  <build_depend> blmc_robots </build_depend>
-  <run_depend>   blmc_robots </run_depend>
-
-  <build_depend> pinocchio_bullet </build_depend>
-  <run_depend>   pinocchio_bullet </run_depend>
-
-  <build_depend> dynamic_graph_manager </build_depend>
-  <run_depend>   dynamic_graph_manager </run_depend>
-
-  <build_depend> realtime_tools </build_depend>
-  <run_depend>   realtime_tools </run_depend>
-
-  <build_depend> yaml_cpp_catkin </build_depend>
-  <run_depend>   yaml_cpp_catkin </run_depend>
+  <depend> robot_properties_solo </depend>
+  <depend> robot_properties_teststand </depend>
+  <depend> robot_properties_stuggihop </depend>
 
   <!-- Generate messages and services -->
-  <build_depend>message_generation</build_depend>
-  <run_depend>  message_generation</run_depend>
-
+  <depend>message_generation</depend>
+  
 </package>

@@ -5,8 +5,11 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(dg_blmc_robots)
 
-# required to use std::shared_ptr in code
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wl,--no-as-needed")
+# required to use std::shared_ptr in code and to link the python bindings
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-as-needed")
+endif()
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 
 # ensuring path to libraries are set during install
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -18,44 +21,26 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 # Search for dependencies. #
 ############################
 set(CATKIN_PKGS ${CATKIN_PKGS}
+  mpi_cmake_modules
   blmc_drivers
   blmc_robots
   yaml_cpp_catkin
   dynamic_graph_manager
   pinocchio_bullet
+  robot_properties_solo
+  robot_properties_teststand
+  robot_properties_stuggihop
 )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
-find_package(robot_properties_solo QUIET)
-find_package(robot_properties_teststand QUIET)
-find_package(robot_properties_stuggihop QUIET)
-search_for_python()
-search_for_boost()
-search_for_eigen()
 
 # Trigger dependency to dynamic-graph.
-add_required_dependency("yaml-cpp")
-add_required_dependency("dynamic-graph >= 3.0.0")
-add_required_dependency("dynamic-graph-python >= 3.0.0")
-build_prefix_for_pkg("yaml-cpp" yaml_cpp_name)
-build_prefix_for_pkg("dynamic-graph" dg_name)
-build_prefix_for_pkg("dynamic-graph-python" dgp_name)
-set(catkin_INCLUDE_DIRS
-  ${${yaml_cpp_name}_INCLUDE_DIRS}
-  ${${dg_name}_INCLUDE_DIRS}
-  ${${dgp_name}_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
-link_directories(
-  ${${yaml_cpp_name}_LIBRARY_DIRS}
-  ${${dg_name}_LIBRARY_DIRS}
-  ${${dgp_name}_LIBRARY_DIRS}
-)
-set(catkin_LIBRARIES
-  ${${yaml_cpp_name}_LIBRARIES}
-  ${${dg_name}_LIBRARIES}
-  ${${dgp_name}_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
+catkin_add_required_dependency("yaml-cpp")
+catkin_add_required_dependency("dynamic-graph >= 3.0.0")
+catkin_add_required_dependency("dynamic-graph-python >= 3.0.0")
+
+search_for_boost()
+search_for_eigen()
+search_for_python()
 
 #########################################
 # Declare the service files to be built #
@@ -77,13 +62,7 @@ generate_messages(DEPENDENCIES std_msgs)
 ######################################################
 # define the include directory of all ${CATKIN_PKGS} #
 ######################################################
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${catkin_INCLUDE_DIRS}
-    ${PYTHON_INCLUDE_PATH}
-    ${Boost_INCLUDE_DIR}
-    ${Eigen_INCLUDE_DIRS}
-)
+include_directories(${PROJECT_SOURCE_DIR}/include ${catkin_INCLUDE_DIRS})
 
 ##########################################
 # export the package as a catkin package #
