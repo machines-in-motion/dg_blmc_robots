@@ -148,7 +148,7 @@ class TeststandBulletRobot(Robot):
         for i in range(steps):
             self.device.execute_graph()
             # The base is not actuated.
-            tau[1:] = np.matrix(self.device.ctrl_joint_torques.value).T
+            tau[1:] = self.device.ctrl_joint_torques.value
             self.wrapper.send_joint_command(tau)
             p.stepSimulation()
             self._sim2signal()
