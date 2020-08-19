@@ -19,7 +19,7 @@ namespace dg_blmc_robots
 
   typedef Eigen::Matrix<double, 1, 1> Vector1d;
 
-  class DGMSingleMotor : public dynamic_graph::DynamicGraphManager
+  class DGMSingleMotor : public dynamic_graph_manager::DynamicGraphManager
   {
   public:
     /**
@@ -43,14 +43,14 @@ namespace dg_blmc_robots
      * input/output map
      * @param[in][out] map is the sensors data filled by this function.
      */
-    void get_sensors_to_map(dynamic_graph::VectorDGMap& map);
+    void get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map);
 
     /**
      * @brief set_motor_controls_from_map reads the input map that contains the
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
+    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
   private:
 
     /**

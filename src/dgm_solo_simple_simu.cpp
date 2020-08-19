@@ -52,7 +52,7 @@ namespace dg_blmc_robots
   }
 
 
-  void DGMQuadrupedSimu::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMQuadrupedSimu::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
   {
     motor_target_currents_ = ctrl_joint_torques_ / motors_torque_constant_;
     motor_torques_ = ctrl_joint_torques_ / motors_gear_ratio_;
@@ -91,7 +91,7 @@ namespace dg_blmc_robots
   }
 
   void DGMQuadrupedSimu::set_motor_controls_from_map(
-      const dynamic_graph::VectorDGMap& map)
+      const dynamic_graph_manager::VectorDGMap& map)
   {
     ctrl_joint_torques_ = map.at("ctrl_joint_torques");
   }

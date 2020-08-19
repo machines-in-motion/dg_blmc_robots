@@ -35,7 +35,7 @@ namespace dg_blmc_robots
     }
   }
 
-  void DGMStuggihop::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMStuggihop::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
   {
     try{
       stuggihop_.acquire_sensors();
@@ -95,7 +95,7 @@ namespace dg_blmc_robots
   }
 
   void DGMStuggihop::set_motor_controls_from_map(
-      const dynamic_graph::VectorDGMap& map)
+      const dynamic_graph_manager::VectorDGMap& map)
   {
     try{
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");
