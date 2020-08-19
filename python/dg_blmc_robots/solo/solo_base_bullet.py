@@ -28,7 +28,7 @@ class SoloBaseRobot(Robot):
     def __init__(self, solo_config, use_fixed_base=False, record_video=False,
                  init_sliders_pose=4*[0.5]):
         self.config = solo_config
-
+        self.record_video = record_video
         self.physicsClient = p.connect(p.GUI)
         p.resetDebugVisualizerCamera(1.2, 50, -35, (0., 0., 0.))
 
@@ -40,7 +40,7 @@ class SoloBaseRobot(Robot):
         print("Loaded plain.")
 
         # Load the robot
-        robotStartPos = [0.,0,.22]
+        robotStartPos = [0.,0,.7]
         robotStartOrientation = p.getQuaternionFromEuler([0,0,0])
 
         self.urdf_path = self.config.urdf_path
@@ -49,8 +49,7 @@ class SoloBaseRobot(Robot):
             useFixedBase=use_fixed_base)
         p.getBasePositionAndOrientation(self.robotId)
 
-        if record_video:
-            p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, "./video/0.mp4")
+        
 
         # Create the robot wrapper in pinocchio.
         package_dirs = [os.path.dirname(os.path.dirname(self.urdf_path)) +
@@ -116,6 +115,13 @@ class SoloBaseRobot(Robot):
         super(SoloBaseRobot, self).__init__('bullet_quadruped',
             self.device)
 
+    def start_video_recording(self):
+        if self.record_video:
+            p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, "/tmp/bullet_quadruped.mp4")
+
+    def stop_video_recording(self):
+        if self.record_video:
+            p.stopStateLogging(p.STATE_LOGGING_VIDEO_MP4)
 
     def pinocchio_robot_wrapper(self):
         return self.pin_robot
