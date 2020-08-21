@@ -5,7 +5,7 @@
  * \date 2018
  */
 
-#include <dynamic_graph_manager/ros_init.hh>
+#include "dynamic_graph_manager/ros_init.hpp"
 #include "dg_blmc_robots/dgm_teststand.hpp"
 
 namespace dg_blmc_robots
@@ -29,8 +29,8 @@ namespace dg_blmc_robots
                         "index_to_zero_angle", zero_to_index_angle_from_file_);
 
     // get the hardware communication ros node handle
-    ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
-      dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+    ros::NodeHandle& ros_node_handle = dynamic_graph_manager::ros_init(
+      dynamic_graph_manager::DynamicGraphManager::hw_com_ros_node_name_);
 
     /** initialize the user commands */
     ros_user_commands_.push_back(ros_node_handle.advertiseService(
@@ -54,7 +54,7 @@ namespace dg_blmc_robots
     }
   }
 
-  void DGMTeststand::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMTeststand::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
   {
     try{
       teststand_.acquire_sensors();
@@ -102,7 +102,7 @@ namespace dg_blmc_robots
   }
 
   void DGMTeststand::set_motor_controls_from_map(
-      const dynamic_graph::VectorDGMap& map)
+      const dynamic_graph_manager::VectorDGMap& map)
   {
     try{
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");

@@ -7,7 +7,7 @@
  * This file defines the TestBench8Motors class.
  */
 
-#include <dynamic_graph_manager/ros_init.hh>
+#include "dynamic_graph_manager/ros_init.hpp"
 #include "dg_blmc_robots/dgm_solo12.hpp"
 
 namespace dg_blmc_robots
@@ -32,8 +32,8 @@ namespace dg_blmc_robots
                         "index_to_zero_angle", zero_to_index_angle_from_file_);
 
     // Get the hardware communication ros node handle.
-    ros::NodeHandle& ros_node_handle = dynamic_graph::ros_init(
-      dynamic_graph::DynamicGraphManager::hw_com_ros_node_name_);
+    ros::NodeHandle& ros_node_handle = dynamic_graph_manager::ros_init(
+      dynamic_graph_manager::DynamicGraphManager::hw_com_ros_node_name_);
 
     /** Initialize the user commands. */
     ros_user_commands_.push_back(ros_node_handle.advertiseService(
@@ -71,7 +71,7 @@ namespace dg_blmc_robots
    }
  }
 
-  void DGMSolo12::get_sensors_to_map(dynamic_graph::VectorDGMap& map)
+  void DGMSolo12::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
   {
     solo_.acquire_sensors();
 
@@ -114,7 +114,7 @@ namespace dg_blmc_robots
   }
 
   void DGMSolo12::set_motor_controls_from_map(
-      const dynamic_graph::VectorDGMap& map)
+      const dynamic_graph_manager::VectorDGMap& map)
   {
     try{
       // Here we need to perform and internal copy. Otherwise the compilator

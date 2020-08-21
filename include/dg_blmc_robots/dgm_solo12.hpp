@@ -11,15 +11,15 @@
 #ifndef DGM_SOLO_HH
 #define DGM_SOLO_HH
 
-#include <dynamic_graph_manager/dynamic_graph_manager.hh>
-#include <blmc_robots/solo12.hpp>
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "blmc_robots/solo12.hpp"
 #include "dg_blmc_robots/JointCalibration.h"
 #include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
 
-  class DGMSolo12 : public dynamic_graph::DynamicGraphManager
+  class DGMSolo12 : public dynamic_graph_manager::DynamicGraphManager
   {
   public:
     /**
@@ -49,14 +49,14 @@ namespace dg_blmc_robots
      * input/output map
      * @param[in][out] map is the sensors data filled by this function.
      */
-    void get_sensors_to_map(dynamic_graph::VectorDGMap& map);
+    void get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map);
 
     /**
      * @brief set_motor_controls_from_map reads the input map that contains the
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph::VectorDGMap& map);
+    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
 
     /**
      * @brief Ros callback for the callibration procedure. Warning the robot
