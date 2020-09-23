@@ -88,6 +88,11 @@ namespace dg_blmc_robots
       * Additional data.
       */
     map.at("slider_positions") = solo_.get_slider_positions();
+    map.at("imu_accelerometer") = solo_.get_imu_accelerometer();
+    map.at("imu_gyroscope") = solo_.get_imu_gyroscope();
+    map.at("imu_attitude") = solo_.get_imu_attitude();
+    map.at("imu_linear_acceleration") = solo_.get_imu_linear_acceleration();
+    map.at("imu_attitude_quaternion") = solo_.get_imu_attitude_quaternion();
 
     /**
      * Robot status.
