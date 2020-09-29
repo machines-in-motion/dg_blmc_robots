@@ -1,27 +1,27 @@
 /**
  * @file dgm_single_motor.hpp
  * @author Manuel Wuthrich
- * @author Maximilien Naveau 
+ * @author Maximilien Naveau
  * @author Julian Viereck
- * @author Johannes Pfleging 
+ * @author Johannes Pfleging
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellshaft.
  */
 
 #ifndef DGM_SINGLE_MOTOR_HH
 #define DGM_SINGLE_MOTOR_HH
 
-#include <dynamic_graph_manager/dynamic_graph_manager.hh>
 #include <blmc_robots/single_motor.hpp>
+#include <dynamic_graph_manager/dynamic_graph_manager.hh>
 
 namespace dg_blmc_robots
 {
+typedef Eigen::Matrix<double, 1, 1> Vector1d;
 
-  typedef Eigen::Matrix<double, 1, 1> Vector1d;
-
-  class DGMSingleMotor : public dynamic_graph_manager::DynamicGraphManager
-  {
-  public:
+class DGMSingleMotor : public dynamic_graph_manager::DynamicGraphManager
+{
+public:
     /**
      * @brief DGMSingleMotor is the constructor.
      */
@@ -50,30 +50,31 @@ namespace dg_blmc_robots
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
-  private:
+    void set_motor_controls_from_map(
+        const dynamic_graph_manager::VectorDGMap& map);
 
+private:
     /**
      * Entries for the real hardware.
      */
 
     /**
-    * @brief single_motor_ the real motor hardware drivers.
-    */
+     * @brief single_motor_ the real motor hardware drivers.
+     */
     blmc_robots::SingleMotor single_motor_;
 
     /**
-    * @brief ctrl_joint_torques_ the motor torque to be sent
-    */
+     * @brief ctrl_joint_torques_ the motor torque to be sent
+     */
     Vector1d ctrl_joint_torques_;
 
     /**
-     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was entered.
+     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was
+     * entered.
      */
     bool was_in_safety_mode_;
-  };
+};
 
+}  // namespace dg_blmc_robots
 
-} // namespace dg_blmc_robots
-
-#endif // DGM_SINGLE_MOTOR_HH
+#endif  // DGM_SINGLE_MOTOR_HH

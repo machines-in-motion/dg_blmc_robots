@@ -9,16 +9,14 @@
 
 #include "dg_blmc_robots/dgm_solo_simple_simu.hpp"
 
-int main(int , char* []) {
-  std::cout << "Loading paramters from "
-            << YAML_PARAMS
-            << std::endl;
-  YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-  dg_blmc_robots::DGMQuadrupedSimu dgm;
+int main(int, char* [])
+{
+    std::cout << "Loading paramters from " << YAML_PARAMS << std::endl;
+    YAML::Node param = YAML::LoadFile(YAML_PARAMS);
+    dg_blmc_robots::DGMQuadrupedSimu dgm;
 
-  dgm.initialize(param);
-  dgm.run();
-  std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
-  ros::waitForShutdown();
+    dgm.initialize(param);
+    dgm.run();
+    std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
+    ros::waitForShutdown();
 }
-

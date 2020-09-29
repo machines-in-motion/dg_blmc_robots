@@ -1,25 +1,25 @@
 /**
  * @file dgm_stuggihop.hpp
  * @author Manuel Wuthrich
- * @author Maximilien Naveau 
+ * @author Maximilien Naveau
  * @author Julian Viereck
- * @author Johannes Pfleging 
+ * @author Johannes Pfleging
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellshaft.
  */
 
 #ifndef DGM_STUGGIHOP_HH
 #define DGM_STUGGIHOP_HH
 
-#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 #include "blmc_robots/stuggihop.hpp"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 
 namespace dg_blmc_robots
 {
-
-  class DGMStuggihop : public dynamic_graph_manager::DynamicGraphManager
-  {
-  public:
+class DGMStuggihop : public dynamic_graph_manager::DynamicGraphManager
+{
+public:
     /**
      * @brief DGMStuggihop is the constructor.
      */
@@ -29,7 +29,6 @@ namespace dg_blmc_robots
      * @brief ~DGMStuggihop is the destructor.
      */
     ~DGMStuggihop();
-
 
     /**
      * @brief initialize_hardware_communication_process is the function that
@@ -49,35 +48,36 @@ namespace dg_blmc_robots
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
+    void set_motor_controls_from_map(
+        const dynamic_graph_manager::VectorDGMap& map);
 
     /**
      * @brief is_in_safety_mode Implement custom safe-mode detection.
      */
     virtual bool is_in_safety_mode();
-  private:
 
+private:
     /**
      * Entries for the real hardware.
      */
 
     /**
-    * @brief test_bench_ the real test bench hardware drivers.
-    */
+     * @brief test_bench_ the real test bench hardware drivers.
+     */
     blmc_robots::Stuggihop stuggihop_;
 
     /**
-    * @brief ctrl_joint_torques_ the joint torques to be sent
-    */
+     * @brief ctrl_joint_torques_ the joint torques to be sent
+     */
     Eigen::Vector2d ctrl_joint_torques_;
 
     /**
-     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was entered.
+     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was
+     * entered.
      */
     bool was_in_safety_mode_;
-  };
+};
 
+}  // namespace dg_blmc_robots
 
-} // namespace dg_blmc_robots
-
-#endif // DGM_STUGGIHOP_HH
+#endif  // DGM_STUGGIHOP_HH

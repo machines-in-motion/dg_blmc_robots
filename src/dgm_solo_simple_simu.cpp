@@ -11,9 +11,8 @@
 
 namespace dg_blmc_robots
 {
-
-  DGMQuadrupedSimu::DGMQuadrupedSimu()
-  {
+DGMQuadrupedSimu::DGMQuadrupedSimu()
+{
     motor_target_currents_.fill(0.0);
     motor_torques_.fill(0.0);
     motor_target_torques_.fill(0.0);
@@ -33,38 +32,38 @@ namespace dg_blmc_robots
     motors_inertia_ = 0.0;
     motors_torque_constant_ = 0.0;
     motors_gear_ratio_ = 0.0;
-  }
+}
 
-  DGMQuadrupedSimu::~DGMQuadrupedSimu()
-  {
-  }
+DGMQuadrupedSimu::~DGMQuadrupedSimu()
+{
+}
 
-  void DGMQuadrupedSimu::initialize_hardware_communication_process()
-  {
+void DGMQuadrupedSimu::initialize_hardware_communication_process()
+{
     motors_inertia_ = params_["motor_I"].as<double>();
     motors_torque_constant_ = params_["motor_KT"].as<double>();
     motors_gear_ratio_ = params_["motor_gear_ratio"].as<double>();
-  }
+}
 
-  bool DGMQuadrupedSimu::is_in_safety_mode()
-  {
+bool DGMQuadrupedSimu::is_in_safety_mode()
+{
     return false;
-  }
+}
 
-
-  void DGMQuadrupedSimu::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
-  {
+void DGMQuadrupedSimu::get_sensors_to_map(
+    dynamic_graph_manager::VectorDGMap& map)
+{
     motor_target_currents_ = ctrl_joint_torques_ / motors_torque_constant_;
     motor_torques_ = ctrl_joint_torques_ / motors_gear_ratio_;
     motor_target_torques_ = ctrl_joint_torques_ / motors_gear_ratio_;
     motor_encoder_indexes_.fill(0.0);
-    joint_positions_ = joint_positions_ + 
+    joint_positions_ = joint_positions_ +
                        control_period_sec_ * joint_velocities_ +
                        control_period_sec_ * control_period_sec_ * 0.5 *
-                       motors_inertia_ * ctrl_joint_torques_;
-    joint_velocities_ = joint_velocities_ +
-                        control_period_sec_ * motors_inertia_ *
-                        ctrl_joint_torques_;
+                           motors_inertia_ * ctrl_joint_torques_;
+    joint_velocities_ = joint_velocities_ + control_period_sec_ *
+                                                motors_inertia_ *
+                                                ctrl_joint_torques_;
     joint_torques_ = ctrl_joint_torques_;
     joint_target_torques_ = ctrl_joint_torques_;
     contact_sensors_.fill(0.0);
@@ -73,7 +72,7 @@ namespace dg_blmc_robots
     motor_ready_.fill(1.0);
     motor_board_enabled_.fill(1.0);
     motor_board_errors_.fill(1.0);
-    
+
     map.at("motor_target_currents") = motor_target_currents_;
     map.at("motor_torques") = motor_torques_;
     map.at("motor_target_torques") = motor_target_torques_;
@@ -88,12 +87,12 @@ namespace dg_blmc_robots
     map.at("motor_ready") = motor_ready_;
     map.at("motor_board_enabled") = motor_board_enabled_;
     map.at("motor_board_errors") = motor_board_errors_;
-  }
+}
 
-  void DGMQuadrupedSimu::set_motor_controls_from_map(
-      const dynamic_graph_manager::VectorDGMap& map)
-  {
+void DGMQuadrupedSimu::set_motor_controls_from_map(
+    const dynamic_graph_manager::VectorDGMap& map)
+{
     ctrl_joint_torques_ = map.at("ctrl_joint_torques");
-  }
+}
 
-} // namespace dg_blmc_robots
+}  // namespace dg_blmc_robots
