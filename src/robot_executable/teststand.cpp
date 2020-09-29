@@ -9,17 +9,15 @@
 
 #include "dg_blmc_robots/dgm_teststand.hpp"
 
-int main(int , char* []) {
-  std::cout << "Loading paramters from "
-            << YAML_PARAMS
-            << std::endl;
-  YAML::Node param = YAML::LoadFile(YAML_PARAMS);
-  dg_blmc_robots::DGMTeststand dgm;
+int main(int, char* [])
+{
+    std::cout << "Loading paramters from " << YAML_PARAMS << std::endl;
+    YAML::Node param = YAML::LoadFile(YAML_PARAMS);
+    dg_blmc_robots::DGMTeststand dgm;
 
-  dgm.initialize(param);
-  dgm.run();
-  std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
-  ros::waitForShutdown();
-  std::cout << "Shutdown is performed." << std::endl;
+    dgm.initialize(param);
+    dgm.run();
+    std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
+    ros::waitForShutdown();
+    std::cout << "Shutdown is performed." << std::endl;
 }
-

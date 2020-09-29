@@ -1,13 +1,13 @@
 /**
  * @file dgm_quadruped_simu.hpp
  * @author Manuel Wuthrich
- * @author Maximilien Naveau 
+ * @author Maximilien Naveau
  * @author Julian Viereck
- * @author Johannes Pfleging 
+ * @author Johannes Pfleging
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellshaft.
  */
-
 
 #ifndef DGM_QUADRUPED_HH
 #define DGM_QUADRUPED_HH
@@ -16,19 +16,19 @@
 
 namespace dg_blmc_robots
 {
-  /**
-   * @brief Vector8d shortcut for the eigen vector of size 8.
-   */
-  typedef Eigen::Matrix<double, 8, 1> Vector8d;
+/**
+ * @brief Vector8d shortcut for the eigen vector of size 8.
+ */
+typedef Eigen::Matrix<double, 8, 1> Vector8d;
 
-  /**
-   * @brief Vector8d shortcut for the eigen vector of size 4.
-   */
-  typedef Eigen::Matrix<double, 8, 1> Vector4d;
+/**
+ * @brief Vector8d shortcut for the eigen vector of size 4.
+ */
+typedef Eigen::Matrix<double, 8, 1> Vector4d;
 
-  class DGMQuadrupedSimu : public dynamic_graph_manager::DynamicGraphManager
-  {
-  public:
+class DGMQuadrupedSimu : public dynamic_graph_manager::DynamicGraphManager
+{
+public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
@@ -63,10 +63,10 @@ namespace dg_blmc_robots
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
+    void set_motor_controls_from_map(
+        const dynamic_graph_manager::VectorDGMap& map);
 
-  private:
-
+private:
     /**
      * Entries for the simulated hardware.
      */
@@ -74,7 +74,7 @@ namespace dg_blmc_robots
     Vector8d motor_torques_;
     Vector8d motor_target_torques_;
     Vector8d motor_encoder_indexes_;
-    
+
     Vector8d joint_positions_;
     Vector8d joint_velocities_;
     Vector8d joint_torques_;
@@ -88,15 +88,14 @@ namespace dg_blmc_robots
 
     Vector4d motor_board_enabled_;
     Vector4d motor_board_errors_;
-  
+
     Vector8d ctrl_joint_torques_;
 
     double motors_inertia_;
     double motors_torque_constant_;
     double motors_gear_ratio_;
-  };
+};
 
+}  // namespace dg_blmc_robots
 
-} // namespace dg_blmc_robots
-
-#endif // DGM_TEST_BENCH_8_MOTORS_HH
+#endif  // DGM_TEST_BENCH_8_MOTORS_HH
