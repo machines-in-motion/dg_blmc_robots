@@ -1,21 +1,22 @@
-# DG BLMC ROBOTS
+DG BLMC ROBOTS
+--------------
 
-## What it is
+### What it is
 
 Dynamic Graph Managers for brushless control motor (BLMC) robots
 
-## Authors
+### Authors
 
 - Maximilien Naveau
 - Manuel Wuthrich
 - Julian Viereck
 - Johannes Pfleging 
 
-## Copyrights
+### Copyrights
 
 Copyright(c) 2018-2019 Max Planck Gesellschaft, New York University
 
-## License
+### License
 
 BSD 3-Clause License
 
