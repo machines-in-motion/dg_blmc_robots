@@ -73,6 +73,12 @@ public:
         dg_blmc_robots::JointCalibration::Request& req,
         dg_blmc_robots::JointCalibration::Response& res);
 
+    /**
+     * @brief compute_safety_controls computes safety controls very fast in case
+     * the dynamic graph is taking to much computation time or has crashed.
+     */
+    void compute_safety_controls();
+
 private:
     /**
      * @brief Calibrate the robot joint position
