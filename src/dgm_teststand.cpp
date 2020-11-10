@@ -5,132 +5,146 @@
  * \date 2018
  */
 
-#include "dynamic_graph_manager/ros_init.hpp"
 #include "dg_blmc_robots/dgm_teststand.hpp"
+
+#include "dynamic_graph_manager/ros.hpp"
 
 namespace dg_blmc_robots
 {
+DGMTeststand::DGMTeststand() : was_in_safety_mode_(false)
+{
+}
 
-  DGMTeststand::DGMTeststand(): was_in_safety_mode_(false)
-  {
-  }
+DGMTeststand::~DGMTeststand()
+{
+}
 
-  DGMTeststand::~DGMTeststand()
-  {
-  }
-
-  void DGMTeststand::initialize_hardware_communication_process()
-  {
+void DGMTeststand::initialize_hardware_communication_process()
+{
     /**
      * Load the calibration parameters
      */
     Eigen::Vector2d joint_index_to_zero;
     YAML::ReadParameter(params_["hardware_communication"]["calibration"],
-                        "index_to_zero_angle", zero_to_index_angle_from_file_);
+                        "index_to_zero_angle",
+                        zero_to_index_angle_from_file_);
 
-    // get the hardware communication ros node handle
-    ros::NodeHandle& ros_node_handle = dynamic_graph_manager::ros_init(
-      dynamic_graph_manager::DynamicGraphManager::hw_com_ros_node_name_);
+    // Get the hardware communication ros node handle.
+    dynamic_graph_manager::RosNodePtr ros_node_handle =
+        dynamic_graph_manager::get_ros_node(
+            dynamic_graph_manager::HWC_ROS_NODE_NAME);
 
-    /** initialize the user commands */
-    ros_user_commands_.push_back(ros_node_handle.advertiseService(
-        "calibrate_joint_position",
-        &DGMTeststand::calibrate_joint_position_callback, this));
+    /** Initialize the user commands. */
+    ros_user_commands_.push_back(
+        ros_node_handle->create_service<mim_msgs::srv::JointCalibration>(
+            "calibrate_joint_position",
+            std::bind(&DGMTeststand::calibrate_joint_position_callback,
+                      this,
+                      std::placeholders::_1,
+                      std::placeholders::_2)));
 
     /**
      * Initialize the hardware
      */
     teststand_.initialize();
-  }
+}
 
-  bool DGMTeststand::is_in_safety_mode()
-  {
-    was_in_safety_mode_ |= teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 10000.;
-    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode()) {
-      was_in_safety_mode_ = true;
-      return true;
-    } else {
-      return false;
+bool DGMTeststand::is_in_safety_mode()
+{
+    was_in_safety_mode_ |=
+        teststand_.get_joint_velocities().cwiseAbs().maxCoeff() > 10000.;
+    if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode())
+    {
+        was_in_safety_mode_ = true;
+        return true;
     }
-  }
-
-  void DGMTeststand::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
-  {
-    try{
-      teststand_.acquire_sensors();
-      /**
-        * Joint data
-        */
-      map.at("joint_positions") = teststand_.get_joint_positions();
-      map.at("joint_velocities") = teststand_.get_joint_velocities();
-      map.at("joint_torques") = teststand_.get_joint_torques();
-      map.at("joint_target_torques") = teststand_.get_joint_target_torques();
-      map.at("joint_encoder_index") = teststand_.get_joint_encoder_index();
-
-      /**
-        * Additional data
-        */
-      map.at("contact_sensors") = teststand_.get_contact_sensors_states();
-      map.at("slider_positions") = teststand_.get_slider_positions();
-      map.at("height_sensors") = teststand_.get_height_sensors();
-
-      map.at("ati_force") = teststand_.get_ati_force();
-      map.at("ati_torque") = teststand_.get_ati_torque();
-    }catch(...){
-      printf("Error in acquiring the sensors data\n");
-      printf("Setting all of them 0.0\n");
-
-      /**
-        * Joint data
-        */
-      map.at("joint_positions").fill(0.0);
-      map.at("joint_velocities").fill(0.0);
-      map.at("joint_torques").fill(0.0);
-      map.at("joint_target_torques").fill(0.0);
-      map.at("joint_encoder_index").fill(0.0);
-
-      /**
-        * Additional data
-        */
-      map.at("contact_sensors").fill(0.0);
-      map.at("slider_positions").fill(0.0);
-      map.at("height_sensors").fill(0.0);
-
-      map.at("ati_force").fill(0.0);
-      map.at("ati_torque").fill(0.0);
+    else
+    {
+        return false;
     }
-  }
+}
 
-  void DGMTeststand::set_motor_controls_from_map(
-      const dynamic_graph_manager::VectorDGMap& map)
-  {
-    try{
-      ctrl_joint_torques_ = map.at("ctrl_joint_torques");
-      teststand_.send_target_joint_torque(ctrl_joint_torques_);
-    }catch(...){
-      printf("Error sending controls\n");
+void DGMTeststand::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
+{
+    try
+    {
+        teststand_.acquire_sensors();
+        /**
+         * Joint data
+         */
+        map.at("joint_positions") = teststand_.get_joint_positions();
+        map.at("joint_velocities") = teststand_.get_joint_velocities();
+        map.at("joint_torques") = teststand_.get_joint_torques();
+        map.at("joint_target_torques") = teststand_.get_joint_target_torques();
+        map.at("joint_encoder_index") = teststand_.get_joint_encoder_index();
+
+        /**
+         * Additional data
+         */
+        map.at("contact_sensors") = teststand_.get_contact_sensors_states();
+        map.at("slider_positions") = teststand_.get_slider_positions();
+        map.at("height_sensors") = teststand_.get_height_sensors();
+
+        map.at("ati_force") = teststand_.get_ati_force();
+        map.at("ati_torque") = teststand_.get_ati_torque();
     }
-  }
+    catch (...)
+    {
+        printf("Error in acquiring the sensors data\n");
+        printf("Setting all of them 0.0\n");
 
-  bool DGMTeststand::calibrate_joint_position_callback(
-    dg_blmc_robots::JointCalibration::Request&,
-    dg_blmc_robots::JointCalibration::Response& res)
-  {
+        /**
+         * Joint data
+         */
+        map.at("joint_positions").fill(0.0);
+        map.at("joint_velocities").fill(0.0);
+        map.at("joint_torques").fill(0.0);
+        map.at("joint_target_torques").fill(0.0);
+        map.at("joint_encoder_index").fill(0.0);
+
+        /**
+         * Additional data
+         */
+        map.at("contact_sensors").fill(0.0);
+        map.at("slider_positions").fill(0.0);
+        map.at("height_sensors").fill(0.0);
+
+        map.at("ati_force").fill(0.0);
+        map.at("ati_torque").fill(0.0);
+    }
+}
+
+void DGMTeststand::set_motor_controls_from_map(
+    const dynamic_graph_manager::VectorDGMap& map)
+{
+    try
+    {
+        ctrl_joint_torques_ = map.at("ctrl_joint_torques");
+        teststand_.send_target_joint_torque(ctrl_joint_torques_);
+    }
+    catch (...)
+    {
+        printf("Error sending controls\n");
+    }
+}
+
+void DGMTeststand::calibrate_joint_position_callback(
+    mim_msgs::srv::JointCalibration::Request::SharedPtr,
+    mim_msgs::srv::JointCalibration::Response::SharedPtr res)
+{
     // parse and register the command for further call.
-    add_user_command(std::bind(&DGMTeststand::calibrate_joint_position, 
-                     this, zero_to_index_angle_from_file_));
+    add_user_command(std::bind(&DGMTeststand::calibrate_joint_position,
+                               this,
+                               zero_to_index_angle_from_file_));
 
     // return whatever the user want
-    res.sanity_check = true;
-    
-    // the service has been executed properly
-    return true;
-  }
+    res->sanity_check = true;
+}
 
-  void DGMTeststand::calibrate_joint_position(
+void DGMTeststand::calibrate_joint_position(
     const Eigen::Vector2d& zero_to_index_angle)
-  {
+{
     teststand_.calibrate(zero_to_index_angle);
-  }
+}
 
-} // namespace dg_blmc_robots
+}  // namespace dg_blmc_robots

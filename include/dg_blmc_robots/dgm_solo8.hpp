@@ -13,7 +13,7 @@
 
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 #include "blmc_robots/solo8.hpp"
-#include "dg_blmc_robots/JointCalibration.h"
+#include "mim_msgs/srv/joint_calibration.hpp"
 #include "yaml_utils/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
@@ -66,9 +66,9 @@ namespace dg_blmc_robots
      * @return true 
      * @return false 
      */
-    bool calibrate_joint_position_callback(
-        dg_blmc_robots::JointCalibration::Request& req,
-        dg_blmc_robots::JointCalibration::Response& res);
+    void calibrate_joint_position_callback(
+        mim_msgs::srv::JointCalibration::Request::SharedPtr req,
+        mim_msgs::srv::JointCalibration::Response::SharedPtr res);
 
   private:
     /**

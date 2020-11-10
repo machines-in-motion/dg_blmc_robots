@@ -5,22 +5,22 @@
  * @author Julian Viereck
  * @author Johannes Pfleging
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellshaft.
  */
 
 #pragma once
 
-#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 #include "blmc_robots/solo8ti.hpp"
-#include "dg_blmc_robots/JointCalibration.h"
-#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
+#include "mim_msgs/srv/joint_calibration.hpp"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
-
-  class DGMSolo8TI : public dynamic_graph_manager::DynamicGraphManager
-  {
-  public:
+class DGMSolo8TI : public dynamic_graph_manager::DynamicGraphManager
+{
+public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
@@ -49,7 +49,8 @@ namespace dg_blmc_robots
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
+    void set_motor_controls_from_map(
+        const dynamic_graph_manager::VectorDGMap& map);
 
     /**
      * @brief Handle the calibrate_joint callback.
@@ -58,18 +59,19 @@ namespace dg_blmc_robots
      * @param res ROS response.
      * @returns True if calibration was successful, false otherwise.
      */
-    bool calibrate_joint_position_callback(
-        dg_blmc_robots::JointCalibration::Request& req,
-        dg_blmc_robots::JointCalibration::Response& res);
+    void calibrate_joint_position_callback(
+        mim_msgs::srv::JointCalibration::Request::SharedPtr req,
+        mim_msgs::srv::JointCalibration::Response::SharedPtr res);
 
-  private:
+private:
     /**
      * @brief Calibrate the robot joint position
      *
      * @param zero_to_index_angle is the angle between the theoretical zero and
      * the next positive angle.
      */
-    void calibrate_joint_position(const blmc_robots::Vector8d& zero_to_index_angle);
+    void calibrate_joint_position(
+        const blmc_robots::Vector8d& zero_to_index_angle);
 
     /**
      * Entries for the real hardware.
@@ -98,8 +100,6 @@ namespace dg_blmc_robots
      * the next jont index.
      */
     blmc_robots::Vector8d zero_to_index_angle_from_file_;
-  };
+};
 
-
-} // namespace dg_blmc_robots
-
+}  // namespace dg_blmc_robots

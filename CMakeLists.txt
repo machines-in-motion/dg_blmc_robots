@@ -9,7 +9,7 @@
 #
 cmake_minimum_required(VERSION 3.10.2)
 
-project(blmc_robots)
+project(dg_blmc_robots)
 
 # Using C++17.
 if(NOT CMAKE_C_STANDARD)
@@ -27,12 +27,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(mpi_cmake_modules REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-
-# Declare the ROS message and service files to be built. This is here because
-# otherwise the Python include_dir is not found...
-rosidl_generate_interfaces(${PROJECT_NAME}_msg_srv "srv/JointCalibration.srv")
-
+find_package(mim_msgs REQUIRED)
 # Depend on ament macros.
 find_package(ament_index_cpp REQUIRED)
 find_package(blmc_drivers REQUIRED)
@@ -40,16 +35,12 @@ find_package(blmc_robots REQUIRED)
 find_package(dynamic_graph_manager REQUIRED)
 find_package(yaml_utils REQUIRED)
 
-find_package(pinocchio_bullet REQUIRED)
-find_package(robot_properties_solo REQUIRED)
-find_package(robot_properties_teststand REQUIRED)
-
 # Export de dependencies.
 ament_export_dependencies(
   ament_cmake
   ament_cmake_python
   mpi_cmake_modules
-  rosidl_default_generators
+  mim_msgs
   ament_index_cpp
   blmc_drivers
   blmc_robots
@@ -80,7 +71,7 @@ endif()
 add_subdirectory(demos)
 
 #
-# Install the package
+# Install the package includes.
 #
 install(DIRECTORY include/ DESTINATION include)
 
