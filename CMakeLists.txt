@@ -54,6 +54,11 @@ ament_export_dependencies(
 ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 #
+# Install the python package.
+#
+ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR python/${PROJECT_NAME})
+
+#
 # Manage the creation of the libraries and executables.
 #
 add_subdirectory(src)
