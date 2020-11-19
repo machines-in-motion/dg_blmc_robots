@@ -94,7 +94,6 @@ class SoloBaseRobot(Robot):
         self.device = Device("bullet_quadruped")
         assert path.exists(self.config.yaml_path)
         self.device.initialize(self.config.yaml_path)
-        self.device.add_signals()
 
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
