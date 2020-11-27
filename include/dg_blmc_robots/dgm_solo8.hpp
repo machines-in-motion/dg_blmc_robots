@@ -95,6 +95,12 @@ namespace dg_blmc_robots
      */
     blmc_robots::Vector8d ctrl_joint_torques_;
 
+    blmc_robots::Vector8d ctrl_joint_desired_position_;
+    blmc_robots::Vector8d ctrl_joint_desired_velocity_;
+    blmc_robots::Vector8d ctrl_joint_torque_saturation_;
+    blmc_robots::Vector8d ctrl_desired_kp_;
+    blmc_robots::Vector8d ctrl_desired_kd_;
+
     /**
      * @brief Check if we entered once in the safety mode and stay there if so
      */

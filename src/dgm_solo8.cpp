@@ -110,7 +110,23 @@ namespace dg_blmc_robots
       // complains
       ctrl_joint_torques_ = map.at("ctrl_joint_torques");
       // Actually send the control to the robot
-      solo_.send_target_joint_torque(ctrl_joint_torques_);
+      solo_.set_target_joint_torque(ctrl_joint_torques_);
+
+      ctrl_joint_desired_position_ = map.at("ctrl_joint_desired_position");
+      ctrl_joint_desired_velocity_ = map.at("ctrl_joint_desired_velocity");
+      ctrl_joint_torque_saturation_ = map.at("ctrl_joint_torque_saturation");
+      ctrl_desired_kp_ = map.at("ctrl_desired_kp");
+      ctrl_desired_kd_ = map.at("ctrl_desired_kd");
+
+      solo_.set_joint_desired_position(ctrl_joint_desired_position_);
+      solo_.set_joint_desired_velocity(ctrl_joint_desired_velocity_);
+      solo_.set_joint_torque_saturation(ctrl_joint_torque_saturation_);
+      solo_.set_joint_kp(ctrl_desired_kp_);
+      solo_.set_joint_kd(ctrl_desired_kd_);
+
+      solo_.send_commands();
+
+
     }catch(const std::exception& e){
       rt_printf("DGMSolo8::set_motor_controls_from_map: "
                 "Error sending controls, %s\n", e.what());
