@@ -11,6 +11,7 @@
 #include "dg_blmc_robots/dgm_solo12.hpp"
 
 int main(int, char* [])
+{
     // Get the dynamic_graph_manager config file.
     std::string share_path = ament_index_cpp::get_package_share_directory(
         ROBOT_PROPERTIES_PACKAGE_NAME);

@@ -15,7 +15,7 @@
 #include "blmc_robots/solo8.hpp"
 #include "mim_msgs/srv/joint_calibration.hpp"
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
