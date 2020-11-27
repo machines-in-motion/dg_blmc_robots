@@ -1,27 +1,27 @@
 /**
  * @file dgm_teststandx.hpp
  * @author Manuel Wuthrich
- * @author Maximilien Naveau 
+ * @author Maximilien Naveau
  * @author Julian Viereck
- * @author Johannes Pfleging 
+ * @author Johannes Pfleging
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellshaft.
  */
 
 #ifndef DGM_TESTSTAND_HH
 #define DGM_TESTSTAND_HH
 
-#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 #include "blmc_robots/teststand.hpp"
 #include "mim_msgs/srv/joint_calibration.hpp"
-#include "yaml_utils/yaml_cpp_fwd.hpp"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
-
-  class DGMTeststand : public dynamic_graph_manager::DynamicGraphManager
-  {
-  public:
+class DGMTeststand : public dynamic_graph_manager::DynamicGraphManager
+{
+public:
     /**
      * @brief DGMTeststand is the constructor.
      */
@@ -50,7 +50,8 @@ namespace dg_blmc_robots
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
+    void set_motor_controls_from_map(
+        const dynamic_graph_manager::VectorDGMap& map);
 
     /**
      * @brief is_in_safety_mode Implement custom safe-mode detection.
@@ -59,20 +60,20 @@ namespace dg_blmc_robots
 
     /**
      * @brief ROS callback
-     * 
-     * @param req 
-     * @param res 
-     * @return true 
-     * @return false 
+     *
+     * @param req
+     * @param res
+     * @return true
+     * @return false
      */
     void calibrate_joint_position_callback(
-      mim_msgs::srv::JointCalibration::Request::SharedPtr req,
-      mim_msgs::srv::JointCalibration::Response::SharedPtr res);
+        dg_blmc_robots::JointCalibration::Request& req,
+        dg_blmc_robots::JointCalibration::Response& res);
 
-  private:
+private:
     /**
      * @brief Calibrate the robot joint position
-     * 
+     *
      * @param zero_to_index_angle is the angle between the theoretical zero and
      * the next positive angle.
      */
@@ -83,13 +84,13 @@ namespace dg_blmc_robots
      */
 
     /**
-      * @brief test_bench_ the real test bench hardware drivers.
-      */
+     * @brief test_bench_ the real test bench hardware drivers.
+     */
     blmc_robots::Teststand teststand_;
 
     /**
-    * @brief ctrl_joint_torques_ the joint torques to be sent
-    */
+     * @brief ctrl_joint_torques_ the joint torques to be sent
+     */
     Eigen::Vector2d ctrl_joint_torques_;
 
     /**
@@ -100,12 +101,12 @@ namespace dg_blmc_robots
     Eigen::Vector2d zero_to_index_angle_from_file_;
 
     /**
-     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was entered.
+     * @brief was_in_safety_mode_ Toggle to keep in safety mode once it was
+     * entered.
      */
     bool was_in_safety_mode_;
-  };
+};
 
+}  // namespace dg_blmc_robots
 
-} // namespace dg_blmc_robots
-
-#endif // DGM_TEST_BENCH_8_MOTORS_HH
+#endif  // DGM_TEST_BENCH_8_MOTORS_HH

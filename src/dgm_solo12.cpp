@@ -8,6 +8,7 @@
  */
 
 #include "dg_blmc_robots/dgm_solo12.hpp"
+#include "dynamic_graph_manager/ros_init.hpp"
 
 #include "dynamic_graph_manager/ros.hpp"
 
@@ -59,30 +60,91 @@ void DGMSolo12::initialize_hardware_communication_process()
 
 bool DGMSolo12::is_in_safety_mode()
 {
-    static int counter = 0;
-    if (solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 100000003.875)
+    // Check if any card is in an error state.
+    if (solo_.has_error()) {
+      was_in_safety_mode_ = true;
+      static int counter = 0;
+      if (counter % 2000 == 0) {
+        printf("DGMSolo12: Going into safe mode as motor card reports error.\n");
+      }
+      counter += 1;
+    }
+
+    // Check for too fast velocity. Value estiamted from small jump.
+    if (solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 80.)
     {
-        printf(
-            "DGMSolo12: Going into safe mode as joint velocity exceeded "
-            "bound.\n");
+      was_in_safety_mode_ = true;
+      static int counter = 0;
+      if (counter % 2000 == 0)
+      {
+        printf("DGMSolo12: Going into safe mode as joint velocity exceeded bound.\n");
+      }
+      counter += 1;
+    }
+
+    // Check for joint limits. Only do this when calibration is not running.
+    if (!solo_.is_calibrating()) {
+      Eigen::Array<double, 12, 1> lower_lim, upper_lim;
+      lower_lim << -1.2, -1.7, -3.4, -1.2, -1.7, -3.4,
+                   -1.2, -1.7, -3.4, -1.2, -1.7, -3.4;
+      upper_lim = -lower_lim;
+
+      if ((solo_.get_joint_positions().array() < lower_lim).any())
+      {
         was_in_safety_mode_ = true;
+        static int counter = 0;
+        if (counter % 2000 == 0)
+        {
+          printf("DGMSolo12: below joint limits.\n");
+          std::cout << solo_.get_joint_positions().transpose() << std::endl;
+        }
+        counter += 1;
+      }
+
+      if ((solo_.get_joint_positions().array() > upper_lim).any())
+      {
+        was_in_safety_mode_ = true;
+        static int counter = 0;
+        if (counter % 2000 == 0)
+        {
+          printf("DGMSolo12: above joint limits.\n");
+          std::cout << solo_.get_joint_positions().transpose() << std::endl;
+        }
+        counter += 1;
+      }
     }
 
     if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode())
     {
-        was_in_safety_mode_ = true;
-        counter++;
-        if (counter % 2000 == 0)
-        {
-            printf("DGMSolo12: is_in_safety_mode.\n");
-        }
-        return true;
+      static int counter = 0;
+      was_in_safety_mode_ = true;
+      if (counter % 2000 == 0)
+      {
+        printf("DGMSolo12: is_in_safety_mode.\n");
+      }
+      counter++;
     }
-    else
-    {
-        return false;
+    return was_in_safety_mode_;
+  }
+
+  void DGMSolo12::compute_safety_controls()
+  {
+    // Check if there is an error with the motors. If so, best we can do is
+    // to command zero torques.
+    if (solo_.has_error()) {
+      for (auto ctrl = motor_controls_map_.begin();
+          ctrl != motor_controls_map_.end();
+          ++ctrl)
+      {
+          ctrl->second.fill(0.0);
+      }
+    } else {
+      // The motors are fine.
+      // --> Run a D controller to damp the current motion.
+      motor_controls_map_.at("ctrl_joint_torques") =
+          -0.05 * sensors_map_.at("joint_velocities");
     }
-}
+  }
 
 void DGMSolo12::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
 {
@@ -101,6 +163,11 @@ void DGMSolo12::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
      * Additional data.
      */
     map.at("slider_positions") = solo_.get_slider_positions();
+    map.at("imu_accelerometer") = solo_.get_imu_accelerometer();
+    map.at("imu_gyroscope") = solo_.get_imu_gyroscope();
+    map.at("imu_attitude") = solo_.get_imu_attitude();
+    map.at("imu_linear_acceleration") = solo_.get_imu_linear_acceleration();
+    map.at("imu_attitude_quaternion") = solo_.get_imu_attitude_quaternion();
 
     /**
      * Robot status.

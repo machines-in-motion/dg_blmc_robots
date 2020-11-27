@@ -6,6 +6,7 @@
  */
 
 #include "dg_blmc_robots/dgm_teststand.hpp"
+#include "dynamic_graph_manager/ros_init.hpp"
 
 #include "dynamic_graph_manager/ros.hpp"
 

@@ -91,7 +91,7 @@ class SoloBaseRobot(Robot):
         self.fr_index = self.pin_robot.model.getFrameId("FR_ANKLE")
 
         # Initialize the device.
-        self.device = Device("bullet_quadruped")
+        self.device = Device(self.config.robot_name)
         assert path.exists(self.config.yaml_path)
         self.device.initialize(self.config.yaml_path)
 
@@ -122,7 +122,8 @@ class SoloBaseRobot(Robot):
 
         self.steps_ = 0
 
-        super(SoloBaseRobot, self).__init__("bullet_quadruped", self.device)
+        super(SoloBaseRobot, self).__init__(self.config.robot_name,
+            self.device)
 
     def start_video_recording(self):
         if self.record_video:

@@ -73,6 +73,12 @@ public:
         mim_msgs::srv::JointCalibration::Request::SharedPtr req,
         mim_msgs::srv::JointCalibration::Response::SharedPtr res);
 
+    /**
+     * @brief compute_safety_controls computes safety controls very fast in case
+     * the dynamic graph is taking to much computation time or has crashed.
+     */
+    void compute_safety_controls();
+
 private:
     /**
      * @brief Calibrate the robot joint position

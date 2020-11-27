@@ -1,27 +1,27 @@
 /**
  * @file dgm_solo.hpp
  * @author Manuel Wuthrich
- * @author Maximilien Naveau 
+ * @author Maximilien Naveau
  * @author Julian Viereck
- * @author Johannes Pfleging 
+ * @author Johannes Pfleging
  * @license License BSD-3-Clause
- * @copyright Copyright (c) 2019, New York University and Max Planck Gesellshaft.
+ * @copyright Copyright (c) 2019, New York University and Max Planck
+ * Gesellshaft.
  */
 
 #ifndef DGM_SOLO_HH
 #define DGM_SOLO_HH
 
-#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
 #include "blmc_robots/solo8.hpp"
 #include "mim_msgs/srv/joint_calibration.hpp"
-#include "yaml_utils/yaml_cpp_fwd.hpp"
+#include "dynamic_graph_manager/dynamic_graph_manager.hpp"
+#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
-
-  class DGMSolo8 : public dynamic_graph_manager::DynamicGraphManager
-  {
-  public:
+class DGMSolo8 : public dynamic_graph_manager::DynamicGraphManager
+{
+public:
     /**
      * @brief DemoSingleMotor is the constructor.
      */
@@ -36,7 +36,7 @@ namespace dg_blmc_robots
      * @brief This function make also sure that the joint velocity do not exceed
      * a certain value
      */
-//    bool is_in_safety_mode();
+    //    bool is_in_safety_mode();
 
     /**
      * @brief initialize_hardware_communication_process is the function that
@@ -56,28 +56,30 @@ namespace dg_blmc_robots
      * controls and send these controls to the hardware.
      * @param map
      */
-    void set_motor_controls_from_map(const dynamic_graph_manager::VectorDGMap& map);
+    void set_motor_controls_from_map(
+        const dynamic_graph_manager::VectorDGMap& map);
 
     /**
-     * @brief 
-     * 
-     * @param req 
-     * @param res 
-     * @return true 
-     * @return false 
+     * @brief
+     *
+     * @param req
+     * @param res
+     * @return true
+     * @return false
      */
     void calibrate_joint_position_callback(
         mim_msgs::srv::JointCalibration::Request::SharedPtr req,
         mim_msgs::srv::JointCalibration::Response::SharedPtr res);
 
-  private:
+private:
     /**
      * @brief Calibrate the robot joint position
-     * 
+     *
      * @param zero_to_index_angle is the angle between the theoretical zero and
      * the next positive angle.
      */
-    void calibrate_joint_position(const blmc_robots::Vector8d& zero_to_index_angle);
+    void calibrate_joint_position(
+        const blmc_robots::Vector8d& zero_to_index_angle);
 
     /**
      * Entries for the real hardware.
@@ -87,7 +89,7 @@ namespace dg_blmc_robots
      * @brief test_bench_ the real test bench hardware drivers.
      */
     blmc_robots::Solo8 solo_;
-    
+
     /**
      * @brief ctrl_joint_torques_ the joint torques to be sent. Used in this
      * class to perform a local copy of the control. This is need in order
@@ -106,9 +108,8 @@ namespace dg_blmc_robots
      * the next jont index.
      */
     blmc_robots::Vector8d zero_to_index_angle_from_file_;
-  };
+};
 
+}  // namespace dg_blmc_robots
 
-} // namespace dg_blmc_robots
-
-#endif // DGM_TEST_BENCH_8_MOTORS_HH
+#endif  // DGM_TEST_BENCH_8_MOTORS_HH
