@@ -1,92 +1,96 @@
-####################################################
-# Write here your robot name in order to build it. #
-####################################################
+#
+# Write here your robot name in order to build it..
+#
 
-set(ROBOT_NAMES
-    solo8
-    solo8ti
-    solo12
-    solo_simple_simu
-    teststand
-    stuggihop
-)
+set(all_src_targets)
 
-set(ROBOT_CONFIG_FILES
-    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo8.yaml"
-    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo8ti.yaml"
-    "${robot_properties_solo_SOURCE_PREFIX}/config/dgm_parameters_solo12.yaml"
-    "${CMAKE_CURRENT_SOURCE_DIR}/config/solo_simple_simu.yaml"
-    "${robot_properties_teststand_SOURCE_PREFIX}/config/dgm_parameters.yaml"
-    "${robot_properties_stuggihop_SOURCE_PREFIX}/config/stuggihop.yaml"
-)
+set(robot_names solo8 solo8ti solo12 teststand)
 
-###############################################
-# Declare a simple macro to build the library #
-###############################################
+set(robot_properties_package_names
+    robot_properties_solo robot_properties_solo robot_properties_solo
+    robot_properties_teststand)
+
+set(dynamic_graph_manager_yaml_files
+    dynamic_graph_manager/dgm_parameters_solo8.yaml
+    dynamic_graph_manager/dgm_parameters_solo8ti.yaml
+    dynamic_graph_manager/dgm_parameters_solo12.yaml
+    dynamic_graph_manager/dgm_parameters.yaml)
+
+#
+# Declare a simple macro to build the library.
+#
 
 macro(create_dgm_library robot_name)
-    set(lib_name dgm_${robot_name})
+  set(lib_name dgm_${robot_name})
+  # create library
+  add_library(${lib_name} SHARED ${lib_name}.cpp)
+  # Add the include dependencies.
+  target_include_directories(
+    ${lib_name}
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+           $<INSTALL_INTERFACE:include>)
+  # Link the dependencies.
+  ament_target_dependencies(${lib_name} mim_msgs)
+  target_link_libraries(${lib_name} ament_index_cpp::ament_index_cpp)
+  target_link_libraries(${lib_name} blmc_drivers::blmc_drivers)
+  target_link_libraries(${lib_name} blmc_robots::${robot_name})
+  target_link_libraries(${lib_name} dynamic_graph_manager::dynamic_graph_manager)
+  target_link_libraries(${lib_name} yaml_utils::yaml_utils)
 
-    add_library(${lib_name} SHARED ${lib_name}.cpp)
-
-    target_link_libraries(${lib_name} ${catkin_LIBRARIES})
-
-    if(TARGET ${robot_name})
-      target_link_libraries(${lib_name} ${robot_name})
-    endif()
-
-    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        target_link_libraries(${lib_name} rt pthread)
-    endif()
-
-    set(LIBRARIES_TO_BE_EXPORTED ${LIBRARIES_TO_BE_EXPORTED} ${lib_name})
+  list(APPEND all_src_targets ${lib_name})
 endmacro(create_dgm_library lib_name)
 
-#############################################
-# Declare a simple macro to build the demos #
-#############################################
+#
+# Declare a simple macro to build the demos.
+#
 
-macro(create_dgm_executable robot_name)
+macro(create_dgm_executable robot_name package_name resource_path)
 
-    set(executable_name dg_main_${robot_name})
+  set(executable_name dg_main_${robot_name})
 
-    ### demo off the 8 blmc motor test bench ####
-    add_executable(${executable_name}
-        robot_executable/${robot_name}.cpp
-    )
+  # Robot executables.
+  add_executable(${executable_name} robot_executable/${robot_name}.cpp)
+  # Add the include dependencies.
+  target_include_directories(
+    ${executable_name}
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+           ${dynamic_graph_manager_INCLUDE_DIRS} $<INSTALL_INTERFACE:include>)
+  # Link the dependencies.
+  target_link_libraries(${executable_name} dgm_${robot_name})
+  # Some compile definitions
+  target_compile_definitions(
+    ${executable_name} PUBLIC ROBOT_PROPERTIES_PACKAGE_NAME="${package_name}"
+                              ROBOT_PROPERTIES_YAML_PATH="${resource_path}")
 
-    target_link_libraries(${executable_name}
-        dgm_${robot_name}
-        ${catkin_LIBRARIES}
-    )
-
-    set(executable_name dg_main_${robot_name})
-    if(NOT EXISTS ${robot_config_file})
-        message(FATAL_ERROR "Error, cannot find the DGM config file: ${robot_config_file}")
-    endif()
-    target_compile_definitions(${executable_name} PUBLIC
-                               YAML_PARAMS="${robot_config_file}")
+  list(APPEND all_src_targets ${executable_name})
 endmacro(create_dgm_executable robot_name)
 
-#####################################
-# build the DGMs and the executable #
-#####################################
+#
+# build the DGMs and the executable
+#
 
-list(LENGTH ROBOT_NAMES nb_names_tmp)
+list(LENGTH robot_names nb_names_tmp)
 math(EXPR nb_names_tmp "${nb_names_tmp} - 1")
 
 foreach(i RANGE ${nb_names_tmp})
-  list(GET ROBOT_NAMES ${i} robot_name)
-  list(GET ROBOT_CONFIG_FILES ${i} robot_config_file)
+  list(GET robot_names ${i} robot_name)
+  list(GET robot_properties_package_names ${i} robot_properties_package_name)
+  list(GET dynamic_graph_manager_yaml_files ${i}
+       dynamic_graph_manager_yaml_file)
 
   create_dgm_library(${robot_name})
-  create_dgm_executable(${robot_name} ${robot_config_file})
+  create_dgm_executable(${robot_name} ${robot_properties_package_name}
+                        ${dynamic_graph_manager_yaml_file})
 endforeach()
 
-
-######################################################
-# Export the libraries in the devel folder of catkin #
-######################################################
-
-set(EXPORTED_LIBRAIRIES ${EXPORTED_LIBRAIRIES} ${LIBRARIES_TO_BE_EXPORTED}
-    PARENT_SCOPE)
+#
+# Install and Export the libraries.
+#
+install(
+  TARGETS ${all_src_targets}
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  INCLUDES
+  DESTINATION include)

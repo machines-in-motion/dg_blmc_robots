@@ -1,28 +1,45 @@
 <?xml version="1.0"?>
-<package format="2">
-  <name>dg_blmc_robots</name>
-  <version>1.0.0</version>
-  <description>
-    This project implements a small example when using the dynamic graph
-  </description>
-  <author email="mnaveau@tue.mpg.de">Maximilien Naveau</author>
-  <maintainer email="mnaveau@tue.mpg.de">Maximilien Naveau</maintainer>
-  <license>BSD 3-CLause</license>
-  <buildtool_depend>catkin</buildtool_depend>
+<?xml-model
+   href="http://download.ros.org/schema/package_format3.xsd"
+   schematypens="http://www.w3.org/2001/XMLSchema"?>
 
-  <depend> mpi_cmake_modules </depend>
-  <depend> blmc_drivers </depend>
-  <depend> blmc_robots </depend>
-  <depend> pinocchio_bullet </depend>
-  <depend> dynamic_graph_manager </depend>
-  <depend> realtime_tools </depend>
-  <depend> yaml_cpp_catkin </depend>
+<package format="3">
 
-  <depend> robot_properties_solo </depend>
-  <depend> robot_properties_teststand </depend>
-  <depend> robot_properties_stuggihop </depend>
+    <name>dg_blmc_robots</name>
+    <version>1.0.0</version>
+    
+    <description>
+        Dynamic Graph Manager wrapper around the blmc_robots drivers.
+    </description>
 
-  <!-- Generate messages and services -->
-  <depend>message_generation</depend>
-  
+    <maintainer email="mnaveau@tuebingen.mpg.de">Maximilien Naveau</maintainer>
+    <maintainer email="vberenz@tuebingen.mpg.de">Vincent Berenz</maintainer>
+
+    <license>BSD-3-clause</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_python</buildtool_depend>
+    <buildtool_depend>mpi_cmake_modules</buildtool_depend>
+
+    <!-- Run time dependencies. -->
+    <depend>ament_index_cpp</depend>
+    <depend>blmc_drivers</depend>
+    <depend>blmc_robots</depend>
+    <depend>dynamic_graph_manager</depend>
+    <depend>yaml_utils</depend>
+    
+    <!-- Python dependencies. -->
+    <depend>pinocchio_bullet</depend>
+    <depend>robot_properties_solo</depend>
+    <depend>robot_properties_teststand</depend>
+
+    <!-- ROS2 message generation. -->
+    <build_depend>rosidl_default_generators</build_depend>
+    <exec_depend>rosidl_default_runtime</exec_depend>
+    <member_of_group>rosidl_interface_packages</member_of_group>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+
 </package>

@@ -1,13 +1,11 @@
 from __future__ import print_function
 
 import os
-import rospkg
 import numpy as np
 import time
 
-import dynamic_graph_manager as dgm
-from dynamic_graph_manager.device import Device
-from dynamic_graph_manager.device.robot import Robot
+from dynamic_graph_manager.dynamic_graph.device import Device
+from dynamic_graph_manager.robot import Robot
 
 from robot_properties_solo.config import SoloConfig
 

@@ -1,102 +1,91 @@
-######################
-# set up the project #
-######################
-cmake_minimum_required(VERSION 2.8.3)
+#
+# Copyright (c) 2019, New York University and Max Planck Gesellschaft.
+#
+# License BSD-3 clause
+#
+
+#
+# Set up the project.
+#
+cmake_minimum_required(VERSION 3.10.2)
 
 project(dg_blmc_robots)
 
-# required to use std::shared_ptr in code and to link the python bindings
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-as-needed")
+# Using C++17.
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
 endif()
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
-# ensuring path to libraries are set during install
-set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+#
+# Dependencies
+#
 
-############################
-# Search for dependencies. #
-############################
-set(CATKIN_PKGS ${CATKIN_PKGS}
+# Build tools.
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(mpi_cmake_modules REQUIRED)
+find_package(mim_msgs REQUIRED)
+# Depend on ament macros.
+find_package(ament_index_cpp REQUIRED)
+find_package(blmc_drivers REQUIRED)
+find_package(blmc_robots REQUIRED)
+find_package(dynamic_graph_manager REQUIRED)
+find_package(yaml_utils REQUIRED)
+
+# Export de dependencies.
+ament_export_dependencies(
+  ament_cmake
+  ament_cmake_python
   mpi_cmake_modules
+  mim_msgs
+  ament_index_cpp
   blmc_drivers
   blmc_robots
-  yaml_cpp_catkin
   dynamic_graph_manager
+  yaml_utils
   pinocchio_bullet
   robot_properties_solo
-  robot_properties_teststand
-  robot_properties_stuggihop
-)
-find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
+  robot_properties_teststand)
 
-# Trigger dependency to dynamic-graph.
-catkin_add_required_dependency("yaml-cpp")
-catkin_add_required_dependency("dynamic-graph >= 3.0.0")
-catkin_add_required_dependency("dynamic-graph-python >= 3.0.0")
+# Prepare the final export.
+ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
-search_for_boost()
-search_for_eigen()
-search_for_python()
+#
+# Install the python package.
+#
+ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR python/${PROJECT_NAME})
 
-#########################################
-# Declare the service files to be built #
-#########################################
-add_service_files(FILES
-  JointCalibration.srv
-)
-
-###############################
-# Generate the catkin package #
-###############################
-catkin_python_setup()
-
-#####################################################################
-# Actually generate the language-specific message and service files #
-#####################################################################
-generate_messages(DEPENDENCIES std_msgs)
-
-######################################################
-# define the include directory of all ${CATKIN_PKGS} #
-######################################################
-include_directories(${PROJECT_SOURCE_DIR}/include ${catkin_INCLUDE_DIRS})
-
-##########################################
-# export the package as a catkin package #
-##########################################
-set(exported_libraries
-  dgm_solo8
-  dgm_solo8ti
-  dgm_solo12
-  dgm_solo_simple_simu
-  dgm_teststand
-  dgm_stuggihop
-)
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${exported_libraries}
-  CATKIN_DEPENDS ${CATKIN_PKGS}
-)
-
-########################################################
-# manage the creation of the libraries and executables #
-########################################################
+#
+# Manage the creation of the libraries and executables.
+#
 add_subdirectory(src)
 
-#########################
-# manage the unit tests #
-#########################
-add_subdirectory(tests)
+#
+# Manage the unit tests.
+#
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
-####################
-# manage the demos #
-####################
+#
+# Manage the demos.
+#
 add_subdirectory(demos)
 
-##########################
-# building documentation #
-##########################
-build_doxygen_documentation()
+#
+# Install the package includes.
+#
+install(DIRECTORY include/ DESTINATION include)
+
+#
+# Building documentation.
+#
+add_documentation()
+
+#
+# Export as an ament_package
+#
+ament_package()

@@ -13,9 +13,9 @@
 #define DGM_SOLO_HH
 
 #include "blmc_robots/solo12.hpp"
-#include "dg_blmc_robots/JointCalibration.h"
+#include "mim_msgs/srv/joint_calibration.hpp"
 #include "dynamic_graph_manager/dynamic_graph_manager.hpp"
-#include "yaml_cpp_catkin/yaml_cpp_fwd.hpp"
+#include "yaml_utils/yaml_cpp_fwd.hpp"
 
 namespace dg_blmc_robots
 {
@@ -69,9 +69,9 @@ public:
      * @return true if everything went well.
      * @return false if something went wrong.
      */
-    bool calibrate_joint_position_callback(
-        dg_blmc_robots::JointCalibration::Request& req,
-        dg_blmc_robots::JointCalibration::Response& res);
+    void calibrate_joint_position_callback(
+        mim_msgs::srv::JointCalibration::Request::SharedPtr req,
+        mim_msgs::srv::JointCalibration::Response::SharedPtr res);
 
     /**
      * @brief compute_safety_controls computes safety controls very fast in case

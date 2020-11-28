@@ -8,7 +8,7 @@
  */
 
 #include "dg_blmc_robots/dgm_solo12.hpp"
-#include "dynamic_graph_manager/ros_init.hpp"
+#include "dynamic_graph_manager/ros.hpp"
 
 namespace dg_blmc_robots
 {
@@ -32,14 +32,18 @@ void DGMSolo12::initialize_hardware_communication_process()
                         zero_to_index_angle_from_file_);
 
     // Get the hardware communication ros node handle.
-    ros::NodeHandle& ros_node_handle = dynamic_graph_manager::ros_init(
-        dynamic_graph_manager::DynamicGraphManager::hw_com_ros_node_name_);
+    dynamic_graph_manager::RosNodePtr ros_node_handle =
+        dynamic_graph_manager::get_ros_node(
+            dynamic_graph_manager::HWC_ROS_NODE_NAME);
 
     /** Initialize the user commands. */
-    ros_user_commands_.push_back(ros_node_handle.advertiseService(
-        "calibrate_joint_position",
-        &DGMSolo12::calibrate_joint_position_callback,
-        this));
+    ros_user_commands_.push_back(
+        ros_node_handle->create_service<mim_msgs::srv::JointCalibration>(
+            "calibrate_joint_position",
+            std::bind(&DGMSolo12::calibrate_joint_position_callback,
+                      this,
+                      std::placeholders::_1,
+                      std::placeholders::_2)));
 
     std::string network_id;
     YAML::ReadParameter(
@@ -50,10 +54,10 @@ void DGMSolo12::initialize_hardware_communication_process()
         params_["hardware_communication"], "serial_port", serial_port);
 
     solo_.initialize(network_id, serial_port);
-  }
+}
 
-  bool DGMSolo12::is_in_safety_mode()
-  {
+bool DGMSolo12::is_in_safety_mode()
+{
     // Check if any card is in an error state.
     if (solo_.has_error()) {
       was_in_safety_mode_ = true;
@@ -140,8 +144,8 @@ void DGMSolo12::initialize_hardware_communication_process()
     }
   }
 
-  void DGMSolo12::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
-  {
+void DGMSolo12::get_sensors_to_map(dynamic_graph_manager::VectorDGMap& map)
+{
     solo_.acquire_sensors();
 
     /**
@@ -210,9 +214,9 @@ void DGMSolo12::set_motor_controls_from_map(
     }
 }
 
-bool DGMSolo12::calibrate_joint_position_callback(
-    dg_blmc_robots::JointCalibration::Request&,
-    dg_blmc_robots::JointCalibration::Response& res)
+void DGMSolo12::calibrate_joint_position_callback(
+    mim_msgs::srv::JointCalibration::Request::SharedPtr,
+    mim_msgs::srv::JointCalibration::Response::SharedPtr res)
 {
     // Parse and register the command for further call.
     add_user_command(std::bind(&DGMSolo12::calibrate_joint_position,
@@ -221,10 +225,7 @@ bool DGMSolo12::calibrate_joint_position_callback(
 
     // Return a sanity check that assert that the function has been correctly
     // registered in the hardware process.
-    res.sanity_check = true;
-
-    // The service has been executed properly.
-    return true;
+    res->sanity_check = true;
 }
 
 void DGMSolo12::calibrate_joint_position(

@@ -7,16 +7,28 @@
  * This file uses the TestBench8Motors class in a small demo.
  */
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "dg_blmc_robots/dgm_solo12.hpp"
 
 int main(int, char* [])
 {
-    std::cout << "Loading paramters from " << YAML_PARAMS << std::endl;
-    YAML::Node param = YAML::LoadFile(YAML_PARAMS);
+    // Get the dynamic_graph_manager config file.
+    std::string share_path = ament_index_cpp::get_package_share_directory(
+        ROBOT_PROPERTIES_PACKAGE_NAME);
+    std::string yaml_path = share_path + "/" + ROBOT_PROPERTIES_YAML_PATH;
+    std::cout << "Loading paramters from " << yaml_path << std::endl;
+    YAML::Node param = YAML::LoadFile(yaml_path);
+
+    // Create the dgm.
     dg_blmc_robots::DGMSolo12 dgm;
 
+    // Initialize and run it.
     dgm.initialize(param);
     dgm.run();
+
+    // Wait until ROS is shutdown.
     std::cout << "Wait for shutdown, press CTRL+C to close." << std::endl;
-    ros::waitForShutdown();
+    dynamic_graph_manager::ros_spin();
+    dynamic_graph_manager::ros_shutdown();
+
 }
