@@ -1,31 +1,15 @@
-from __future__ import print_function
+"""Interface between Bullet and the Dynamic Graph for solo12 """
 
-import os
-import numpy as np
-import time
 
-from dynamic_graph_manager.dynamic_graph.device import Device
-from dynamic_graph_manager.robot import Robot
+from robot_properties_solo.solo8wrapper import Solo8Robot, Solo8Config
+from dg_blmc_robots.solo.dg_bullet_solo import DgBulletSoloBaseRobot
 
-from robot_properties_solo.config import SoloConfig
 
-import pybullet as p
-import pinocchio as se3
-from pinocchio.utils import zero
-
-from matplotlib import pyplot as plt
-
-from dynamic_graph.sot.core.vector_constant import VectorConstant
-
-from py_pinocchio_bullet.wrapper import PinBulletWrapper
-
-from dg_blmc_robots.solo.solo_base_bullet import SoloBaseRobot
-
-class QuadrupedBulletRobot(SoloBaseRobot):
+class QuadrupedBulletRobot(DgBulletSoloBaseRobot):
     def __init__(self, use_fixed_base=False, record_video=False,
                  init_sliders_pose=4*[0.5]):
 
-        super(QuadrupedBulletRobot, self).__init__(SoloConfig(), use_fixed_base,
+        super(QuadrupedBulletRobot, self).__init__(Solo8Robot, Solo8Config, use_fixed_base,
                 record_video, init_sliders_pose)
 
         self.q0[0] = 0.2
@@ -42,7 +26,7 @@ class QuadrupedBulletRobot(SoloBaseRobot):
         self.q0[14] = 1.6
 
         # Sync the current robot state to the graph input signals.
-        self.sim2signal_()
+        self._sim2signal()
 
 
 def get_robot(use_fixed_base=False, record_video = False,

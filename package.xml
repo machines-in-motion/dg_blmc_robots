@@ -27,16 +27,12 @@
     <depend>blmc_robots</depend>
     <depend>dynamic_graph_manager</depend>
     <depend>yaml_utils</depend>
+    <depend>mim_msgs</depend>
     
     <!-- Python dependencies. -->
-    <depend>pinocchio_bullet</depend>
+    <depend>bullet_utils</depend>
     <depend>robot_properties_solo</depend>
     <depend>robot_properties_teststand</depend>
-
-    <!-- ROS2 message generation. -->
-    <build_depend>rosidl_default_generators</build_depend>
-    <exec_depend>rosidl_default_runtime</exec_depend>
-    <member_of_group>rosidl_interface_packages</member_of_group>
 
     <export>
         <build_type>ament_cmake</build_type>
