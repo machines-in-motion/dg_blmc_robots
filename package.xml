@@ -30,7 +30,6 @@
     <depend>mim_msgs</depend>
     
     <!-- Python dependencies. -->
-    <depend>bullet_utils</depend>
     <depend>robot_properties_solo</depend>
     <depend>robot_properties_teststand</depend>
 

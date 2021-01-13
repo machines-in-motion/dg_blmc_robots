@@ -7,15 +7,12 @@
  * This file uses the TestBench8Motors class in a small demo.
  */
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "dg_blmc_robots/dgm_solo8ti.hpp"
 
 int main(int, char*[])
 {
     // Get the dynamic_graph_manager config file.
-    std::string share_path = ament_index_cpp::get_package_share_directory(
-        ROBOT_PROPERTIES_PACKAGE_NAME);
-    std::string yaml_path = share_path + "/" + ROBOT_PROPERTIES_YAML_PATH;
+    std::string yaml_path = ROBOT_PROPERTIES_YAML_PATH;
     std::cout << "Loading paramters from " << yaml_path << std::endl;
     YAML::Node param = YAML::LoadFile(yaml_path);
 

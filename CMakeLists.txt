@@ -29,11 +29,12 @@ find_package(ament_cmake_python REQUIRED)
 find_package(mpi_cmake_modules REQUIRED)
 find_package(mim_msgs REQUIRED)
 # Depend on ament macros.
-find_package(ament_index_cpp REQUIRED)
 find_package(blmc_drivers REQUIRED)
 find_package(blmc_robots REQUIRED)
 find_package(dynamic_graph_manager REQUIRED)
 find_package(yaml_utils REQUIRED)
+find_package(PythonModules REQUIRED COMPONENTS robot_properties_solo
+                                              robot_properties_teststand)
 
 # Export de dependencies.
 ament_export_dependencies(
