@@ -68,50 +68,6 @@ bool DGMSolo12::is_in_safety_mode()
       counter += 1;
     }
 
-    // Check for too fast velocity. Value estiamted from small jump.
-    if (solo_.get_joint_velocities().cwiseAbs().maxCoeff() > 80.)
-    {
-      was_in_safety_mode_ = true;
-      static int counter = 0;
-      if (counter % 2000 == 0)
-      {
-        printf("DGMSolo12: Going into safe mode as joint velocity exceeded bound.\n");
-      }
-      counter += 1;
-    }
-
-    // Check for joint limits. Only do this when calibration is not running.
-    if (!solo_.is_calibrating()) {
-      Eigen::Array<double, 12, 1> lower_lim, upper_lim;
-      lower_lim << -1.2, -1.7, -3.4, -1.2, -1.7, -3.4,
-                   -1.2, -1.7, -3.4, -1.2, -1.7, -3.4;
-      upper_lim = -lower_lim;
-
-      if ((solo_.get_joint_positions().array() < lower_lim).any())
-      {
-        was_in_safety_mode_ = true;
-        static int counter = 0;
-        if (counter % 2000 == 0)
-        {
-          printf("DGMSolo12: below joint limits.\n");
-          std::cout << solo_.get_joint_positions().transpose() << std::endl;
-        }
-        counter += 1;
-      }
-
-      if ((solo_.get_joint_positions().array() > upper_lim).any())
-      {
-        was_in_safety_mode_ = true;
-        static int counter = 0;
-        if (counter % 2000 == 0)
-        {
-          printf("DGMSolo12: above joint limits.\n");
-          std::cout << solo_.get_joint_positions().transpose() << std::endl;
-        }
-        counter += 1;
-      }
-    }
-
     if (was_in_safety_mode_ || DynamicGraphManager::is_in_safety_mode())
     {
       static int counter = 0;
