@@ -104,7 +104,7 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
             ]
         )
 
-    def run(self, steps=1):
+    def run(self, steps=1, sleep=False):
         """ Get input from Device, Step the simulation, feed the Device. """
 
         for _ in range(steps):
@@ -112,10 +112,8 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
             self.robot_bullet.send_joint_command(
                 np.matrix(self.device.ctrl_joint_torques.value).T
             )
-            pybullet.stepSimulation()
+            self.bullet_env.step(sleep=sleep)
             self._sim2signal()
-
-            self.bullet_env.step()
 
     def reset_state(self, q, dq):
         """Sets the bullet simulator and the signals to
