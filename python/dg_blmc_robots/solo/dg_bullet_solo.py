@@ -126,3 +126,11 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
     ):
         ## for vicon entity
         self.signal_name = signal_name
+
+    def start_video_recording(self, file_name):
+        if self.record_video:
+            self.bullet_env.start_video_recording(file_name)
+
+    def stop_video_recording(self):
+        if self.record_video:
+            self.bullet_env.stop_video_recording()
