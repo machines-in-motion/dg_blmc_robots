@@ -33,8 +33,7 @@ find_package(blmc_drivers REQUIRED)
 find_package(blmc_robots REQUIRED)
 find_package(dynamic_graph_manager REQUIRED)
 find_package(yaml_utils REQUIRED)
-find_package(PythonModules REQUIRED COMPONENTS robot_properties_solo
-                                              robot_properties_teststand)
+find_package(PythonModules REQUIRED COMPONENTS robot_properties_solo)
 
 # Export de dependencies.
 ament_export_dependencies(
@@ -48,8 +47,7 @@ ament_export_dependencies(
   dynamic_graph_manager
   yaml_utils
   pinocchio_bullet
-  robot_properties_solo
-  robot_properties_teststand)
+  robot_properties_solo)
 
 # Prepare the final export.
 ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

@@ -4,13 +4,12 @@
 
 set(all_src_targets)
 
-set(robot_names solo8 solo8ti solo12 teststand)
+set(robot_names solo8 solo8ti solo12)
 
 set(dynamic_graph_manager_yaml_files
     ${PythonModules_robot_properties_solo_PATH}/robot_properties_solo/robot_properties_solo/dynamic_graph_manager/dgm_parameters_solo8.yaml
     ${PythonModules_robot_properties_solo_PATH}/robot_properties_solo/robot_properties_solo/dynamic_graph_manager/dgm_parameters_solo8ti.yaml
     ${PythonModules_robot_properties_solo_PATH}/robot_properties_solo/robot_properties_solo/dynamic_graph_manager/dgm_parameters_solo12.yaml
-    ${PythonModules_robot_properties_teststand_PATH}/robot_properties_teststand/robot_properties_teststand/dynamic_graph_manager/dgm_parameters_teststand.yaml
 )
 
 #
