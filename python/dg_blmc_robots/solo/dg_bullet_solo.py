@@ -38,13 +38,14 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
         robotStartPos = [0.0, 0, 0.7]
         robotStartOrientation = pybullet.getQuaternionFromEuler([0, 0, 0])
 
-        # Load the robot
-        self.robot_bullet = self.bullet_env.add_robot(
-            self.SoloRobotClass,
+        # Create the robot and add it to the env.
+        robot = self.SoloRobotClass(
             pos=robotStartPos,
             orn=robotStartOrientation,
-            useFixedBase=use_fixed_base,
+            useFixedBase=use_fixed_base
         )
+
+        self.robot_bullet = self.bullet_env.add_robot(robot)
 
         self.q0 = zero(self.robot_bullet.pin_robot.nq)
 
