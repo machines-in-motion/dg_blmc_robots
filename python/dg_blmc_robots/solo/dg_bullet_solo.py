@@ -39,13 +39,14 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
         robotStartOrientation = pybullet.getQuaternionFromEuler([0, 0, 0])
 
         # Create the robot and add it to the env.
-        robot = self.SoloRobotClass(
+        self.robot_bullet = SoloRobotClass(
             pos=robotStartPos,
             orn=robotStartOrientation,
-            useFixedBase=use_fixed_base
+            useFixedBase=use_fixed_base,
+            init_sliders_pose=init_sliders_pose,
         )
 
-        self.robot_bullet = self.bullet_env.add_robot(robot)
+        self.robot_bullet = self.bullet_env.add_robot(self.robot_bullet)
 
         self.q0 = zero(self.robot_bullet.pin_robot.nq)
 
@@ -57,11 +58,15 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
         # Create signals for the base.
         self.signal_base_pos_ = VectorConstant("bullet_quadruped_base_pos")
         self.signal_base_vel_ = VectorConstant("bullet_quadruped_base_vel")
-        self.signal_base_vel_world_ = VectorConstant("bullet_quadruped_base_vel_world")
+        self.signal_base_vel_world_ = VectorConstant(
+            "bullet_quadruped_base_vel_world"
+        )
         self.signal_base_pos_.sout.value = np.hstack(
             [robotStartPos, robotStartOrientation]
         )
-        self.signal_base_vel_.sout.value = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.signal_base_vel_.sout.value = np.array(
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        )
         self.signal_base_vel_world_.sout.value = np.array(
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         )
@@ -73,7 +78,9 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
         # Sync the current robot state to the graph input signals.
         self._sim2signal()
 
-        super(DgBulletSoloBaseRobot, self).__init__(self.config.robot_name, self.device)
+        super(DgBulletSoloBaseRobot, self).__init__(
+            self.config.robot_name, self.device
+        )
 
     def base_signals(self):
         return self.signal_base_pos_.sout, self.signal_base_vel_.sout
@@ -94,14 +101,16 @@ class DgBulletSoloBaseRobot(dynamic_graph_manager.robot.Robot):
 
         self.signal_base_pos_.sout.value = q[0:7]
         self.signal_base_vel_.sout.value = dq[0:6]
-        self.signal_base_vel_world_.sout.value = self.robot_bullet.get_base_velocity_world()
+        self.signal_base_vel_world_.sout.value = (
+            self.robot_bullet.get_base_velocity_world()
+        )
 
         device.slider_positions.value = np.array(
             [
                 self.robot_bullet.get_slider_position("a"),
                 self.robot_bullet.get_slider_position("b"),
                 self.robot_bullet.get_slider_position("c"),
-                self.robot_bullet.get_slider_position("d")
+                self.robot_bullet.get_slider_position("d"),
             ]
         )
 
