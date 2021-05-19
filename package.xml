@@ -7,7 +7,7 @@
 
     <name>dg_blmc_robots</name>
     <version>1.0.0</version>
-    
+
     <description>
         Dynamic Graph Manager wrapper around the blmc_robots drivers.
     </description>
@@ -24,11 +24,11 @@
     <!-- Run time dependencies. -->
     <depend>ament_index_cpp</depend>
     <depend>blmc_drivers</depend>
-    <depend>blmc_robots</depend>
+    <depend>solo</depend>
     <depend>dynamic_graph_manager</depend>
     <depend>yaml_utils</depend>
     <depend>mim_msgs</depend>
-    
+
     <!-- Python dependencies. -->
     <depend>robot_properties_solo</depend>
     <depend>robot_properties_teststand</depend>

@@ -30,7 +30,7 @@ find_package(mpi_cmake_modules REQUIRED)
 find_package(mim_msgs REQUIRED)
 # Depend on ament macros.
 find_package(blmc_drivers REQUIRED)
-find_package(blmc_robots REQUIRED)
+find_package(solo REQUIRED)
 find_package(dynamic_graph_manager REQUIRED)
 find_package(yaml_utils REQUIRED)
 find_package(PythonModules REQUIRED COMPONENTS robot_properties_solo)
@@ -43,7 +43,7 @@ ament_export_dependencies(
   mim_msgs
   ament_index_cpp
   blmc_drivers
-  blmc_robots
+  solo
   dynamic_graph_manager
   yaml_utils
   pinocchio_bullet
