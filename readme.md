@@ -1,3 +1,9 @@
+ARCHIVED
+--------
+
+This pacakge is deprectaed the code has been moved to the https://github.com/open-dynamic-robot-initiative/solo package
+
+
 DG BLMC ROBOTS
 --------------
 
